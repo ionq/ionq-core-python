@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+GetCharacterizationsForBackendBackend = Literal['qpu.aria-1', 'qpu.aria-2', 'qpu.forte-1', 'qpu.forte-enterprise-1', 'qpu.forte-enterprise-2', 'qpu.forte-enterprise-3']
+
+GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES: set[GetCharacterizationsForBackendBackend] = { 'qpu.aria-1', 'qpu.aria-2', 'qpu.forte-1', 'qpu.forte-enterprise-1', 'qpu.forte-enterprise-2', 'qpu.forte-enterprise-3',  }
+
+def check_get_characterizations_for_backend_backend(value: str) -> GetCharacterizationsForBackendBackend:
+    if value in GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES:
+        return cast(GetCharacterizationsForBackendBackend, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES!r}")

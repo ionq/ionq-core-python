@@ -1,0 +1,46 @@
+name: Generated code check
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  staleness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          python-version: "3.12"
+          enable-cache: false
+      - name: Apply overlay if present
+        run: |
+          if [[ -f openapi-overlay.yaml ]]; then
+            uvx oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+          else
+            cp openapi.json /tmp/patched-spec.json
+          fi
+      - name: Regenerate client
+        run: |
+          uvx openapi-python-client generate \
+            --path /tmp/patched-spec.json \
+            --meta none \
+            --config openapi-python-client-config.yaml \
+            --output-path ionq_core \
+            --overwrite
+      - name: Check for uncommitted changes
+        run: |
+          if [[ -n "$(git status --porcelain ionq_core/)" ]]; then
+            echo "::error::Generated code is out of date. Run the generator and commit the results."
+            git diff ionq_core/
+            exit 1
+          fi

@@ -1,0 +1,241 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.session_status_enum import check_session_status_enum
+from ..models.session_status_enum import SessionStatusEnum
+from ..types import UNSET, Unset
+from dateutil.parser import isoparse
+from typing import cast
+import datetime
+
+if TYPE_CHECKING:
+  from ..models.session_settings import SessionSettings
+
+
+
+
+
+T = TypeVar("T", bound="Session")
+
+
+
+@_attrs_define
+class Session:
+    """ 
+        Attributes:
+            id (str): The id of the session.
+            created_at (datetime.datetime):
+            organization_id (str):
+            backend (None | str):
+            project_id (None | str):
+            creator_id (None | str):
+            ended_at (datetime.datetime | None):
+            ender_id (None | str):
+            active (bool):
+            status (SessionStatusEnum):
+            started_at (datetime.datetime | None):
+            settings (SessionSettings | Unset):
+     """
+
+    id: str
+    created_at: datetime.datetime
+    organization_id: str
+    backend: None | str
+    project_id: None | str
+    creator_id: None | str
+    ended_at: datetime.datetime | None
+    ender_id: None | str
+    active: bool
+    status: SessionStatusEnum
+    started_at: datetime.datetime | None
+    settings: SessionSettings | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.session_settings import SessionSettings
+        id = self.id
+
+        created_at = self.created_at.isoformat()
+
+        organization_id = self.organization_id
+
+        backend: None | str
+        backend = self.backend
+
+        project_id: None | str
+        project_id = self.project_id
+
+        creator_id: None | str
+        creator_id = self.creator_id
+
+        ended_at: None | str
+        if isinstance(self.ended_at, datetime.datetime):
+            ended_at = self.ended_at.isoformat()
+        else:
+            ended_at = self.ended_at
+
+        ender_id: None | str
+        ender_id = self.ender_id
+
+        active = self.active
+
+        status: str = self.status
+
+        started_at: None | str
+        if isinstance(self.started_at, datetime.datetime):
+            started_at = self.started_at.isoformat()
+        else:
+            started_at = self.started_at
+
+        settings: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.settings, Unset):
+            settings = self.settings.to_dict()
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "id": id,
+            "created_at": created_at,
+            "organization_id": organization_id,
+            "backend": backend,
+            "project_id": project_id,
+            "creator_id": creator_id,
+            "ended_at": ended_at,
+            "ender_id": ender_id,
+            "active": active,
+            "status": status,
+            "started_at": started_at,
+        })
+        if settings is not UNSET:
+            field_dict["settings"] = settings
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.session_settings import SessionSettings
+        d = dict(src_dict)
+        id = d.pop("id")
+
+        created_at = isoparse(d.pop("created_at"))
+
+
+
+
+        organization_id = d.pop("organization_id")
+
+        def _parse_backend(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        backend = _parse_backend(d.pop("backend"))
+
+
+        def _parse_project_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        project_id = _parse_project_id(d.pop("project_id"))
+
+
+        def _parse_creator_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        creator_id = _parse_creator_id(d.pop("creator_id"))
+
+
+        def _parse_ended_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                ended_at_type_0 = isoparse(data)
+
+
+
+                return ended_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        ended_at = _parse_ended_at(d.pop("ended_at"))
+
+
+        def _parse_ender_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        ender_id = _parse_ender_id(d.pop("ender_id"))
+
+
+        active = d.pop("active")
+
+        status = check_session_status_enum(d.pop("status"))
+
+
+
+
+        def _parse_started_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                started_at_type_0 = isoparse(data)
+
+
+
+                return started_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        started_at = _parse_started_at(d.pop("started_at"))
+
+
+        _settings = d.pop("settings", UNSET)
+        settings: SessionSettings | Unset
+        if isinstance(_settings,  Unset):
+            settings = UNSET
+        else:
+            settings = SessionSettings.from_dict(_settings)
+
+
+
+
+        session = cls(
+            id=id,
+            created_at=created_at,
+            organization_id=organization_id,
+            backend=backend,
+            project_id=project_id,
+            creator_id=creator_id,
+            ended_at=ended_at,
+            ender_id=ender_id,
+            active=active,
+            status=status,
+            started_at=started_at,
+            settings=settings,
+        )
+
+        return session
+

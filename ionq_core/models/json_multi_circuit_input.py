@@ -1,0 +1,142 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.json_multi_circuit_input_gateset import check_json_multi_circuit_input_gateset
+from ..models.json_multi_circuit_input_gateset import JsonMultiCircuitInputGateset
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.native_circuit import NativeCircuit
+  from ..models.qis_circuit import QISCircuit
+
+
+
+
+
+T = TypeVar("T", bound="JsonMultiCircuitInput")
+
+
+
+@_attrs_define
+class JsonMultiCircuitInput:
+    """ 
+        Attributes:
+            gateset (JsonMultiCircuitInputGateset):
+            circuits (list[NativeCircuit | QISCircuit]):
+            qubits (float | Unset):
+     """
+
+    gateset: JsonMultiCircuitInputGateset
+    circuits: list[NativeCircuit | QISCircuit]
+    qubits: float | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.native_circuit import NativeCircuit
+        from ..models.qis_circuit import QISCircuit
+        gateset: str = self.gateset
+
+        circuits = []
+        for circuits_item_data in self.circuits:
+            circuits_item: dict[str, Any]
+            if isinstance(circuits_item_data, QISCircuit):
+                circuits_item = circuits_item_data.to_dict()
+            else:
+                circuits_item = circuits_item_data.to_dict()
+
+            circuits.append(circuits_item)
+
+
+
+        qubits = self.qubits
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+            "gateset": gateset,
+            "circuits": circuits,
+        })
+        if qubits is not UNSET:
+            field_dict["qubits"] = qubits
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.native_circuit import NativeCircuit
+        from ..models.qis_circuit import QISCircuit
+        d = dict(src_dict)
+        gateset = check_json_multi_circuit_input_gateset(d.pop("gateset"))
+
+
+
+
+        circuits = []
+        _circuits = d.pop("circuits")
+        for circuits_item_data in (_circuits):
+            def _parse_circuits_item(data: object) -> NativeCircuit | QISCircuit:
+                try:
+                    if not isinstance(data, dict):
+                        raise TypeError()
+                    circuits_item_type_0 = QISCircuit.from_dict(data)
+
+
+
+                    return circuits_item_type_0
+                except (TypeError, ValueError, AttributeError, KeyError):
+                    pass
+                if not isinstance(data, dict):
+                    raise TypeError()
+                circuits_item_type_1 = NativeCircuit.from_dict(data)
+
+
+
+                return circuits_item_type_1
+
+            circuits_item = _parse_circuits_item(circuits_item_data)
+
+            circuits.append(circuits_item)
+
+
+        qubits = d.pop("qubits", UNSET)
+
+        json_multi_circuit_input = cls(
+            gateset=gateset,
+            circuits=circuits,
+            qubits=qubits,
+        )
+
+
+        json_multi_circuit_input.additional_properties = d
+        return json_multi_circuit_input
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

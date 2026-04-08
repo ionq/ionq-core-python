@@ -1,0 +1,87 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.job_status import check_job_status
+from ..models.job_status import JobStatus
+from typing import cast
+
+
+
+
+
+
+T = TypeVar("T", bound="JobCreationResponse")
+
+
+
+@_attrs_define
+class JobCreationResponse:
+    """ 
+        Attributes:
+            id (str):  Example: 617a1f8b-59d4-435d-aa33-695433d7155e.
+            status (JobStatus):
+            session_id (None | str):
+     """
+
+    id: str
+    status: JobStatus
+    session_id: None | str
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        id = self.id
+
+        status: str = self.status
+
+        session_id: None | str
+        session_id = self.session_id
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "id": id,
+            "status": status,
+            "session_id": session_id,
+        })
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        id = d.pop("id")
+
+        status = check_job_status(d.pop("status"))
+
+
+
+
+        def _parse_session_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        session_id = _parse_session_id(d.pop("session_id"))
+
+
+        job_creation_response = cls(
+            id=id,
+            status=status,
+            session_id=session_id,
+        )
+
+        return job_creation_response
+

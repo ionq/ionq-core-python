@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+NativeCircuitGateset = Literal['native']
+
+NATIVE_CIRCUIT_GATESET_VALUES: set[NativeCircuitGateset] = { 'native',  }
+
+def check_native_circuit_gateset(value: str) -> NativeCircuitGateset:
+    if value in NATIVE_CIRCUIT_GATESET_VALUES:
+        return cast(NativeCircuitGateset, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {NATIVE_CIRCUIT_GATESET_VALUES!r}")

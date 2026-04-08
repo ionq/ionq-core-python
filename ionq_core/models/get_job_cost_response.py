@@ -1,0 +1,97 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.get_job_cost_response_cost import GetJobCostResponseCost
+  from ..models.get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
+
+
+
+
+
+T = TypeVar("T", bound="GetJobCostResponse")
+
+
+
+@_attrs_define
+class GetJobCostResponse:
+    """ 
+        Attributes:
+            dry_run (bool):
+            estimated_cost (GetJobCostResponseEstimatedCost):
+            cost (GetJobCostResponseCost | Unset):
+     """
+
+    dry_run: bool
+    estimated_cost: GetJobCostResponseEstimatedCost
+    cost: GetJobCostResponseCost | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.get_job_cost_response_cost import GetJobCostResponseCost
+        from ..models.get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
+        dry_run = self.dry_run
+
+        estimated_cost = self.estimated_cost.to_dict()
+
+        cost: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.cost, Unset):
+            cost = self.cost.to_dict()
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "dry_run": dry_run,
+            "estimated_cost": estimated_cost,
+        })
+        if cost is not UNSET:
+            field_dict["cost"] = cost
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.get_job_cost_response_cost import GetJobCostResponseCost
+        from ..models.get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
+        d = dict(src_dict)
+        dry_run = d.pop("dry_run")
+
+        estimated_cost = GetJobCostResponseEstimatedCost.from_dict(d.pop("estimated_cost"))
+
+
+
+
+        _cost = d.pop("cost", UNSET)
+        cost: GetJobCostResponseCost | Unset
+        if isinstance(_cost,  Unset):
+            cost = UNSET
+        else:
+            cost = GetJobCostResponseCost.from_dict(_cost)
+
+
+
+
+        get_job_cost_response = cls(
+            dry_run=dry_run,
+            estimated_cost=estimated_cost,
+            cost=cost,
+        )
+
+        return get_job_cost_response
+

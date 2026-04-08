@@ -1,0 +1,100 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+
+
+
+
+
+
+T = TypeVar("T", bound="GetJobEstimateResponseRateInformation")
+
+
+
+@_attrs_define
+class GetJobEstimateResponseRateInformation:
+    """ 
+        Attributes:
+            job_cost_minimum (float):
+            cost_2q_gate (float):
+            cost_1q_gate (float):
+            organization (str):
+     """
+
+    job_cost_minimum: float
+    cost_2q_gate: float
+    cost_1q_gate: float
+    organization: str
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        job_cost_minimum = self.job_cost_minimum
+
+        cost_2q_gate = self.cost_2q_gate
+
+        cost_1q_gate = self.cost_1q_gate
+
+        organization = self.organization
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+            "job_cost_minimum": job_cost_minimum,
+            "cost_2q_gate": cost_2q_gate,
+            "cost_1q_gate": cost_1q_gate,
+            "organization": organization,
+        })
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        job_cost_minimum = d.pop("job_cost_minimum")
+
+        cost_2q_gate = d.pop("cost_2q_gate")
+
+        cost_1q_gate = d.pop("cost_1q_gate")
+
+        organization = d.pop("organization")
+
+        get_job_estimate_response_rate_information = cls(
+            job_cost_minimum=job_cost_minimum,
+            cost_2q_gate=cost_2q_gate,
+            cost_1q_gate=cost_1q_gate,
+            organization=organization,
+        )
+
+
+        get_job_estimate_response_rate_information.additional_properties = d
+        return get_job_estimate_response_rate_information
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

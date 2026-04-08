@@ -1,0 +1,220 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.circuit_job_creation_payload_type import check_circuit_job_creation_payload_type
+from ..models.circuit_job_creation_payload_type import CircuitJobCreationPayloadType
+from ..models.job_backends import check_job_backends
+from ..models.job_backends import JobBackends
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
+  from ..models.job_metadata import JobMetadata
+  from ..models.native_circuit_input import NativeCircuitInput
+  from ..models.noise import Noise
+  from ..models.qis_circuit_input import QisCircuitInput
+
+
+
+
+
+T = TypeVar("T", bound="CircuitJobCreationPayload")
+
+
+
+@_attrs_define
+class CircuitJobCreationPayload:
+    """ 
+        Attributes:
+            backend (JobBackends):
+            type_ (CircuitJobCreationPayloadType):
+            input_ (NativeCircuitInput | QisCircuitInput):
+            name (str | Unset):
+            metadata (JobMetadata | Unset):
+            shots (int | Unset):  Default: 100.
+            session_id (str | Unset):
+            settings (CircuitJobCreationPayloadSettings | Unset):
+            dry_run (bool | Unset):
+            noise (Noise | Unset):
+     """
+
+    backend: JobBackends
+    type_: CircuitJobCreationPayloadType
+    input_: NativeCircuitInput | QisCircuitInput
+    name: str | Unset = UNSET
+    metadata: JobMetadata | Unset = UNSET
+    shots: int | Unset = 100
+    session_id: str | Unset = UNSET
+    settings: CircuitJobCreationPayloadSettings | Unset = UNSET
+    dry_run: bool | Unset = UNSET
+    noise: Noise | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
+        from ..models.job_metadata import JobMetadata
+        from ..models.native_circuit_input import NativeCircuitInput
+        from ..models.noise import Noise
+        from ..models.qis_circuit_input import QisCircuitInput
+        backend: str = self.backend
+
+        type_: str = self.type_
+
+        input_: dict[str, Any]
+        if isinstance(self.input_, QisCircuitInput):
+            input_ = self.input_.to_dict()
+        else:
+            input_ = self.input_.to_dict()
+
+
+        name = self.name
+
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
+            metadata = self.metadata.to_dict()
+
+        shots = self.shots
+
+        session_id = self.session_id
+
+        settings: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.settings, Unset):
+            settings = self.settings.to_dict()
+
+        dry_run = self.dry_run
+
+        noise: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.noise, Unset):
+            noise = self.noise.to_dict()
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "backend": backend,
+            "type": type_,
+            "input": input_,
+        })
+        if name is not UNSET:
+            field_dict["name"] = name
+        if metadata is not UNSET:
+            field_dict["metadata"] = metadata
+        if shots is not UNSET:
+            field_dict["shots"] = shots
+        if session_id is not UNSET:
+            field_dict["session_id"] = session_id
+        if settings is not UNSET:
+            field_dict["settings"] = settings
+        if dry_run is not UNSET:
+            field_dict["dry_run"] = dry_run
+        if noise is not UNSET:
+            field_dict["noise"] = noise
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
+        from ..models.job_metadata import JobMetadata
+        from ..models.native_circuit_input import NativeCircuitInput
+        from ..models.noise import Noise
+        from ..models.qis_circuit_input import QisCircuitInput
+        d = dict(src_dict)
+        backend = check_job_backends(d.pop("backend"))
+
+
+
+
+        type_ = check_circuit_job_creation_payload_type(d.pop("type"))
+
+
+
+
+        def _parse_input_(data: object) -> NativeCircuitInput | QisCircuitInput:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_circuit_input_type_0 = QisCircuitInput.from_dict(data)
+
+
+
+                return componentsschemas_json_circuit_input_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            componentsschemas_json_circuit_input_type_1 = NativeCircuitInput.from_dict(data)
+
+
+
+            return componentsschemas_json_circuit_input_type_1
+
+        input_ = _parse_input_(d.pop("input"))
+
+
+        name = d.pop("name", UNSET)
+
+        _metadata = d.pop("metadata", UNSET)
+        metadata: JobMetadata | Unset
+        if isinstance(_metadata,  Unset):
+            metadata = UNSET
+        else:
+            metadata = JobMetadata.from_dict(_metadata)
+
+
+
+
+        shots = d.pop("shots", UNSET)
+
+        session_id = d.pop("session_id", UNSET)
+
+        _settings = d.pop("settings", UNSET)
+        settings: CircuitJobCreationPayloadSettings | Unset
+        if isinstance(_settings,  Unset):
+            settings = UNSET
+        else:
+            settings = CircuitJobCreationPayloadSettings.from_dict(_settings)
+
+
+
+
+        dry_run = d.pop("dry_run", UNSET)
+
+        _noise = d.pop("noise", UNSET)
+        noise: Noise | Unset
+        if isinstance(_noise,  Unset):
+            noise = UNSET
+        else:
+            noise = Noise.from_dict(_noise)
+
+
+
+
+        circuit_job_creation_payload = cls(
+            backend=backend,
+            type_=type_,
+            input_=input_,
+            name=name,
+            metadata=metadata,
+            shots=shots,
+            session_id=session_id,
+            settings=settings,
+            dry_run=dry_run,
+            noise=noise,
+        )
+
+        return circuit_job_creation_payload
+

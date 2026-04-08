@@ -1,0 +1,74 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.noise_model import check_noise_model
+from ..models.noise_model import NoiseModel
+from ..types import UNSET, Unset
+from typing import cast
+
+
+
+
+
+
+T = TypeVar("T", bound="Noise")
+
+
+
+@_attrs_define
+class Noise:
+    """ 
+        Attributes:
+            model (NoiseModel):
+            seed (int | Unset):
+     """
+
+    model: NoiseModel
+    seed: int | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        model: str = self.model
+
+        seed = self.seed
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "model": model,
+        })
+        if seed is not UNSET:
+            field_dict["seed"] = seed
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        model = check_noise_model(d.pop("model"))
+
+
+
+
+        seed = d.pop("seed", UNSET)
+
+        noise = cls(
+            model=model,
+            seed=seed,
+        )
+
+        return noise
+

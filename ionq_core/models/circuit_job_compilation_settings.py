@@ -1,0 +1,87 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..types import UNSET, Unset
+
+
+
+
+
+
+T = TypeVar("T", bound="CircuitJobCompilationSettings")
+
+
+
+@_attrs_define
+class CircuitJobCompilationSettings:
+    """ 
+        Attributes:
+            precision (str | Unset):
+            opt (float | Unset):
+            gate_basis (str | Unset):
+            service_version (str | Unset):
+     """
+
+    precision: str | Unset = UNSET
+    opt: float | Unset = UNSET
+    gate_basis: str | Unset = UNSET
+    service_version: str | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        precision = self.precision
+
+        opt = self.opt
+
+        gate_basis = self.gate_basis
+
+        service_version = self.service_version
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+        })
+        if precision is not UNSET:
+            field_dict["precision"] = precision
+        if opt is not UNSET:
+            field_dict["opt"] = opt
+        if gate_basis is not UNSET:
+            field_dict["gate_basis"] = gate_basis
+        if service_version is not UNSET:
+            field_dict["service_version"] = service_version
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        precision = d.pop("precision", UNSET)
+
+        opt = d.pop("opt", UNSET)
+
+        gate_basis = d.pop("gate_basis", UNSET)
+
+        service_version = d.pop("service_version", UNSET)
+
+        circuit_job_compilation_settings = cls(
+            precision=precision,
+            opt=opt,
+            gate_basis=gate_basis,
+            service_version=service_version,
+        )
+
+        return circuit_job_compilation_settings
+

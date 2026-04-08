@@ -1,0 +1,206 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.characterization_backend import CharacterizationBackend
+from ..models.characterization_backend import check_characterization_backend
+from ..types import UNSET, Unset
+from typing import cast
+from uuid import UUID
+
+if TYPE_CHECKING:
+  from ..models.characterization_fidelity import CharacterizationFidelity
+  from ..models.characterization_timing import CharacterizationTiming
+
+
+
+
+
+T = TypeVar("T", bound="Characterization")
+
+
+
+@_attrs_define
+class Characterization:
+    """ Quantum hardware characterization data.
+
+        Attributes:
+            backend (CharacterizationBackend | Unset): The backend calibrated hardware.
+            connectivity (list[list[int]] | Unset): An array of valid, unordered tuples of possible qubits for executing
+                two-qubit gates (e.g., `[[0, 1], [0, 2], [1, 2]]`) Example: [[0, 1], [0, 2], [10, 9]].
+            date (str | Unset): Date time of the measurement, in ISO format. Example: 2025-06-16T00:00:00Z.
+            fidelity (CharacterizationFidelity | Unset): Fidelity for single-qubit (`1q`) and two-qubit (`2q`) gates, and
+                State Preparation and Measurement (`spam`) operations.
+                Currently provides only median fidelity; additional statistical data will be added in the future.
+            id (UUID | Unset): UUID of the characterization.
+            qubits (int | Unset): The number of qubits available. Example: 25.
+            timing (CharacterizationTiming | Unset): Time, in seconds, of various system properties: `t1` time, `t2` time,
+                `1q` gate time, `2q` gate time, `readout` time, and qubit `reset` time.
+     """
+
+    backend: CharacterizationBackend | Unset = UNSET
+    connectivity: list[list[int]] | Unset = UNSET
+    date: str | Unset = UNSET
+    fidelity: CharacterizationFidelity | Unset = UNSET
+    id: UUID | Unset = UNSET
+    qubits: int | Unset = UNSET
+    timing: CharacterizationTiming | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.characterization_fidelity import CharacterizationFidelity
+        from ..models.characterization_timing import CharacterizationTiming
+        backend: str | Unset = UNSET
+        if not isinstance(self.backend, Unset):
+            backend = self.backend
+
+
+        connectivity: list[list[int]] | Unset = UNSET
+        if not isinstance(self.connectivity, Unset):
+            connectivity = []
+            for connectivity_item_data in self.connectivity:
+                connectivity_item = connectivity_item_data
+
+
+                connectivity.append(connectivity_item)
+
+
+
+        date = self.date
+
+        fidelity: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.fidelity, Unset):
+            fidelity = self.fidelity.to_dict()
+
+        id: str | Unset = UNSET
+        if not isinstance(self.id, Unset):
+            id = str(self.id)
+
+        qubits = self.qubits
+
+        timing: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.timing, Unset):
+            timing = self.timing.to_dict()
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+        })
+        if backend is not UNSET:
+            field_dict["backend"] = backend
+        if connectivity is not UNSET:
+            field_dict["connectivity"] = connectivity
+        if date is not UNSET:
+            field_dict["date"] = date
+        if fidelity is not UNSET:
+            field_dict["fidelity"] = fidelity
+        if id is not UNSET:
+            field_dict["id"] = id
+        if qubits is not UNSET:
+            field_dict["qubits"] = qubits
+        if timing is not UNSET:
+            field_dict["timing"] = timing
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.characterization_fidelity import CharacterizationFidelity
+        from ..models.characterization_timing import CharacterizationTiming
+        d = dict(src_dict)
+        _backend = d.pop("backend", UNSET)
+        backend: CharacterizationBackend | Unset
+        if isinstance(_backend,  Unset):
+            backend = UNSET
+        else:
+            backend = check_characterization_backend(_backend)
+
+
+
+
+        _connectivity = d.pop("connectivity", UNSET)
+        connectivity: list[list[int]] | Unset = UNSET
+        if _connectivity is not UNSET:
+            connectivity = []
+            for connectivity_item_data in _connectivity:
+                connectivity_item = cast(list[int], connectivity_item_data)
+
+                connectivity.append(connectivity_item)
+
+
+        date = d.pop("date", UNSET)
+
+        _fidelity = d.pop("fidelity", UNSET)
+        fidelity: CharacterizationFidelity | Unset
+        if isinstance(_fidelity,  Unset):
+            fidelity = UNSET
+        else:
+            fidelity = CharacterizationFidelity.from_dict(_fidelity)
+
+
+
+
+        _id = d.pop("id", UNSET)
+        id: UUID | Unset
+        if isinstance(_id,  Unset):
+            id = UNSET
+        else:
+            id = UUID(_id)
+
+
+
+
+        qubits = d.pop("qubits", UNSET)
+
+        _timing = d.pop("timing", UNSET)
+        timing: CharacterizationTiming | Unset
+        if isinstance(_timing,  Unset):
+            timing = UNSET
+        else:
+            timing = CharacterizationTiming.from_dict(_timing)
+
+
+
+
+        characterization = cls(
+            backend=backend,
+            connectivity=connectivity,
+            date=date,
+            fidelity=fidelity,
+            id=id,
+            qubits=qubits,
+            timing=timing,
+        )
+
+
+        characterization.additional_properties = d
+        return characterization
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

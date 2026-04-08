@@ -1,0 +1,39 @@
+name: Spec drift check
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - name: Fetch latest spec
+        run: curl -sf https://api-staging.ionq.co/v0.4/api-docs -o /tmp/latest-spec.json
+      - name: Check for drift
+        id: drift
+        run: |
+          if ! diff -q <(python3 -m json.tool openapi.json) <(python3 -m json.tool /tmp/latest-spec.json) > /dev/null 2>&1; then
+            echo "drifted=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Open issue
+        if: steps.drift.outputs.drifted == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          existing=$(gh issue list --label spec-drift --state open --json number --jq length)
+          if [[ "$existing" == "0" ]]; then
+            gh issue create \
+              --title "OpenAPI spec has changed upstream" \
+              --body "The spec at api-staging.ionq.co/v0.4/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client." \
+              --label spec-drift
+          fi

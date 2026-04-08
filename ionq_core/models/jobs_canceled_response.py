@@ -1,0 +1,75 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.jobs_canceled_response_status import check_jobs_canceled_response_status
+from ..models.jobs_canceled_response_status import JobsCanceledResponseStatus
+from typing import cast
+
+
+
+
+
+
+T = TypeVar("T", bound="JobsCanceledResponse")
+
+
+
+@_attrs_define
+class JobsCanceledResponse:
+    """ 
+        Attributes:
+            ids (list[str]):  Example: ['617a1f8b-59d4-435d-aa33-695433d7155e', '617a1f8b-59d4-435d-aa33-695433d7155f'].
+            status (JobsCanceledResponseStatus):
+     """
+
+    ids: list[str]
+    status: JobsCanceledResponseStatus
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        ids = self.ids
+
+
+
+        status: str = self.status
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "ids": ids,
+            "status": status,
+        })
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        ids = cast(list[str], d.pop("ids"))
+
+
+        status = check_jobs_canceled_response_status(d.pop("status"))
+
+
+
+
+        jobs_canceled_response = cls(
+            ids=ids,
+            status=status,
+        )
+
+        return jobs_canceled_response
+

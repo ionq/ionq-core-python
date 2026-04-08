@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+JobCanceledResponseStatus = Literal['canceled']
+
+JOB_CANCELED_RESPONSE_STATUS_VALUES: set[JobCanceledResponseStatus] = { 'canceled',  }
+
+def check_job_canceled_response_status(value: str) -> JobCanceledResponseStatus:
+    if value in JOB_CANCELED_RESPONSE_STATUS_VALUES:
+        return cast(JobCanceledResponseStatus, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {JOB_CANCELED_RESPONSE_STATUS_VALUES!r}")

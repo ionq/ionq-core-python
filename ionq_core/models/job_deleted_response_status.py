@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+JobDeletedResponseStatus = Literal['deleted']
+
+JOB_DELETED_RESPONSE_STATUS_VALUES: set[JobDeletedResponseStatus] = { 'deleted',  }
+
+def check_job_deleted_response_status(value: str) -> JobDeletedResponseStatus:
+    if value in JOB_DELETED_RESPONSE_STATUS_VALUES:
+        return cast(JobDeletedResponseStatus, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {JOB_DELETED_RESPONSE_STATUS_VALUES!r}")

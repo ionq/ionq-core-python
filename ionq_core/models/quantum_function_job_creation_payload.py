@@ -1,0 +1,216 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.job_backends import check_job_backends
+from ..models.job_backends import JobBackends
+from ..models.quantum_function_job_creation_payload_type import check_quantum_function_job_creation_payload_type
+from ..models.quantum_function_job_creation_payload_type import QuantumFunctionJobCreationPayloadType
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+  from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
+  from ..models.job_metadata import JobMetadata
+  from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
+
+
+
+
+
+T = TypeVar("T", bound="QuantumFunctionJobCreationPayload")
+
+
+
+@_attrs_define
+class QuantumFunctionJobCreationPayload:
+    """ 
+        Attributes:
+            backend (JobBackends):
+            type_ (QuantumFunctionJobCreationPayloadType):
+            input_ (GenericQuantumFunctionInput | HamiltonianEnergyInput):
+            name (str | Unset):
+            metadata (JobMetadata | Unset):
+            shots (int | Unset):  Default: 100.
+            session_id (str | Unset):
+            settings (QuantumFunctionJobCreationPayloadSettings | Unset):
+            dry_run (bool | Unset):
+     """
+
+    backend: JobBackends
+    type_: QuantumFunctionJobCreationPayloadType
+    input_: GenericQuantumFunctionInput | HamiltonianEnergyInput
+    name: str | Unset = UNSET
+    metadata: JobMetadata | Unset = UNSET
+    shots: int | Unset = 100
+    session_id: str | Unset = UNSET
+    settings: QuantumFunctionJobCreationPayloadSettings | Unset = UNSET
+    dry_run: bool | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+        from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
+        from ..models.job_metadata import JobMetadata
+        from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
+        backend: str = self.backend
+
+        type_: str = self.type_
+
+        input_: dict[str, Any]
+        if isinstance(self.input_, HamiltonianEnergyInput):
+            input_ = self.input_.to_dict()
+        else:
+            input_ = self.input_.to_dict()
+
+
+        name = self.name
+
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
+            metadata = self.metadata.to_dict()
+
+        shots = self.shots
+
+        session_id = self.session_id
+
+        settings: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.settings, Unset):
+            settings = self.settings.to_dict()
+
+        dry_run = self.dry_run
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+            "backend": backend,
+            "type": type_,
+            "input": input_,
+        })
+        if name is not UNSET:
+            field_dict["name"] = name
+        if metadata is not UNSET:
+            field_dict["metadata"] = metadata
+        if shots is not UNSET:
+            field_dict["shots"] = shots
+        if session_id is not UNSET:
+            field_dict["session_id"] = session_id
+        if settings is not UNSET:
+            field_dict["settings"] = settings
+        if dry_run is not UNSET:
+            field_dict["dry_run"] = dry_run
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+        from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
+        from ..models.job_metadata import JobMetadata
+        from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
+        d = dict(src_dict)
+        backend = check_job_backends(d.pop("backend"))
+
+
+
+
+        type_ = check_quantum_function_job_creation_payload_type(d.pop("type"))
+
+
+
+
+        def _parse_input_(data: object) -> GenericQuantumFunctionInput | HamiltonianEnergyInput:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_quantum_function_input_type_0 = HamiltonianEnergyInput.from_dict(data)
+
+
+
+                return componentsschemas_quantum_function_input_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            componentsschemas_quantum_function_input_type_1 = GenericQuantumFunctionInput.from_dict(data)
+
+
+
+            return componentsschemas_quantum_function_input_type_1
+
+        input_ = _parse_input_(d.pop("input"))
+
+
+        name = d.pop("name", UNSET)
+
+        _metadata = d.pop("metadata", UNSET)
+        metadata: JobMetadata | Unset
+        if isinstance(_metadata,  Unset):
+            metadata = UNSET
+        else:
+            metadata = JobMetadata.from_dict(_metadata)
+
+
+
+
+        shots = d.pop("shots", UNSET)
+
+        session_id = d.pop("session_id", UNSET)
+
+        _settings = d.pop("settings", UNSET)
+        settings: QuantumFunctionJobCreationPayloadSettings | Unset
+        if isinstance(_settings,  Unset):
+            settings = UNSET
+        else:
+            settings = QuantumFunctionJobCreationPayloadSettings.from_dict(_settings)
+
+
+
+
+        dry_run = d.pop("dry_run", UNSET)
+
+        quantum_function_job_creation_payload = cls(
+            backend=backend,
+            type_=type_,
+            input_=input_,
+            name=name,
+            metadata=metadata,
+            shots=shots,
+            session_id=session_id,
+            settings=settings,
+            dry_run=dry_run,
+        )
+
+
+        quantum_function_job_creation_payload.additional_properties = d
+        return quantum_function_job_creation_payload
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

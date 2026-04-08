@@ -1,0 +1,84 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.session import Session
+
+
+
+
+
+T = TypeVar("T", bound="SessionsResponse")
+
+
+
+@_attrs_define
+class SessionsResponse:
+    """ 
+        Attributes:
+            organization_id (str):
+            sessions (list[Session]):
+     """
+
+    organization_id: str
+    sessions: list[Session]
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.session import Session
+        organization_id = self.organization_id
+
+        sessions = []
+        for sessions_item_data in self.sessions:
+            sessions_item = sessions_item_data.to_dict()
+            sessions.append(sessions_item)
+
+
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "organization_id": organization_id,
+            "sessions": sessions,
+        })
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.session import Session
+        d = dict(src_dict)
+        organization_id = d.pop("organization_id")
+
+        sessions = []
+        _sessions = d.pop("sessions")
+        for sessions_item_data in (_sessions):
+            sessions_item = Session.from_dict(sessions_item_data)
+
+
+
+            sessions.append(sessions_item)
+
+
+        sessions_response = cls(
+            organization_id=organization_id,
+            sessions=sessions,
+        )
+
+        return sessions_response
+

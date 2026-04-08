@@ -1,0 +1,123 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..types import UNSET, Unset
+
+
+
+
+
+
+T = TypeVar("T", bound="CharacterizationTiming")
+
+
+
+@_attrs_define
+class CharacterizationTiming:
+    """ Time, in seconds, of various system properties: `t1` time, `t2` time, `1q` gate time, `2q` gate time, `readout`
+    time, and qubit `reset` time.
+
+        Attributes:
+            readout (int): Readout time.
+            reset (int): qubit reset time.
+            field_1q (int | Unset):
+            field_2q (int | Unset):
+            t1 (int | Unset):  Example: 10.
+            t2 (int | Unset):  Example: 1.
+     """
+
+    readout: int
+    reset: int
+    field_1q: int | Unset = UNSET
+    field_2q: int | Unset = UNSET
+    t1: int | Unset = UNSET
+    t2: int | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        readout = self.readout
+
+        reset = self.reset
+
+        field_1q = self.field_1q
+
+        field_2q = self.field_2q
+
+        t1 = self.t1
+
+        t2 = self.t2
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+            "readout": readout,
+            "reset": reset,
+        })
+        if field_1q is not UNSET:
+            field_dict["1q"] = field_1q
+        if field_2q is not UNSET:
+            field_dict["2q"] = field_2q
+        if t1 is not UNSET:
+            field_dict["t1"] = t1
+        if t2 is not UNSET:
+            field_dict["t2"] = t2
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        d = dict(src_dict)
+        readout = d.pop("readout")
+
+        reset = d.pop("reset")
+
+        field_1q = d.pop("1q", UNSET)
+
+        field_2q = d.pop("2q", UNSET)
+
+        t1 = d.pop("t1", UNSET)
+
+        t2 = d.pop("t2", UNSET)
+
+        characterization_timing = cls(
+            readout=readout,
+            reset=reset,
+            field_1q=field_1q,
+            field_2q=field_2q,
+            t1=t1,
+            t2=t2,
+        )
+
+
+        characterization_timing.additional_properties = d
+        return characterization_timing
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties

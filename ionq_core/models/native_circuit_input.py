@@ -1,0 +1,99 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..models.native_circuit_input_gateset import check_native_circuit_input_gateset
+from ..models.native_circuit_input_gateset import NativeCircuitInputGateset
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.gate_native_gate import GateNativeGate
+
+
+
+
+
+T = TypeVar("T", bound="NativeCircuitInput")
+
+
+
+@_attrs_define
+class NativeCircuitInput:
+    """ 
+        Attributes:
+            circuit (list[GateNativeGate]):
+            gateset (NativeCircuitInputGateset):
+            qubits (float | Unset):
+     """
+
+    circuit: list[GateNativeGate]
+    gateset: NativeCircuitInputGateset
+    qubits: float | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.gate_native_gate import GateNativeGate
+        circuit = []
+        for circuit_item_data in self.circuit:
+            circuit_item = circuit_item_data.to_dict()
+            circuit.append(circuit_item)
+
+
+
+        gateset: str = self.gateset
+
+        qubits = self.qubits
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "circuit": circuit,
+            "gateset": gateset,
+        })
+        if qubits is not UNSET:
+            field_dict["qubits"] = qubits
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.gate_native_gate import GateNativeGate
+        d = dict(src_dict)
+        circuit = []
+        _circuit = d.pop("circuit")
+        for circuit_item_data in (_circuit):
+            circuit_item = GateNativeGate.from_dict(circuit_item_data)
+
+
+
+            circuit.append(circuit_item)
+
+
+        gateset = check_native_circuit_input_gateset(d.pop("gateset"))
+
+
+
+
+        qubits = d.pop("qubits", UNSET)
+
+        native_circuit_input = cls(
+            circuit=circuit,
+            gateset=gateset,
+            qubits=qubits,
+        )
+
+        return native_circuit_input
+

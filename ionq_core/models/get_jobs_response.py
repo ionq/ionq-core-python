@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.job import Job
+
+
+
+
+
+T = TypeVar("T", bound="GetJobsResponse")
+
+
+
+@_attrs_define
+class GetJobsResponse:
+    """ 
+        Attributes:
+            jobs (list[Job]):
+            next_ (None | str):
+     """
+
+    jobs: list[Job]
+    next_: None | str
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.job import Job
+        jobs = []
+        for jobs_item_data in self.jobs:
+            jobs_item = jobs_item_data.to_dict()
+            jobs.append(jobs_item)
+
+
+
+        next_: None | str
+        next_ = self.next_
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+            "jobs": jobs,
+            "next": next_,
+        })
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.job import Job
+        d = dict(src_dict)
+        jobs = []
+        _jobs = d.pop("jobs")
+        for jobs_item_data in (_jobs):
+            jobs_item = Job.from_dict(jobs_item_data)
+
+
+
+            jobs.append(jobs_item)
+
+
+        def _parse_next_(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        next_ = _parse_next_(d.pop("next"))
+
+
+        get_jobs_response = cls(
+            jobs=jobs,
+            next_=next_,
+        )
+
+        return get_jobs_response
+

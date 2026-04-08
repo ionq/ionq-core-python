@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+QisCircuitInputGateset = Literal['qis']
+
+QIS_CIRCUIT_INPUT_GATESET_VALUES: set[QisCircuitInputGateset] = { 'qis',  }
+
+def check_qis_circuit_input_gateset(value: str) -> QisCircuitInputGateset:
+    if value in QIS_CIRCUIT_INPUT_GATESET_VALUES:
+        return cast(QisCircuitInputGateset, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {QIS_CIRCUIT_INPUT_GATESET_VALUES!r}")

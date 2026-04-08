@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.number_map import NumberMap
+
+
+
+
+
+T = TypeVar("T", bound="CircuitJobStats")
+
+
+
+@_attrs_define
+class CircuitJobStats:
+    """ 
+        Attributes:
+            qubits (int | Unset):
+            circuits (int | Unset):
+            gate_counts (NumberMap | Unset):
+            kwh (float | Unset):
+            predicted_quantum_compute_time_us (int | Unset):
+            billed_quantum_compute_time_us (int | Unset):
+     """
+
+    qubits: int | Unset = UNSET
+    circuits: int | Unset = UNSET
+    gate_counts: NumberMap | Unset = UNSET
+    kwh: float | Unset = UNSET
+    predicted_quantum_compute_time_us: int | Unset = UNSET
+    billed_quantum_compute_time_us: int | Unset = UNSET
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.number_map import NumberMap
+        qubits = self.qubits
+
+        circuits = self.circuits
+
+        gate_counts: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.gate_counts, Unset):
+            gate_counts = self.gate_counts.to_dict()
+
+        kwh = self.kwh
+
+        predicted_quantum_compute_time_us = self.predicted_quantum_compute_time_us
+
+        billed_quantum_compute_time_us = self.billed_quantum_compute_time_us
+
+
+        field_dict: dict[str, Any] = {}
+
+        field_dict.update({
+        })
+        if qubits is not UNSET:
+            field_dict["qubits"] = qubits
+        if circuits is not UNSET:
+            field_dict["circuits"] = circuits
+        if gate_counts is not UNSET:
+            field_dict["gate_counts"] = gate_counts
+        if kwh is not UNSET:
+            field_dict["kwh"] = kwh
+        if predicted_quantum_compute_time_us is not UNSET:
+            field_dict["predicted_quantum_compute_time_us"] = predicted_quantum_compute_time_us
+        if billed_quantum_compute_time_us is not UNSET:
+            field_dict["billed_quantum_compute_time_us"] = billed_quantum_compute_time_us
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.number_map import NumberMap
+        d = dict(src_dict)
+        qubits = d.pop("qubits", UNSET)
+
+        circuits = d.pop("circuits", UNSET)
+
+        _gate_counts = d.pop("gate_counts", UNSET)
+        gate_counts: NumberMap | Unset
+        if isinstance(_gate_counts,  Unset):
+            gate_counts = UNSET
+        else:
+            gate_counts = NumberMap.from_dict(_gate_counts)
+
+
+
+
+        kwh = d.pop("kwh", UNSET)
+
+        predicted_quantum_compute_time_us = d.pop("predicted_quantum_compute_time_us", UNSET)
+
+        billed_quantum_compute_time_us = d.pop("billed_quantum_compute_time_us", UNSET)
+
+        circuit_job_stats = cls(
+            qubits=qubits,
+            circuits=circuits,
+            gate_counts=gate_counts,
+            kwh=kwh,
+            predicted_quantum_compute_time_us=predicted_quantum_compute_time_us,
+            billed_quantum_compute_time_us=billed_quantum_compute_time_us,
+        )
+
+        return circuit_job_stats
+

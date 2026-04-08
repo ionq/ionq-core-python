@@ -1,0 +1,308 @@
+from http import HTTPStatus
+from typing import Any, cast
+from urllib.parse import quote
+
+import httpx
+
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+from ... import errors
+
+from ...models.get_jobs_response import GetJobsResponse
+from ...models.job_status import check_job_status
+from ...models.job_status import JobStatus
+from ...types import UNSET, Unset
+from typing import cast
+
+
+
+def _get_kwargs(
+    *,
+    ids: list[str] | Unset = UNSET,
+    parent_job_id: str | Unset = UNSET,
+    status: JobStatus | Unset = UNSET,
+    target: str | Unset = UNSET,
+    session_id: str | Unset = UNSET,
+    submitter_id: str | Unset = UNSET,
+    limit: int | Unset = UNSET,
+    next_: str | Unset = UNSET,
+
+) -> dict[str, Any]:
+    
+
+    
+
+    params: dict[str, Any] = {}
+
+    json_ids: list[str] | Unset = UNSET
+    if not isinstance(ids, Unset):
+        json_ids = ids
+
+
+    params["ids"] = json_ids
+
+    params["parent_job_id"] = parent_job_id
+
+    json_status: str | Unset = UNSET
+    if not isinstance(status, Unset):
+        json_status = status
+
+    params["status"] = json_status
+
+    params["target"] = target
+
+    params["session_id"] = session_id
+
+    params["submitter_id"] = submitter_id
+
+    params["limit"] = limit
+
+    params["next"] = next_
+
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
+
+    _kwargs: dict[str, Any] = {
+        "method": "get",
+        "url": "/jobs",
+        "params": params,
+    }
+
+
+    return _kwargs
+
+
+
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | GetJobsResponse | None:
+    if response.status_code == 200:
+        response_200 = GetJobsResponse.from_dict(response.json())
+
+
+
+        return response_200
+
+    if response.status_code == 429:
+        response_429 = cast(Any, None)
+        return response_429
+
+    if response.status_code == 500:
+        response_500 = cast(Any, None)
+        return response_500
+
+    if response.status_code == 502:
+        response_502 = cast(Any, None)
+        return response_502
+
+    if response.status_code == 503:
+        response_503 = cast(Any, None)
+        return response_503
+
+    if client.raise_on_unexpected_status:
+        raise errors.UnexpectedStatus(response.status_code, response.content)
+    else:
+        return None
+
+
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | GetJobsResponse]:
+    return Response(
+        status_code=HTTPStatus(response.status_code),
+        content=response.content,
+        headers=response.headers,
+        parsed=_parse_response(client=client, response=response),
+    )
+
+
+def sync_detailed(
+    *,
+    client: AuthenticatedClient,
+    ids: list[str] | Unset = UNSET,
+    parent_job_id: str | Unset = UNSET,
+    status: JobStatus | Unset = UNSET,
+    target: str | Unset = UNSET,
+    session_id: str | Unset = UNSET,
+    submitter_id: str | Unset = UNSET,
+    limit: int | Unset = UNSET,
+    next_: str | Unset = UNSET,
+
+) -> Response[Any | GetJobsResponse]:
+    """ 
+    Args:
+        ids (list[str] | Unset):
+        parent_job_id (str | Unset):
+        status (JobStatus | Unset):
+        target (str | Unset):
+        session_id (str | Unset):
+        submitter_id (str | Unset):
+        limit (int | Unset):
+        next_ (str | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[Any | GetJobsResponse]
+     """
+
+
+    kwargs = _get_kwargs(
+        ids=ids,
+parent_job_id=parent_job_id,
+status=status,
+target=target,
+session_id=session_id,
+submitter_id=submitter_id,
+limit=limit,
+next_=next_,
+
+    )
+
+    response = client.get_httpx_client().request(
+        **kwargs,
+    )
+
+    return _build_response(client=client, response=response)
+
+def sync(
+    *,
+    client: AuthenticatedClient,
+    ids: list[str] | Unset = UNSET,
+    parent_job_id: str | Unset = UNSET,
+    status: JobStatus | Unset = UNSET,
+    target: str | Unset = UNSET,
+    session_id: str | Unset = UNSET,
+    submitter_id: str | Unset = UNSET,
+    limit: int | Unset = UNSET,
+    next_: str | Unset = UNSET,
+
+) -> Any | GetJobsResponse | None:
+    """ 
+    Args:
+        ids (list[str] | Unset):
+        parent_job_id (str | Unset):
+        status (JobStatus | Unset):
+        target (str | Unset):
+        session_id (str | Unset):
+        submitter_id (str | Unset):
+        limit (int | Unset):
+        next_ (str | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Any | GetJobsResponse
+     """
+
+
+    return sync_detailed(
+        client=client,
+ids=ids,
+parent_job_id=parent_job_id,
+status=status,
+target=target,
+session_id=session_id,
+submitter_id=submitter_id,
+limit=limit,
+next_=next_,
+
+    ).parsed
+
+async def asyncio_detailed(
+    *,
+    client: AuthenticatedClient,
+    ids: list[str] | Unset = UNSET,
+    parent_job_id: str | Unset = UNSET,
+    status: JobStatus | Unset = UNSET,
+    target: str | Unset = UNSET,
+    session_id: str | Unset = UNSET,
+    submitter_id: str | Unset = UNSET,
+    limit: int | Unset = UNSET,
+    next_: str | Unset = UNSET,
+
+) -> Response[Any | GetJobsResponse]:
+    """ 
+    Args:
+        ids (list[str] | Unset):
+        parent_job_id (str | Unset):
+        status (JobStatus | Unset):
+        target (str | Unset):
+        session_id (str | Unset):
+        submitter_id (str | Unset):
+        limit (int | Unset):
+        next_ (str | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[Any | GetJobsResponse]
+     """
+
+
+    kwargs = _get_kwargs(
+        ids=ids,
+parent_job_id=parent_job_id,
+status=status,
+target=target,
+session_id=session_id,
+submitter_id=submitter_id,
+limit=limit,
+next_=next_,
+
+    )
+
+    response = await client.get_async_httpx_client().request(
+        **kwargs
+    )
+
+    return _build_response(client=client, response=response)
+
+async def asyncio(
+    *,
+    client: AuthenticatedClient,
+    ids: list[str] | Unset = UNSET,
+    parent_job_id: str | Unset = UNSET,
+    status: JobStatus | Unset = UNSET,
+    target: str | Unset = UNSET,
+    session_id: str | Unset = UNSET,
+    submitter_id: str | Unset = UNSET,
+    limit: int | Unset = UNSET,
+    next_: str | Unset = UNSET,
+
+) -> Any | GetJobsResponse | None:
+    """ 
+    Args:
+        ids (list[str] | Unset):
+        parent_job_id (str | Unset):
+        status (JobStatus | Unset):
+        target (str | Unset):
+        session_id (str | Unset):
+        submitter_id (str | Unset):
+        limit (int | Unset):
+        next_ (str | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Any | GetJobsResponse
+     """
+
+
+    return (await asyncio_detailed(
+        client=client,
+ids=ids,
+parent_job_id=parent_job_id,
+status=status,
+target=target,
+session_id=session_id,
+submitter_id=submitter_id,
+limit=limit,
+next_=next_,
+
+    )).parsed

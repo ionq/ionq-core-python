@@ -1,0 +1,10 @@
+from typing import Literal, cast
+
+HamiltonianEnergyInputDataType = Literal['hamiltonian-energy']
+
+HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES: set[HamiltonianEnergyInputDataType] = { 'hamiltonian-energy',  }
+
+def check_hamiltonian_energy_input_data_type(value: str) -> HamiltonianEnergyInputDataType:
+    if value in HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES:
+        return cast(HamiltonianEnergyInputDataType, value)
+    raise TypeError(f"Unexpected value {value!r}. Expected one of {HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES!r}")

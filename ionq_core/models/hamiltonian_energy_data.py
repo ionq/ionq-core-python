@@ -1,0 +1,209 @@
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
+
+from attrs import define as _attrs_define
+from attrs import field as _attrs_field
+
+from ..types import UNSET, Unset
+
+from ..types import UNSET, Unset
+from typing import cast
+
+if TYPE_CHECKING:
+  from ..models.ansatz import Ansatz
+  from ..models.hamiltonian_pauli_term import HamiltonianPauliTerm
+  from ..models.linear_constraint import LinearConstraint
+  from ..models.quadratic_constraint import QuadraticConstraint
+
+
+
+
+
+T = TypeVar("T", bound="HamiltonianEnergyData")
+
+
+
+@_attrs_define
+class HamiltonianEnergyData:
+    """ 
+        Attributes:
+            hamiltonian (list[HamiltonianPauliTerm]):
+            ansatz (Ansatz):
+            linear_constraints (list[LinearConstraint] | Unset):
+            quadratic_constraints (list[QuadraticConstraint] | Unset):
+            penalty (float | None | Unset):  Default: 0.0.
+            cvar_alpha (float | None | Unset):
+     """
+
+    hamiltonian: list[HamiltonianPauliTerm]
+    ansatz: Ansatz
+    linear_constraints: list[LinearConstraint] | Unset = UNSET
+    quadratic_constraints: list[QuadraticConstraint] | Unset = UNSET
+    penalty: float | None | Unset = 0.0
+    cvar_alpha: float | None | Unset = UNSET
+    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+
+
+
+
+
+    def to_dict(self) -> dict[str, Any]:
+        from ..models.ansatz import Ansatz
+        from ..models.hamiltonian_pauli_term import HamiltonianPauliTerm
+        from ..models.linear_constraint import LinearConstraint
+        from ..models.quadratic_constraint import QuadraticConstraint
+        hamiltonian = []
+        for hamiltonian_item_data in self.hamiltonian:
+            hamiltonian_item = hamiltonian_item_data.to_dict()
+            hamiltonian.append(hamiltonian_item)
+
+
+
+        ansatz = self.ansatz.to_dict()
+
+        linear_constraints: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.linear_constraints, Unset):
+            linear_constraints = []
+            for linear_constraints_item_data in self.linear_constraints:
+                linear_constraints_item = linear_constraints_item_data.to_dict()
+                linear_constraints.append(linear_constraints_item)
+
+
+
+        quadratic_constraints: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.quadratic_constraints, Unset):
+            quadratic_constraints = []
+            for quadratic_constraints_item_data in self.quadratic_constraints:
+                quadratic_constraints_item = quadratic_constraints_item_data.to_dict()
+                quadratic_constraints.append(quadratic_constraints_item)
+
+
+
+        penalty: float | None | Unset
+        if isinstance(self.penalty, Unset):
+            penalty = UNSET
+        else:
+            penalty = self.penalty
+
+        cvar_alpha: float | None | Unset
+        if isinstance(self.cvar_alpha, Unset):
+            cvar_alpha = UNSET
+        else:
+            cvar_alpha = self.cvar_alpha
+
+
+        field_dict: dict[str, Any] = {}
+        field_dict.update(self.additional_properties)
+        field_dict.update({
+            "hamiltonian": hamiltonian,
+            "ansatz": ansatz,
+        })
+        if linear_constraints is not UNSET:
+            field_dict["linear_constraints"] = linear_constraints
+        if quadratic_constraints is not UNSET:
+            field_dict["quadratic_constraints"] = quadratic_constraints
+        if penalty is not UNSET:
+            field_dict["penalty"] = penalty
+        if cvar_alpha is not UNSET:
+            field_dict["cvar_alpha"] = cvar_alpha
+
+        return field_dict
+
+
+
+    @classmethod
+    def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.ansatz import Ansatz
+        from ..models.hamiltonian_pauli_term import HamiltonianPauliTerm
+        from ..models.linear_constraint import LinearConstraint
+        from ..models.quadratic_constraint import QuadraticConstraint
+        d = dict(src_dict)
+        hamiltonian = []
+        _hamiltonian = d.pop("hamiltonian")
+        for hamiltonian_item_data in (_hamiltonian):
+            hamiltonian_item = HamiltonianPauliTerm.from_dict(hamiltonian_item_data)
+
+
+
+            hamiltonian.append(hamiltonian_item)
+
+
+        ansatz = Ansatz.from_dict(d.pop("ansatz"))
+
+
+
+
+        _linear_constraints = d.pop("linear_constraints", UNSET)
+        linear_constraints: list[LinearConstraint] | Unset = UNSET
+        if _linear_constraints is not UNSET:
+            linear_constraints = []
+            for linear_constraints_item_data in _linear_constraints:
+                linear_constraints_item = LinearConstraint.from_dict(linear_constraints_item_data)
+
+
+
+                linear_constraints.append(linear_constraints_item)
+
+
+        _quadratic_constraints = d.pop("quadratic_constraints", UNSET)
+        quadratic_constraints: list[QuadraticConstraint] | Unset = UNSET
+        if _quadratic_constraints is not UNSET:
+            quadratic_constraints = []
+            for quadratic_constraints_item_data in _quadratic_constraints:
+                quadratic_constraints_item = QuadraticConstraint.from_dict(quadratic_constraints_item_data)
+
+
+
+                quadratic_constraints.append(quadratic_constraints_item)
+
+
+        def _parse_penalty(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        penalty = _parse_penalty(d.pop("penalty", UNSET))
+
+
+        def _parse_cvar_alpha(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        cvar_alpha = _parse_cvar_alpha(d.pop("cvar_alpha", UNSET))
+
+
+        hamiltonian_energy_data = cls(
+            hamiltonian=hamiltonian,
+            ansatz=ansatz,
+            linear_constraints=linear_constraints,
+            quadratic_constraints=quadratic_constraints,
+            penalty=penalty,
+            cvar_alpha=cvar_alpha,
+        )
+
+
+        hamiltonian_energy_data.additional_properties = d
+        return hamiltonian_energy_data
+
+    @property
+    def additional_keys(self) -> list[str]:
+        return list(self.additional_properties.keys())
+
+    def __getitem__(self, key: str) -> Any:
+        return self.additional_properties[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        self.additional_properties[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        del self.additional_properties[key]
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.additional_properties
