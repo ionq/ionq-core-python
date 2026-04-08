@@ -32,7 +32,7 @@ jobs:
           fi
       - name: Regenerate client
         run: |
-          uvx openapi-python-client generate \
+          uvx openapi-python-client==0.28.3 generate \
             --path /tmp/patched-spec.json \
             --meta none \
             --config openapi-python-client-config.yaml \
