@@ -26,13 +26,13 @@ T = TypeVar("T", bound="GateNativeGate")
 class GateNativeGate:
     """ 
         Attributes:
-            type_ (NativeGate):
             targets (list[float]): The qubits that a quantum gate is applied to
+            gate (NativeGate):
             controls (list[float] | Unset): The qubits that determine whether the operation is applied to targets.
      """
 
-    type_: NativeGate
     targets: list[float]
+    gate: NativeGate
     controls: list[float] | Unset = UNSET
 
 
@@ -40,11 +40,11 @@ class GateNativeGate:
 
 
     def to_dict(self) -> dict[str, Any]:
-        type_: str = self.type_
-
         targets = self.targets
 
 
+
+        gate: str = self.gate
 
         controls: list[float] | Unset = UNSET
         if not isinstance(self.controls, Unset):
@@ -56,8 +56,8 @@ class GateNativeGate:
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
-            "type": type_,
             "targets": targets,
+            "gate": gate,
         })
         if controls is not UNSET:
             field_dict["controls"] = controls
@@ -69,20 +69,20 @@ class GateNativeGate:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        type_ = check_native_gate(d.pop("type"))
-
-
-
-
         targets = cast(list[float], d.pop("targets"))
+
+
+        gate = check_native_gate(d.pop("gate"))
+
+
 
 
         controls = cast(list[float], d.pop("controls", UNSET))
 
 
         gate_native_gate = cls(
-            type_=type_,
             targets=targets,
+            gate=gate,
             controls=controls,
         )
 

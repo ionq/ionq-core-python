@@ -118,7 +118,7 @@ class TestCreateJob:
             "shots": 100,
             "input": {
                 "gateset": "qis",
-                "circuit": [{"type": "h", "targets": [0]}],
+                "circuit": [{"gate": "h", "targets": [0]}],
             },
         })
         result = create_job.sync(client=auth_client, body=body)

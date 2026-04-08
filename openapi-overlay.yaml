@@ -55,3 +55,27 @@ actions:
   - target: $.components.schemas.JsonObject
     update:
       nullable: true
+
+  # Gate schemas: spec uses "type" but API expects "gate" for the gate name field.
+  - target: $.components.schemas.Gate_QisGate_.properties
+    update:
+      gate:
+        $ref: "#/components/schemas/QisGate"
+  - target: $.components.schemas.Gate_QisGate_.properties.type
+    remove: true
+  - target: $.components.schemas.Gate_QisGate_.required
+    remove: true
+  - target: $.components.schemas.Gate_QisGate_
+    update:
+      required: [gate, targets]
+  - target: $.components.schemas.Gate_NativeGate_.properties
+    update:
+      gate:
+        $ref: "#/components/schemas/NativeGate"
+  - target: $.components.schemas.Gate_NativeGate_.properties.type
+    remove: true
+  - target: $.components.schemas.Gate_NativeGate_.required
+    remove: true
+  - target: $.components.schemas.Gate_NativeGate_
+    update:
+      required: [gate, targets]
