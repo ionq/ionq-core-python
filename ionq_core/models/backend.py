@@ -8,12 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.backend_backend import BackendBackend
-from ..models.backend_backend import check_backend_backend
-from ..models.backend_status import BackendStatus
-from ..models.backend_status import check_backend_status
 from ..types import UNSET, Unset
-from typing import cast
 
 
 
@@ -30,11 +25,11 @@ class Backend:
 
         Attributes:
             average_queue_time (float): Current wait time on the queue for execution. Example: 1181215.
-            backend (BackendBackend): Specifies target hardware and generation where applies. Example: qpu.aria-1.
+            backend (str): Specifies target hardware and generation where applies. Example: qpu.aria-1.
             degraded (bool): Flag to tell if the backend is degraded or not.
             last_updated (str): Last date time the backend status was updated. Example: 2025-06-16T00:00:00Z.
             qubits (int): The number of qubits available. Example: 25.
-            status (BackendStatus): Current availability.
+            status (str): Current availability.
             characterization_id (str | Unset): Current characterization ID for this backend Example:
                 617a1f8b-59d4-435d-aa33-695433d7155e.
             kw (float | Unset): The amount of energy used by the backend in kilowatt-hours. Example: 4902.81.
@@ -42,11 +37,11 @@ class Backend:
      """
 
     average_queue_time: float
-    backend: BackendBackend
+    backend: str
     degraded: bool
     last_updated: str
     qubits: int
-    status: BackendStatus
+    status: str
     characterization_id: str | Unset = UNSET
     kw: float | Unset = UNSET
     location: str | Unset = UNSET
@@ -59,7 +54,7 @@ class Backend:
     def to_dict(self) -> dict[str, Any]:
         average_queue_time = self.average_queue_time
 
-        backend: str = self.backend
+        backend = self.backend
 
         degraded = self.degraded
 
@@ -67,7 +62,7 @@ class Backend:
 
         qubits = self.qubits
 
-        status: str = self.status
+        status = self.status
 
         characterization_id = self.characterization_id
 
@@ -102,10 +97,7 @@ class Backend:
         d = dict(src_dict)
         average_queue_time = d.pop("average_queue_time")
 
-        backend = check_backend_backend(d.pop("backend"))
-
-
-
+        backend = d.pop("backend")
 
         degraded = d.pop("degraded")
 
@@ -113,10 +105,7 @@ class Backend:
 
         qubits = d.pop("qubits")
 
-        status = check_backend_status(d.pop("status"))
-
-
-
+        status = d.pop("status")
 
         characterization_id = d.pop("characterization_id", UNSET)
 

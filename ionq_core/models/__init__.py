@@ -4,11 +4,8 @@ from .add_job_results_payload import AddJobResultsPayload
 from .add_job_results_response import AddJobResultsResponse
 from .ansatz import Ansatz
 from .backend import Backend
-from .backend_backend import BackendBackend
-from .backend_status import BackendStatus
 from .bad_request_error import BadRequestError
 from .characterization import Characterization
-from .characterization_backend import CharacterizationBackend
 from .characterization_fidelity import CharacterizationFidelity
 from .characterization_fidelity_spam import CharacterizationFidelitySpam
 from .characterization_timing import CharacterizationTiming
@@ -120,11 +117,8 @@ __all__ = (
     "AddJobResultsResponse",
     "Ansatz",
     "Backend",
-    "BackendBackend",
-    "BackendStatus",
     "BadRequestError",
     "Characterization",
-    "CharacterizationBackend",
     "CharacterizationFidelity",
     "CharacterizationFidelitySpam",
     "CharacterizationTiming",

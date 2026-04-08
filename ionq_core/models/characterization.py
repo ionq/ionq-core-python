@@ -8,8 +8,6 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.characterization_backend import CharacterizationBackend
-from ..models.characterization_backend import check_characterization_backend
 from ..types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -31,7 +29,7 @@ class Characterization:
     """ Quantum hardware characterization data.
 
         Attributes:
-            backend (CharacterizationBackend | Unset): The backend calibrated hardware.
+            backend (str | Unset): The backend calibrated hardware.
             connectivity (list[list[int]] | Unset): An array of valid, unordered tuples of possible qubits for executing
                 two-qubit gates (e.g., `[[0, 1], [0, 2], [1, 2]]`) Example: [[0, 1], [0, 2], [10, 9]].
             date (str | Unset): Date time of the measurement, in ISO format. Example: 2025-06-16T00:00:00Z.
@@ -44,7 +42,7 @@ class Characterization:
                 `1q` gate time, `2q` gate time, `readout` time, and qubit `reset` time.
      """
 
-    backend: CharacterizationBackend | Unset = UNSET
+    backend: str | Unset = UNSET
     connectivity: list[list[int]] | Unset = UNSET
     date: str | Unset = UNSET
     fidelity: CharacterizationFidelity | Unset = UNSET
@@ -60,10 +58,7 @@ class Characterization:
     def to_dict(self) -> dict[str, Any]:
         from ..models.characterization_fidelity import CharacterizationFidelity
         from ..models.characterization_timing import CharacterizationTiming
-        backend: str | Unset = UNSET
-        if not isinstance(self.backend, Unset):
-            backend = self.backend
-
+        backend = self.backend
 
         connectivity: list[list[int]] | Unset = UNSET
         if not isinstance(self.connectivity, Unset):
@@ -121,15 +116,7 @@ class Characterization:
         from ..models.characterization_fidelity import CharacterizationFidelity
         from ..models.characterization_timing import CharacterizationTiming
         d = dict(src_dict)
-        _backend = d.pop("backend", UNSET)
-        backend: CharacterizationBackend | Unset
-        if isinstance(_backend,  Unset):
-            backend = UNSET
-        else:
-            backend = check_characterization_backend(_backend)
-
-
-
+        backend = d.pop("backend", UNSET)
 
         _connectivity = d.pop("connectivity", UNSET)
         connectivity: list[list[int]] | Unset = UNSET

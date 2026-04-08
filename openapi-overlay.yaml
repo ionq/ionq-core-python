@@ -1,7 +1,7 @@
 overlay: 1.1.0
 info:
   title: Fixes for openapi-python-client generation
-  version: 1.0.0
+  version: 1.1.0
 extends: ./openapi.json
 actions:
   - target: $.components.schemas.Optional_CircuitJobResult_
@@ -19,4 +19,21 @@ actions:
     remove: true
   - target: $.components.schemas.Optional_CircuitJobResult_.nullable
     description: Remove nullable (represented by null type in oneOf above).
+    remove: true
+  - target: $.components.schemas.Backend.properties.backend.enum
+    description: >
+      Remove restrictive backend enum. The API returns backends (simulator,
+      qpu.harmony) not listed in the spec enum. Use plain string instead.
+      Remove when spec enums match reality.
+    remove: true
+  - target: $.components.schemas.Backend.properties.status.enum
+    description: >
+      Remove restrictive status enum. The API returns statuses (retired)
+      not listed in the spec enum. Use plain string instead.
+      Remove when spec enums match reality.
+    remove: true
+  - target: $.components.schemas.Characterization.properties.backend.enum
+    description: >
+      Remove restrictive characterization backend enum for same reason as above.
+      Remove when spec enums match reality.
     remove: true
