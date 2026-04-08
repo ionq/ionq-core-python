@@ -5,9 +5,6 @@ info:
 extends: ./openapi.json
 actions:
   # Generator bug: nullable allOf pattern creates duplicate models.
-  # The generator's internal transform of allOf+nullable into oneOf
-  # re-processes CircuitJobResult sub-schemas, causing name collisions.
-  # Fix: replace allOf+nullable with explicit oneOf null pattern.
   - target: $.components.schemas.Optional_CircuitJobResult_
     update:
       oneOf:
@@ -18,10 +15,7 @@ actions:
   - target: $.components.schemas.Optional_CircuitJobResult_.nullable
     remove: true
 
-  # Spec enums are too restrictive. The API returns values not in the enums:
-  #   Backend.backend: missing simulator, qpu.harmony
-  #   Backend.status: missing retired
-  #   Characterization.backend: same as Backend.backend
+  # Spec enums too restrictive (missing simulator, qpu.harmony, retired).
   - target: $.components.schemas.Backend.properties.backend.enum
     remove: true
   - target: $.components.schemas.Backend.properties.status.enum
@@ -29,13 +23,8 @@ actions:
   - target: $.components.schemas.Characterization.properties.backend.enum
     remove: true
 
-  # Job schema: many fields are required+non-nullable in the spec but the
-  # API returns them as null or omits them. Specifically:
-  #   shots: omitted from list responses
-  #   failure: null on successful jobs
-  #   metadata: null when not set
-  #   output, settings, stats, results: null on some jobs
-  # Fix: reduce required to only fields that are always present and non-null.
+  # Job fields: many are required+non-nullable but API returns null or omits them.
+  # Make them optional.
   - target: $.components.schemas.Job.required
     remove: true
   - target: $.components.schemas.Job
@@ -51,3 +40,27 @@ actions:
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
     update:
       required: [id, status, type, backend, dry_run, submitter_id]
+
+  # Job object fields: API returns null but spec has non-nullable $ref.
+  # Point to existing Optional_ wrappers (failure, metadata).
+  - target: $.components.schemas.Job.properties.failure
+    update:
+      $ref: "#/components/schemas/Optional_Failure_"
+  - target: $.components.schemas.Job.properties.metadata
+    update:
+      $ref: "#/components/schemas/Optional_JobMetadata_"
+
+  # Job dict fields (output/settings/stats/results): API returns null.
+  # No Optional_ wrapper exists for JsonObject, so add nullable inline.
+  - target: $.components.schemas.Job.properties.output
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.settings
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.stats
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.results
+    update:
+      nullable: true
