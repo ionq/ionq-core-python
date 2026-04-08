@@ -56,7 +56,6 @@ from .hamiltonian_energy_input_data import HamiltonianEnergyInputData
 from .hamiltonian_energy_input_data_type import HamiltonianEnergyInputDataType
 from .hamiltonian_pauli_term import HamiltonianPauliTerm
 from .job import Job
-from .job_backends import JobBackends
 from .job_canceled_response import JobCanceledResponse
 from .job_canceled_response_status import JobCanceledResponseStatus
 from .job_creation_response import JobCreationResponse
@@ -169,7 +168,6 @@ __all__ = (
     "HamiltonianEnergyInputDataType",
     "HamiltonianPauliTerm",
     "Job",
-    "JobBackends",
     "JobCanceledResponse",
     "JobCanceledResponseStatus",
     "JobCreationResponse",

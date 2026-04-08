@@ -8,10 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.job_backends import check_job_backends
-from ..models.job_backends import JobBackends
 from ..types import UNSET, Unset
-from typing import cast
 
 
 
@@ -26,7 +23,7 @@ T = TypeVar("T", bound="GetJobEstimateQueryParams")
 class GetJobEstimateQueryParams:
     """ 
         Attributes:
-            backend (JobBackends):
+            backend (str):
             type_ (str | Unset):  Default: 'ionq.circuit.v1'.
             qubits (int | Unset):  Default: 25.
             shots (int | Unset):  Default: 1000.
@@ -35,7 +32,7 @@ class GetJobEstimateQueryParams:
             error_mitigation (bool | Unset):  Default: False.
      """
 
-    backend: JobBackends
+    backend: str
     type_: str | Unset = 'ionq.circuit.v1'
     qubits: int | Unset = 25
     shots: int | Unset = 1000
@@ -48,7 +45,7 @@ class GetJobEstimateQueryParams:
 
 
     def to_dict(self) -> dict[str, Any]:
-        backend: str = self.backend
+        backend = self.backend
 
         type_ = self.type_
 
@@ -88,10 +85,7 @@ class GetJobEstimateQueryParams:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        backend = check_job_backends(d.pop("backend"))
-
-
-
+        backend = d.pop("backend")
 
         type_ = d.pop("type", UNSET)
 

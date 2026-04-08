@@ -8,8 +8,6 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.job_backends import check_job_backends
-from ..models.job_backends import JobBackends
 from ..models.json_multi_circuit_job_type import check_json_multi_circuit_job_type
 from ..models.json_multi_circuit_job_type import JSONMultiCircuitJobType
 from ..types import UNSET, Unset
@@ -41,7 +39,7 @@ class JSONMultiCircuitJob:
                 'targets': [0, 1], 'phases': [0, 0.25]}, {'gate': 'gpi2', 'target': 0, 'phase': 0.75}]}]}}
 
         Attributes:
-            backend (JobBackends):
+            backend (str):
             type_ (JSONMultiCircuitJobType):
             input_ (JsonMultiCircuitInput):
             name (str | Unset):
@@ -53,7 +51,7 @@ class JSONMultiCircuitJob:
             noise (Noise | Unset):
      """
 
-    backend: JobBackends
+    backend: str
     type_: JSONMultiCircuitJobType
     input_: JsonMultiCircuitInput
     name: str | Unset = UNSET
@@ -73,7 +71,7 @@ class JSONMultiCircuitJob:
         from ..models.json_multi_circuit_input import JsonMultiCircuitInput
         from ..models.json_multi_circuit_job_settings import JSONMultiCircuitJobSettings
         from ..models.noise import Noise
-        backend: str = self.backend
+        backend = self.backend
 
         type_: str = self.type_
 
@@ -133,10 +131,7 @@ class JSONMultiCircuitJob:
         from ..models.json_multi_circuit_job_settings import JSONMultiCircuitJobSettings
         from ..models.noise import Noise
         d = dict(src_dict)
-        backend = check_job_backends(d.pop("backend"))
-
-
-
+        backend = d.pop("backend")
 
         type_ = check_json_multi_circuit_job_type(d.pop("type"))
 

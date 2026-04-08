@@ -26,25 +26,33 @@ T = TypeVar("T", bound="GateNativeGate")
 class GateNativeGate:
     """ 
         Attributes:
-            targets (list[float]): The qubits that a quantum gate is applied to
             gate (NativeGate):
+            targets (list[float] | Unset): The qubits that a quantum gate is applied to
             controls (list[float] | Unset): The qubits that determine whether the operation is applied to targets.
+            target (int | Unset): Single qubit target (alternative to targets array)
+            phase (float | Unset): Phase for gpi/gpi2 gates
+            phases (list[float] | Unset): Phases for ms gate
      """
 
-    targets: list[float]
     gate: NativeGate
+    targets: list[float] | Unset = UNSET
     controls: list[float] | Unset = UNSET
+    target: int | Unset = UNSET
+    phase: float | Unset = UNSET
+    phases: list[float] | Unset = UNSET
 
 
 
 
 
     def to_dict(self) -> dict[str, Any]:
-        targets = self.targets
-
-
-
         gate: str = self.gate
+
+        targets: list[float] | Unset = UNSET
+        if not isinstance(self.targets, Unset):
+            targets = self.targets
+
+
 
         controls: list[float] | Unset = UNSET
         if not isinstance(self.controls, Unset):
@@ -52,15 +60,32 @@ class GateNativeGate:
 
 
 
+        target = self.target
+
+        phase = self.phase
+
+        phases: list[float] | Unset = UNSET
+        if not isinstance(self.phases, Unset):
+            phases = self.phases
+
+
+
 
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
-            "targets": targets,
             "gate": gate,
         })
+        if targets is not UNSET:
+            field_dict["targets"] = targets
         if controls is not UNSET:
             field_dict["controls"] = controls
+        if target is not UNSET:
+            field_dict["target"] = target
+        if phase is not UNSET:
+            field_dict["phase"] = phase
+        if phases is not UNSET:
+            field_dict["phases"] = phases
 
         return field_dict
 
@@ -69,21 +94,31 @@ class GateNativeGate:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        targets = cast(list[float], d.pop("targets"))
-
-
         gate = check_native_gate(d.pop("gate"))
 
 
 
 
+        targets = cast(list[float], d.pop("targets", UNSET))
+
+
         controls = cast(list[float], d.pop("controls", UNSET))
 
 
+        target = d.pop("target", UNSET)
+
+        phase = d.pop("phase", UNSET)
+
+        phases = cast(list[float], d.pop("phases", UNSET))
+
+
         gate_native_gate = cls(
-            targets=targets,
             gate=gate,
+            targets=targets,
             controls=controls,
+            target=target,
+            phase=phase,
+            phases=phases,
         )
 
         return gate_native_gate

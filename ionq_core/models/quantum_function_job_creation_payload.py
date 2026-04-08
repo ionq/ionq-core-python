@@ -8,8 +8,6 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.job_backends import check_job_backends
-from ..models.job_backends import JobBackends
 from ..models.quantum_function_job_creation_payload_type import check_quantum_function_job_creation_payload_type
 from ..models.quantum_function_job_creation_payload_type import QuantumFunctionJobCreationPayloadType
 from ..types import UNSET, Unset
@@ -33,7 +31,7 @@ T = TypeVar("T", bound="QuantumFunctionJobCreationPayload")
 class QuantumFunctionJobCreationPayload:
     """ 
         Attributes:
-            backend (JobBackends):
+            backend (str):
             type_ (QuantumFunctionJobCreationPayloadType):
             input_ (GenericQuantumFunctionInput | HamiltonianEnergyInput):
             name (str | Unset):
@@ -44,7 +42,7 @@ class QuantumFunctionJobCreationPayload:
             dry_run (bool | Unset):
      """
 
-    backend: JobBackends
+    backend: str
     type_: QuantumFunctionJobCreationPayloadType
     input_: GenericQuantumFunctionInput | HamiltonianEnergyInput
     name: str | Unset = UNSET
@@ -64,7 +62,7 @@ class QuantumFunctionJobCreationPayload:
         from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
         from ..models.job_metadata import JobMetadata
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
-        backend: str = self.backend
+        backend = self.backend
 
         type_: str = self.type_
 
@@ -123,10 +121,7 @@ class QuantumFunctionJobCreationPayload:
         from ..models.job_metadata import JobMetadata
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
         d = dict(src_dict)
-        backend = check_job_backends(d.pop("backend"))
-
-
-
+        backend = d.pop("backend")
 
         type_ = check_quantum_function_job_creation_payload_type(d.pop("type"))
 

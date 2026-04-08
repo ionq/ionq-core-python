@@ -9,8 +9,6 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.get_job_estimate_response import GetJobEstimateResponse
-from ...models.job_backends import check_job_backends
-from ...models.job_backends import JobBackends
 from ...types import UNSET, Unset
 from typing import cast
 
@@ -18,7 +16,7 @@ from typing import cast
 
 def _get_kwargs(
     *,
-    backend: JobBackends,
+    backend: str,
     type_: str | Unset = 'ionq.circuit.v1',
     qubits: int | Unset = 25,
     shots: int | Unset = 1000,
@@ -33,8 +31,7 @@ def _get_kwargs(
 
     params: dict[str, Any] = {}
 
-    json_backend: str = backend
-    params["backend"] = json_backend
+    params["backend"] = backend
 
     params["type"] = type_
 
@@ -105,7 +102,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    backend: JobBackends,
+    backend: str,
     type_: str | Unset = 'ionq.circuit.v1',
     qubits: int | Unset = 25,
     shots: int | Unset = 1000,
@@ -116,7 +113,7 @@ def sync_detailed(
 ) -> Response[Any | GetJobEstimateResponse]:
     """ 
     Args:
-        backend (JobBackends):
+        backend (str):
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -153,7 +150,7 @@ error_mitigation=error_mitigation,
 def sync(
     *,
     client: AuthenticatedClient,
-    backend: JobBackends,
+    backend: str,
     type_: str | Unset = 'ionq.circuit.v1',
     qubits: int | Unset = 25,
     shots: int | Unset = 1000,
@@ -164,7 +161,7 @@ def sync(
 ) -> Any | GetJobEstimateResponse | None:
     """ 
     Args:
-        backend (JobBackends):
+        backend (str):
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -196,7 +193,7 @@ error_mitigation=error_mitigation,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    backend: JobBackends,
+    backend: str,
     type_: str | Unset = 'ionq.circuit.v1',
     qubits: int | Unset = 25,
     shots: int | Unset = 1000,
@@ -207,7 +204,7 @@ async def asyncio_detailed(
 ) -> Response[Any | GetJobEstimateResponse]:
     """ 
     Args:
-        backend (JobBackends):
+        backend (str):
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -244,7 +241,7 @@ error_mitigation=error_mitigation,
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    backend: JobBackends,
+    backend: str,
     type_: str | Unset = 'ionq.circuit.v1',
     qubits: int | Unset = 25,
     shots: int | Unset = 1000,
@@ -255,7 +252,7 @@ async def asyncio(
 ) -> Any | GetJobEstimateResponse | None:
     """ 
     Args:
-        backend (JobBackends):
+        backend (str):
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.

@@ -10,8 +10,6 @@ from ..types import UNSET, Unset
 
 from ..models.circuit_job_creation_payload_type import check_circuit_job_creation_payload_type
 from ..models.circuit_job_creation_payload_type import CircuitJobCreationPayloadType
-from ..models.job_backends import check_job_backends
-from ..models.job_backends import JobBackends
 from ..types import UNSET, Unset
 from typing import cast
 
@@ -34,7 +32,7 @@ T = TypeVar("T", bound="CircuitJobCreationPayload")
 class CircuitJobCreationPayload:
     """ 
         Attributes:
-            backend (JobBackends):
+            backend (str):
             type_ (CircuitJobCreationPayloadType):
             input_ (NativeCircuitInput | QisCircuitInput):
             name (str | Unset):
@@ -46,7 +44,7 @@ class CircuitJobCreationPayload:
             noise (Noise | Unset):
      """
 
-    backend: JobBackends
+    backend: str
     type_: CircuitJobCreationPayloadType
     input_: NativeCircuitInput | QisCircuitInput
     name: str | Unset = UNSET
@@ -67,7 +65,7 @@ class CircuitJobCreationPayload:
         from ..models.native_circuit_input import NativeCircuitInput
         from ..models.noise import Noise
         from ..models.qis_circuit_input import QisCircuitInput
-        backend: str = self.backend
+        backend = self.backend
 
         type_: str = self.type_
 
@@ -133,10 +131,7 @@ class CircuitJobCreationPayload:
         from ..models.noise import Noise
         from ..models.qis_circuit_input import QisCircuitInput
         d = dict(src_dict)
-        backend = check_job_backends(d.pop("backend"))
-
-
-
+        backend = d.pop("backend")
 
         type_ = check_circuit_job_creation_payload_type(d.pop("type"))
 
