@@ -14,12 +14,12 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="JsonObject")
+T = TypeVar("T", bound="JsonObjectType0")
 
 
 
 @_attrs_define
-class JsonObject:
+class JsonObjectType0:
     """ 
      """
 
@@ -41,12 +41,12 @@ class JsonObject:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        json_object = cls(
+        json_object_type_0 = cls(
         )
 
 
-        json_object.additional_properties = d
-        return json_object
+        json_object_type_0.additional_properties = d
+        return json_object_type_0
 
     @property
     def additional_keys(self) -> list[str]:

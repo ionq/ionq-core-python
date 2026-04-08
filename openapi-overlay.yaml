@@ -50,17 +50,8 @@ actions:
     update:
       $ref: "#/components/schemas/Optional_JobMetadata_"
 
-  # Job dict fields (output/settings/stats/results): API returns null.
-  # No Optional_ wrapper exists for JsonObject, so add nullable inline.
-  - target: $.components.schemas.Job.properties.output
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.settings
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.stats
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.results
+  # JsonObject (used for output/settings/stats/results): API returns null.
+  # Make the schema itself nullable since all uses can be null.
+  - target: $.components.schemas.JsonObject
     update:
       nullable: true

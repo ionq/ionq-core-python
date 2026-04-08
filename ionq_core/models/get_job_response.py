@@ -19,7 +19,7 @@ if TYPE_CHECKING:
   from ..models.circuit_job_stats import CircuitJobStats
   from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
-  from ..models.json_object import JsonObject
+  from ..models.json_object_type_0 import JsonObjectType0
   from ..models.noise import Noise
 
 
@@ -54,7 +54,7 @@ class GetJobResponse:
             shots (int | Unset):
             noise (Noise | Unset):
             failure (Failure | None | Unset):
-            output (JsonObject | Unset):
+            output (JsonObjectType0 | None | Unset):
             child_job_ids (list[str] | None | Unset):
             settings (CircuitJobSettings | Unset):
             stats (CircuitJobStats | Unset):
@@ -81,7 +81,7 @@ class GetJobResponse:
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
     failure: Failure | None | Unset = UNSET
-    output: JsonObject | Unset = UNSET
+    output: JsonObjectType0 | None | Unset = UNSET
     child_job_ids: list[str] | None | Unset = UNSET
     settings: CircuitJobSettings | Unset = UNSET
     stats: CircuitJobStats | Unset = UNSET
@@ -97,7 +97,7 @@ class GetJobResponse:
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
+        from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         id = self.id
 
@@ -189,9 +189,13 @@ class GetJobResponse:
         else:
             failure = self.failure
 
-        output: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.output, Unset):
+        output: dict[str, Any] | None | Unset
+        if isinstance(self.output, Unset):
+            output = UNSET
+        elif isinstance(self.output, JsonObjectType0):
             output = self.output.to_dict()
+        else:
+            output = self.output
 
         child_job_ids: list[str] | None | Unset
         if isinstance(self.child_job_ids, Unset):
@@ -280,7 +284,7 @@ class GetJobResponse:
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
+        from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         d = dict(src_dict)
         id = d.pop("id")
@@ -442,14 +446,24 @@ class GetJobResponse:
         failure = _parse_failure(d.pop("failure", UNSET))
 
 
-        _output = d.pop("output", UNSET)
-        output: JsonObject | Unset
-        if isinstance(_output,  Unset):
-            output = UNSET
-        else:
-            output = JsonObject.from_dict(_output)
+        def _parse_output(data: object) -> JsonObjectType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
 
 
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None | Unset, data)
+
+        output = _parse_output(d.pop("output", UNSET))
 
 
         def _parse_child_job_ids(data: object) -> list[str] | None | Unset:

@@ -16,7 +16,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
-  from ..models.json_object import JsonObject
+  from ..models.json_object_type_0 import JsonObjectType0
   from ..models.noise import Noise
 
 
@@ -52,10 +52,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             shots (int | Unset):
             noise (Noise | Unset):
             failure (Failure | Unset):
-            output (JsonObject | Unset):
-            settings (JsonObject | Unset):
-            stats (JsonObject | Unset):
-            results (JsonObject | Unset):
+            output (JsonObjectType0 | None | Unset):
+            settings (JsonObjectType0 | None | Unset):
+            stats (JsonObjectType0 | None | Unset):
+            results (JsonObjectType0 | None | Unset):
      """
 
     id: str
@@ -78,10 +78,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
     failure: Failure | Unset = UNSET
-    output: JsonObject | Unset = UNSET
-    settings: JsonObject | Unset = UNSET
-    stats: JsonObject | Unset = UNSET
-    results: JsonObject | Unset = UNSET
+    output: JsonObjectType0 | None | Unset = UNSET
+    settings: JsonObjectType0 | None | Unset = UNSET
+    stats: JsonObjectType0 | None | Unset = UNSET
+    results: JsonObjectType0 | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -91,7 +91,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     def to_dict(self) -> dict[str, Any]:
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
+        from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         id = self.id
 
@@ -139,21 +139,37 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         if not isinstance(self.failure, Unset):
             failure = self.failure.to_dict()
 
-        output: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.output, Unset):
+        output: dict[str, Any] | None | Unset
+        if isinstance(self.output, Unset):
+            output = UNSET
+        elif isinstance(self.output, JsonObjectType0):
             output = self.output.to_dict()
+        else:
+            output = self.output
 
-        settings: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.settings, Unset):
+        settings: dict[str, Any] | None | Unset
+        if isinstance(self.settings, Unset):
+            settings = UNSET
+        elif isinstance(self.settings, JsonObjectType0):
             settings = self.settings.to_dict()
+        else:
+            settings = self.settings
 
-        stats: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.stats, Unset):
+        stats: dict[str, Any] | None | Unset
+        if isinstance(self.stats, Unset):
+            stats = UNSET
+        elif isinstance(self.stats, JsonObjectType0):
             stats = self.stats.to_dict()
+        else:
+            stats = self.stats
 
-        results: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.results, Unset):
+        results: dict[str, Any] | None | Unset
+        if isinstance(self.results, Unset):
+            results = UNSET
+        elif isinstance(self.results, JsonObjectType0):
             results = self.results.to_dict()
+        else:
+            results = self.results
 
 
         field_dict: dict[str, Any] = {}
@@ -211,7 +227,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
+        from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         d = dict(src_dict)
         id = d.pop("id")
@@ -281,44 +297,84 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
-        _output = d.pop("output", UNSET)
-        output: JsonObject | Unset
-        if isinstance(_output,  Unset):
-            output = UNSET
-        else:
-            output = JsonObject.from_dict(_output)
+        def _parse_output(data: object) -> JsonObjectType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
 
 
 
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None | Unset, data)
 
-        _settings = d.pop("settings", UNSET)
-        settings: JsonObject | Unset
-        if isinstance(_settings,  Unset):
-            settings = UNSET
-        else:
-            settings = JsonObject.from_dict(_settings)
-
+        output = _parse_output(d.pop("output", UNSET))
 
 
-
-        _stats = d.pop("stats", UNSET)
-        stats: JsonObject | Unset
-        if isinstance(_stats,  Unset):
-            stats = UNSET
-        else:
-            stats = JsonObject.from_dict(_stats)
-
-
-
-
-        _results = d.pop("results", UNSET)
-        results: JsonObject | Unset
-        if isinstance(_results,  Unset):
-            results = UNSET
-        else:
-            results = JsonObject.from_dict(_results)
+        def _parse_settings(data: object) -> JsonObjectType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
 
 
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None | Unset, data)
+
+        settings = _parse_settings(d.pop("settings", UNSET))
+
+
+        def _parse_stats(data: object) -> JsonObjectType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None | Unset, data)
+
+        stats = _parse_stats(d.pop("stats", UNSET))
+
+
+        def _parse_results(data: object) -> JsonObjectType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None | Unset, data)
+
+        results = _parse_results(d.pop("results", UNSET))
 
 
         pick_base_job_exclude_keyof_base_job_child_job_ids = cls(
