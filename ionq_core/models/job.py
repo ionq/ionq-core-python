@@ -40,7 +40,7 @@ class Job:
             project_id (str | Unset):
             parent_job_id (str | Unset):
             session_id (str | Unset):
-            metadata (JobMetadata | None | Unset):
+            metadata (JobMetadata | Unset):
             name (str | Unset):
             submitted_at (str | Unset):
             started_at (str | Unset):
@@ -50,7 +50,7 @@ class Job:
             execution_duration_ms (int | Unset):
             shots (int | Unset):
             noise (Noise | Unset):
-            failure (Failure | None | Unset):
+            failure (Failure | Unset):
             output (JsonObject | Unset):
             settings (JsonObject | Unset):
             stats (JsonObject | Unset):
@@ -66,7 +66,7 @@ class Job:
     project_id: str | Unset = UNSET
     parent_job_id: str | Unset = UNSET
     session_id: str | Unset = UNSET
-    metadata: JobMetadata | None | Unset = UNSET
+    metadata: JobMetadata | Unset = UNSET
     name: str | Unset = UNSET
     submitted_at: str | Unset = UNSET
     started_at: str | Unset = UNSET
@@ -76,7 +76,7 @@ class Job:
     execution_duration_ms: int | Unset = UNSET
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
-    failure: Failure | None | Unset = UNSET
+    failure: Failure | Unset = UNSET
     output: JsonObject | Unset = UNSET
     settings: JsonObject | Unset = UNSET
     stats: JsonObject | Unset = UNSET
@@ -109,13 +109,9 @@ class Job:
 
         session_id = self.session_id
 
-        metadata: dict[str, Any] | None | Unset
-        if isinstance(self.metadata, Unset):
-            metadata = UNSET
-        elif isinstance(self.metadata, JobMetadata):
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
             metadata = self.metadata.to_dict()
-        else:
-            metadata = self.metadata
 
         name = self.name
 
@@ -137,13 +133,9 @@ class Job:
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
 
-        failure: dict[str, Any] | None | Unset
-        if isinstance(self.failure, Unset):
-            failure = UNSET
-        elif isinstance(self.failure, Failure):
+        failure: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.failure, Unset):
             failure = self.failure.to_dict()
-        else:
-            failure = self.failure
 
         output: dict[str, Any] | Unset = UNSET
         if not isinstance(self.output, Unset):
@@ -241,24 +233,14 @@ class Job:
 
         session_id = d.pop("session_id", UNSET)
 
-        def _parse_metadata(data: object) -> JobMetadata | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_optional_job_metadata_type_1 = JobMetadata.from_dict(data)
+        _metadata = d.pop("metadata", UNSET)
+        metadata: JobMetadata | Unset
+        if isinstance(_metadata,  Unset):
+            metadata = UNSET
+        else:
+            metadata = JobMetadata.from_dict(_metadata)
 
 
-
-                return componentsschemas_optional_job_metadata_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JobMetadata | None | Unset, data)
-
-        metadata = _parse_metadata(d.pop("metadata", UNSET))
 
 
         name = d.pop("name", UNSET)
@@ -287,24 +269,14 @@ class Job:
 
 
 
-        def _parse_failure(data: object) -> Failure | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_optional_failure_type_1 = Failure.from_dict(data)
+        _failure = d.pop("failure", UNSET)
+        failure: Failure | Unset
+        if isinstance(_failure,  Unset):
+            failure = UNSET
+        else:
+            failure = Failure.from_dict(_failure)
 
 
-
-                return componentsschemas_optional_failure_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(Failure | None | Unset, data)
-
-        failure = _parse_failure(d.pop("failure", UNSET))
 
 
         _output = d.pop("output", UNSET)

@@ -1,73 +1,52 @@
 overlay: 1.1.0
 info:
-  title: Fixes for openapi-python-client generation
-  version: 1.1.0
+  title: Spec fixes for IonQ API client generation
+  version: 2.0.0
 extends: ./openapi.json
 actions:
+  # Generator bug: nullable allOf pattern creates duplicate models.
+  # The generator's internal transform of allOf+nullable into oneOf
+  # re-processes CircuitJobResult sub-schemas, causing name collisions.
+  # Fix: replace allOf+nullable with explicit oneOf null pattern.
   - target: $.components.schemas.Optional_CircuitJobResult_
-    description: >
-      Add oneOf with explicit null type as replacement for allOf + nullable.
-      The allOf + nullable pattern causes openapi-python-client to generate
-      duplicate CircuitJobResultProbabilities models (issues #323, #1066, #1375).
-      Remove this action when the generator fixes nullable allOf handling.
     update:
       oneOf:
         - type: "null"
         - $ref: "#/components/schemas/CircuitJobResult"
   - target: $.components.schemas.Optional_CircuitJobResult_.allOf
-    description: Remove allOf (replaced by oneOf above).
     remove: true
   - target: $.components.schemas.Optional_CircuitJobResult_.nullable
-    description: Remove nullable (represented by null type in oneOf above).
     remove: true
+
+  # Spec enums are too restrictive. The API returns values not in the enums:
+  #   Backend.backend: missing simulator, qpu.harmony
+  #   Backend.status: missing retired
+  #   Characterization.backend: same as Backend.backend
   - target: $.components.schemas.Backend.properties.backend.enum
-    description: >
-      Remove restrictive backend enum. The API returns backends (simulator,
-      qpu.harmony) not listed in the spec enum. Use plain string instead.
-      Remove when spec enums match reality.
     remove: true
   - target: $.components.schemas.Backend.properties.status.enum
-    description: >
-      Remove restrictive status enum. The API returns statuses (retired)
-      not listed in the spec enum. Use plain string instead.
-      Remove when spec enums match reality.
     remove: true
   - target: $.components.schemas.Characterization.properties.backend.enum
-    description: >
-      Remove restrictive characterization backend enum for same reason as above.
-      Remove when spec enums match reality.
     remove: true
-  - target: $.components.schemas.Job.properties.failure
-    description: >
-      Make failure nullable on Job. The API returns null for successful jobs.
-      GetCircuitJobResponse already uses Optional_Failure_ but Job does not.
-      Remove when spec makes this nullable.
-    update:
-      $ref: "#/components/schemas/Optional_Failure_"
-  - target: $.components.schemas.Job.properties.metadata
-    description: >
-      Make metadata nullable on Job. The API returns null when no metadata set.
-      GetCircuitJobResponse already uses Optional_JobMetadata_ but Job does not.
-      Remove when spec makes this nullable.
-    update:
-      $ref: "#/components/schemas/Optional_JobMetadata_"
+
+  # Job schema: many fields are required+non-nullable in the spec but the
+  # API returns them as null or omits them. Specifically:
+  #   shots: omitted from list responses
+  #   failure: null on successful jobs
+  #   metadata: null when not set
+  #   output, settings, stats, results: null on some jobs
+  # Fix: reduce required to only fields that are always present and non-null.
   - target: $.components.schemas.Job.required
-    description: >
-      Make shots, failure, and metadata optional on Job. The API returns null
-      for failure/metadata on successful jobs, and omits shots from list responses.
-      Remove when spec marks these as optional/nullable.
     remove: true
   - target: $.components.schemas.Job
     update:
       required: [id, status, type, backend, dry_run, submitter_id]
   - target: $.components.schemas.GetCircuitJobResponse.required
-    description: Same fixes as Job for GetCircuitJobResponse.
     remove: true
   - target: $.components.schemas.GetCircuitJobResponse
     update:
       required: [id, status, type, backend, dry_run, submitter_id]
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].required"
-    description: Same fixes as Job for BaseJobSummary.
     remove: true
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
     update:
