@@ -1,13 +1,15 @@
-overlay: 1.0.0
+overlay: 1.1.0
 info:
   title: Fixes for openapi-python-client generation
   version: 1.0.0
+extends: ./openapi.json
 actions:
   - target: $.components.schemas.Optional_CircuitJobResult_
     description: >
       Add oneOf with explicit null type as replacement for allOf + nullable.
       The allOf + nullable pattern causes openapi-python-client to generate
       duplicate CircuitJobResultProbabilities models (issues #323, #1066, #1375).
+      Remove this action when the generator fixes nullable allOf handling.
     update:
       oneOf:
         - type: "null"

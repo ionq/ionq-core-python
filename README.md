@@ -268,7 +268,7 @@ curl -s https://api-staging.ionq.co/v0.4/api-docs -o openapi.json
 
 # Apply overlay if present (patches spec issues that the generator can't handle)
 if [ -f openapi-overlay.yaml ]; then
-    uvx oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+    uvx oas-patch==0.6.0 overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
 else
     cp openapi.json /tmp/patched-spec.json
 fi
@@ -284,7 +284,7 @@ uvx openapi-python-client generate \
 
 ### OpenAPI Overlay
 
-If the upstream spec contains patterns that the code generator cannot handle, fixes are applied via an [OpenAPI Overlay](https://spec.openapis.org/overlay/v1.0.0.html) file (`openapi-overlay.yaml`). The overlay is declarative, version-controlled, and applied automatically during generation. When the upstream issue is resolved, delete the corresponding action from the overlay (or the entire file) and the pipeline continues to work without it.
+If the upstream spec contains patterns that the code generator cannot handle, fixes are applied via an [OpenAPI Overlay](https://spec.openapis.org/overlay/v1.1.0.html) file (`openapi-overlay.yaml`) using [oas-patch](https://pypi.org/project/oas-patch/). The overlay is declarative, version-controlled, and applied automatically during generation. The vendored `openapi.json` is always the unmodified upstream spec. When the upstream issue is resolved, delete the corresponding action from the overlay (or the entire file) and the pipeline continues to work without it.
 
 ## Development
 
