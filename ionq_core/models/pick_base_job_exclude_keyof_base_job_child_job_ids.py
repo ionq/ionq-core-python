@@ -38,24 +38,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             backend (str):
             dry_run (bool):
             submitter_id (str): The id of the user who submitted the job
-            project_id (str):
-            parent_job_id (str):
-            session_id (str):
-            name (str):
-            submitted_at (str):
-            started_at (str):
-            completed_at (str):
-            predicted_wait_time_ms (int):
-            predicted_execution_duration_ms (int):
-            execution_duration_ms (int):
-            output (JsonObject):
-            settings (JsonObject):
-            stats (JsonObject):
-            results (JsonObject):
+            project_id (str | Unset):
+            parent_job_id (str | Unset):
+            session_id (str | Unset):
             metadata (JobMetadata | Unset):
+            name (str | Unset):
+            submitted_at (str | Unset):
+            started_at (str | Unset):
+            completed_at (str | Unset):
+            predicted_wait_time_ms (int | Unset):
+            predicted_execution_duration_ms (int | Unset):
+            execution_duration_ms (int | Unset):
             shots (int | Unset):
             noise (Noise | Unset):
             failure (Failure | Unset):
+            output (JsonObject | Unset):
+            settings (JsonObject | Unset):
+            stats (JsonObject | Unset):
+            results (JsonObject | Unset):
      """
 
     id: str
@@ -64,24 +64,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     backend: str
     dry_run: bool
     submitter_id: str
-    project_id: str
-    parent_job_id: str
-    session_id: str
-    name: str
-    submitted_at: str
-    started_at: str
-    completed_at: str
-    predicted_wait_time_ms: int
-    predicted_execution_duration_ms: int
-    execution_duration_ms: int
-    output: JsonObject
-    settings: JsonObject
-    stats: JsonObject
-    results: JsonObject
+    project_id: str | Unset = UNSET
+    parent_job_id: str | Unset = UNSET
+    session_id: str | Unset = UNSET
     metadata: JobMetadata | Unset = UNSET
+    name: str | Unset = UNSET
+    submitted_at: str | Unset = UNSET
+    started_at: str | Unset = UNSET
+    completed_at: str | Unset = UNSET
+    predicted_wait_time_ms: int | Unset = UNSET
+    predicted_execution_duration_ms: int | Unset = UNSET
+    execution_duration_ms: int | Unset = UNSET
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
     failure: Failure | Unset = UNSET
+    output: JsonObject | Unset = UNSET
+    settings: JsonObject | Unset = UNSET
+    stats: JsonObject | Unset = UNSET
+    results: JsonObject | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -111,6 +111,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         session_id = self.session_id
 
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
+            metadata = self.metadata.to_dict()
+
         name = self.name
 
         submitted_at = self.submitted_at
@@ -125,18 +129,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         execution_duration_ms = self.execution_duration_ms
 
-        output = self.output.to_dict()
-
-        settings = self.settings.to_dict()
-
-        stats = self.stats.to_dict()
-
-        results = self.results.to_dict()
-
-        metadata: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.metadata, Unset):
-            metadata = self.metadata.to_dict()
-
         shots = self.shots
 
         noise: dict[str, Any] | Unset = UNSET
@@ -146,6 +138,22 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         failure: dict[str, Any] | Unset = UNSET
         if not isinstance(self.failure, Unset):
             failure = self.failure.to_dict()
+
+        output: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.output, Unset):
+            output = self.output.to_dict()
+
+        settings: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.settings, Unset):
+            settings = self.settings.to_dict()
+
+        stats: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.stats, Unset):
+            stats = self.stats.to_dict()
+
+        results: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.results, Unset):
+            results = self.results.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -157,29 +165,43 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "backend": backend,
             "dry_run": dry_run,
             "submitter_id": submitter_id,
-            "project_id": project_id,
-            "parent_job_id": parent_job_id,
-            "session_id": session_id,
-            "name": name,
-            "submitted_at": submitted_at,
-            "started_at": started_at,
-            "completed_at": completed_at,
-            "predicted_wait_time_ms": predicted_wait_time_ms,
-            "predicted_execution_duration_ms": predicted_execution_duration_ms,
-            "execution_duration_ms": execution_duration_ms,
-            "output": output,
-            "settings": settings,
-            "stats": stats,
-            "results": results,
         })
+        if project_id is not UNSET:
+            field_dict["project_id"] = project_id
+        if parent_job_id is not UNSET:
+            field_dict["parent_job_id"] = parent_job_id
+        if session_id is not UNSET:
+            field_dict["session_id"] = session_id
         if metadata is not UNSET:
             field_dict["metadata"] = metadata
+        if name is not UNSET:
+            field_dict["name"] = name
+        if submitted_at is not UNSET:
+            field_dict["submitted_at"] = submitted_at
+        if started_at is not UNSET:
+            field_dict["started_at"] = started_at
+        if completed_at is not UNSET:
+            field_dict["completed_at"] = completed_at
+        if predicted_wait_time_ms is not UNSET:
+            field_dict["predicted_wait_time_ms"] = predicted_wait_time_ms
+        if predicted_execution_duration_ms is not UNSET:
+            field_dict["predicted_execution_duration_ms"] = predicted_execution_duration_ms
+        if execution_duration_ms is not UNSET:
+            field_dict["execution_duration_ms"] = execution_duration_ms
         if shots is not UNSET:
             field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
         if failure is not UNSET:
             field_dict["failure"] = failure
+        if output is not UNSET:
+            field_dict["output"] = output
+        if settings is not UNSET:
+            field_dict["settings"] = settings
+        if stats is not UNSET:
+            field_dict["stats"] = stats
+        if results is not UNSET:
+            field_dict["results"] = results
 
         return field_dict
 
@@ -207,45 +229,11 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         submitter_id = d.pop("submitter_id")
 
-        project_id = d.pop("project_id")
+        project_id = d.pop("project_id", UNSET)
 
-        parent_job_id = d.pop("parent_job_id")
+        parent_job_id = d.pop("parent_job_id", UNSET)
 
-        session_id = d.pop("session_id")
-
-        name = d.pop("name")
-
-        submitted_at = d.pop("submitted_at")
-
-        started_at = d.pop("started_at")
-
-        completed_at = d.pop("completed_at")
-
-        predicted_wait_time_ms = d.pop("predicted_wait_time_ms")
-
-        predicted_execution_duration_ms = d.pop("predicted_execution_duration_ms")
-
-        execution_duration_ms = d.pop("execution_duration_ms")
-
-        output = JsonObject.from_dict(d.pop("output"))
-
-
-
-
-        settings = JsonObject.from_dict(d.pop("settings"))
-
-
-
-
-        stats = JsonObject.from_dict(d.pop("stats"))
-
-
-
-
-        results = JsonObject.from_dict(d.pop("results"))
-
-
-
+        session_id = d.pop("session_id", UNSET)
 
         _metadata = d.pop("metadata", UNSET)
         metadata: JobMetadata | Unset
@@ -256,6 +244,20 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
+
+        name = d.pop("name", UNSET)
+
+        submitted_at = d.pop("submitted_at", UNSET)
+
+        started_at = d.pop("started_at", UNSET)
+
+        completed_at = d.pop("completed_at", UNSET)
+
+        predicted_wait_time_ms = d.pop("predicted_wait_time_ms", UNSET)
+
+        predicted_execution_duration_ms = d.pop("predicted_execution_duration_ms", UNSET)
+
+        execution_duration_ms = d.pop("execution_duration_ms", UNSET)
 
         shots = d.pop("shots", UNSET)
 
@@ -279,6 +281,46 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
+        _output = d.pop("output", UNSET)
+        output: JsonObject | Unset
+        if isinstance(_output,  Unset):
+            output = UNSET
+        else:
+            output = JsonObject.from_dict(_output)
+
+
+
+
+        _settings = d.pop("settings", UNSET)
+        settings: JsonObject | Unset
+        if isinstance(_settings,  Unset):
+            settings = UNSET
+        else:
+            settings = JsonObject.from_dict(_settings)
+
+
+
+
+        _stats = d.pop("stats", UNSET)
+        stats: JsonObject | Unset
+        if isinstance(_stats,  Unset):
+            stats = UNSET
+        else:
+            stats = JsonObject.from_dict(_stats)
+
+
+
+
+        _results = d.pop("results", UNSET)
+        results: JsonObject | Unset
+        if isinstance(_results,  Unset):
+            results = UNSET
+        else:
+            results = JsonObject.from_dict(_results)
+
+
+
+
         pick_base_job_exclude_keyof_base_job_child_job_ids = cls(
             id=id,
             status=status,
@@ -289,6 +331,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id=project_id,
             parent_job_id=parent_job_id,
             session_id=session_id,
+            metadata=metadata,
             name=name,
             submitted_at=submitted_at,
             started_at=started_at,
@@ -296,14 +339,13 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
+            shots=shots,
+            noise=noise,
+            failure=failure,
             output=output,
             settings=settings,
             stats=stats,
             results=results,
-            metadata=metadata,
-            shots=shots,
-            noise=noise,
-            failure=failure,
         )
 
 

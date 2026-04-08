@@ -59,16 +59,16 @@ actions:
     remove: true
   - target: $.components.schemas.Job
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id]
   - target: $.components.schemas.GetCircuitJobResponse.required
     description: Same fixes as Job for GetCircuitJobResponse.
     remove: true
   - target: $.components.schemas.GetCircuitJobResponse
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, child_job_ids, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id]
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].required"
     description: Same fixes as Job for BaseJobSummary.
     remove: true
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id]
