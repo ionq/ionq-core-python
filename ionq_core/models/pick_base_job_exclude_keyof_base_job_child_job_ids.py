@@ -41,7 +41,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id (str):
             parent_job_id (str):
             session_id (str):
-            metadata (JobMetadata):
             name (str):
             submitted_at (str):
             started_at (str):
@@ -49,13 +48,14 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms (int):
             predicted_execution_duration_ms (int):
             execution_duration_ms (int):
-            failure (Failure):
             output (JsonObject):
             settings (JsonObject):
             stats (JsonObject):
             results (JsonObject):
+            metadata (JobMetadata | Unset):
             shots (int | Unset):
             noise (Noise | Unset):
+            failure (Failure | Unset):
      """
 
     id: str
@@ -67,7 +67,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     project_id: str
     parent_job_id: str
     session_id: str
-    metadata: JobMetadata
     name: str
     submitted_at: str
     started_at: str
@@ -75,13 +74,14 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     predicted_wait_time_ms: int
     predicted_execution_duration_ms: int
     execution_duration_ms: int
-    failure: Failure
     output: JsonObject
     settings: JsonObject
     stats: JsonObject
     results: JsonObject
+    metadata: JobMetadata | Unset = UNSET
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
+    failure: Failure | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -111,8 +111,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         session_id = self.session_id
 
-        metadata = self.metadata.to_dict()
-
         name = self.name
 
         submitted_at = self.submitted_at
@@ -127,8 +125,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         execution_duration_ms = self.execution_duration_ms
 
-        failure = self.failure.to_dict()
-
         output = self.output.to_dict()
 
         settings = self.settings.to_dict()
@@ -137,11 +133,19 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         results = self.results.to_dict()
 
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
+            metadata = self.metadata.to_dict()
+
         shots = self.shots
 
         noise: dict[str, Any] | Unset = UNSET
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
+
+        failure: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.failure, Unset):
+            failure = self.failure.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -156,7 +160,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "project_id": project_id,
             "parent_job_id": parent_job_id,
             "session_id": session_id,
-            "metadata": metadata,
             "name": name,
             "submitted_at": submitted_at,
             "started_at": started_at,
@@ -164,16 +167,19 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "predicted_wait_time_ms": predicted_wait_time_ms,
             "predicted_execution_duration_ms": predicted_execution_duration_ms,
             "execution_duration_ms": execution_duration_ms,
-            "failure": failure,
             "output": output,
             "settings": settings,
             "stats": stats,
             "results": results,
         })
+        if metadata is not UNSET:
+            field_dict["metadata"] = metadata
         if shots is not UNSET:
             field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
+        if failure is not UNSET:
+            field_dict["failure"] = failure
 
         return field_dict
 
@@ -207,11 +213,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         session_id = d.pop("session_id")
 
-        metadata = JobMetadata.from_dict(d.pop("metadata"))
-
-
-
-
         name = d.pop("name")
 
         submitted_at = d.pop("submitted_at")
@@ -225,11 +226,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         predicted_execution_duration_ms = d.pop("predicted_execution_duration_ms")
 
         execution_duration_ms = d.pop("execution_duration_ms")
-
-        failure = Failure.from_dict(d.pop("failure"))
-
-
-
 
         output = JsonObject.from_dict(d.pop("output"))
 
@@ -251,6 +247,16 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
+        _metadata = d.pop("metadata", UNSET)
+        metadata: JobMetadata | Unset
+        if isinstance(_metadata,  Unset):
+            metadata = UNSET
+        else:
+            metadata = JobMetadata.from_dict(_metadata)
+
+
+
+
         shots = d.pop("shots", UNSET)
 
         _noise = d.pop("noise", UNSET)
@@ -259,6 +265,16 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             noise = UNSET
         else:
             noise = Noise.from_dict(_noise)
+
+
+
+
+        _failure = d.pop("failure", UNSET)
+        failure: Failure | Unset
+        if isinstance(_failure,  Unset):
+            failure = UNSET
+        else:
+            failure = Failure.from_dict(_failure)
 
 
 
@@ -273,7 +289,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id=project_id,
             parent_job_id=parent_job_id,
             session_id=session_id,
-            metadata=metadata,
             name=name,
             submitted_at=submitted_at,
             started_at=started_at,
@@ -281,13 +296,14 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
-            failure=failure,
             output=output,
             settings=settings,
             stats=stats,
             results=results,
+            metadata=metadata,
             shots=shots,
             noise=noise,
+            failure=failure,
         )
 
 

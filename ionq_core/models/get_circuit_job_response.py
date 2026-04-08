@@ -43,7 +43,6 @@ class GetCircuitJobResponse:
             project_id (None | str):
             parent_job_id (None | str):
             session_id (None | str):
-            metadata (JobMetadata | None):
             name (None | str):
             submitted_at (str):
             started_at (None | str):
@@ -51,14 +50,15 @@ class GetCircuitJobResponse:
             predicted_wait_time_ms (float | None):
             predicted_execution_duration_ms (float | None):
             execution_duration_ms (float | None):
-            failure (Failure | None):
             output (JsonObject):
             child_job_ids (list[str] | None):
             settings (CircuitJobSettings):
             stats (CircuitJobStats):
             results (CircuitJobResult | None):
+            metadata (JobMetadata | None | Unset):
             shots (int | Unset):
             noise (Noise | Unset):
+            failure (Failure | None | Unset):
      """
 
     id: str
@@ -70,7 +70,6 @@ class GetCircuitJobResponse:
     project_id: None | str
     parent_job_id: None | str
     session_id: None | str
-    metadata: JobMetadata | None
     name: None | str
     submitted_at: str
     started_at: None | str
@@ -78,14 +77,15 @@ class GetCircuitJobResponse:
     predicted_wait_time_ms: float | None
     predicted_execution_duration_ms: float | None
     execution_duration_ms: float | None
-    failure: Failure | None
     output: JsonObject
     child_job_ids: list[str] | None
     settings: CircuitJobSettings
     stats: CircuitJobStats
     results: CircuitJobResult | None
+    metadata: JobMetadata | None | Unset = UNSET
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
+    failure: Failure | None | Unset = UNSET
 
 
 
@@ -120,12 +120,6 @@ class GetCircuitJobResponse:
         session_id: None | str
         session_id = self.session_id
 
-        metadata: dict[str, Any] | None
-        if isinstance(self.metadata, JobMetadata):
-            metadata = self.metadata.to_dict()
-        else:
-            metadata = self.metadata
-
         name: None | str
         name = self.name
 
@@ -145,12 +139,6 @@ class GetCircuitJobResponse:
 
         execution_duration_ms: float | None
         execution_duration_ms = self.execution_duration_ms
-
-        failure: dict[str, Any] | None
-        if isinstance(self.failure, Failure):
-            failure = self.failure.to_dict()
-        else:
-            failure = self.failure
 
         output = self.output.to_dict()
 
@@ -172,11 +160,27 @@ class GetCircuitJobResponse:
         else:
             results = self.results
 
+        metadata: dict[str, Any] | None | Unset
+        if isinstance(self.metadata, Unset):
+            metadata = UNSET
+        elif isinstance(self.metadata, JobMetadata):
+            metadata = self.metadata.to_dict()
+        else:
+            metadata = self.metadata
+
         shots = self.shots
 
         noise: dict[str, Any] | Unset = UNSET
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
+
+        failure: dict[str, Any] | None | Unset
+        if isinstance(self.failure, Unset):
+            failure = UNSET
+        elif isinstance(self.failure, Failure):
+            failure = self.failure.to_dict()
+        else:
+            failure = self.failure
 
 
         field_dict: dict[str, Any] = {}
@@ -191,7 +195,6 @@ class GetCircuitJobResponse:
             "project_id": project_id,
             "parent_job_id": parent_job_id,
             "session_id": session_id,
-            "metadata": metadata,
             "name": name,
             "submitted_at": submitted_at,
             "started_at": started_at,
@@ -199,17 +202,20 @@ class GetCircuitJobResponse:
             "predicted_wait_time_ms": predicted_wait_time_ms,
             "predicted_execution_duration_ms": predicted_execution_duration_ms,
             "execution_duration_ms": execution_duration_ms,
-            "failure": failure,
             "output": output,
             "child_job_ids": child_job_ids,
             "settings": settings,
             "stats": stats,
             "results": results,
         })
+        if metadata is not UNSET:
+            field_dict["metadata"] = metadata
         if shots is not UNSET:
             field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
+        if failure is not UNSET:
+            field_dict["failure"] = failure
 
         return field_dict
 
@@ -264,24 +270,6 @@ class GetCircuitJobResponse:
         session_id = _parse_session_id(d.pop("session_id"))
 
 
-        def _parse_metadata(data: object) -> JobMetadata | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_optional_job_metadata_type_1 = JobMetadata.from_dict(data)
-
-
-
-                return componentsschemas_optional_job_metadata_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JobMetadata | None, data)
-
-        metadata = _parse_metadata(d.pop("metadata"))
-
-
         def _parse_name(data: object) -> None | str:
             if data is None:
                 return data
@@ -330,24 +318,6 @@ class GetCircuitJobResponse:
             return cast(float | None, data)
 
         execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
-
-
-        def _parse_failure(data: object) -> Failure | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_optional_failure_type_1 = Failure.from_dict(data)
-
-
-
-                return componentsschemas_optional_failure_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(Failure | None, data)
-
-        failure = _parse_failure(d.pop("failure"))
 
 
         output = JsonObject.from_dict(d.pop("output"))
@@ -399,6 +369,26 @@ class GetCircuitJobResponse:
         results = _parse_results(d.pop("results"))
 
 
+        def _parse_metadata(data: object) -> JobMetadata | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_optional_job_metadata_type_1 = JobMetadata.from_dict(data)
+
+
+
+                return componentsschemas_optional_job_metadata_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JobMetadata | None | Unset, data)
+
+        metadata = _parse_metadata(d.pop("metadata", UNSET))
+
+
         shots = d.pop("shots", UNSET)
 
         _noise = d.pop("noise", UNSET)
@@ -411,6 +401,26 @@ class GetCircuitJobResponse:
 
 
 
+        def _parse_failure(data: object) -> Failure | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_optional_failure_type_1 = Failure.from_dict(data)
+
+
+
+                return componentsschemas_optional_failure_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(Failure | None | Unset, data)
+
+        failure = _parse_failure(d.pop("failure", UNSET))
+
+
         get_circuit_job_response = cls(
             id=id,
             status=status,
@@ -421,7 +431,6 @@ class GetCircuitJobResponse:
             project_id=project_id,
             parent_job_id=parent_job_id,
             session_id=session_id,
-            metadata=metadata,
             name=name,
             submitted_at=submitted_at,
             started_at=started_at,
@@ -429,14 +438,15 @@ class GetCircuitJobResponse:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
-            failure=failure,
             output=output,
             child_job_ids=child_job_ids,
             settings=settings,
             stats=stats,
             results=results,
+            metadata=metadata,
             shots=shots,
             noise=noise,
+            failure=failure,
         )
 
         return get_circuit_job_response

@@ -37,23 +37,38 @@ actions:
       Remove restrictive characterization backend enum for same reason as above.
       Remove when spec enums match reality.
     remove: true
+  - target: $.components.schemas.Job.properties.failure
+    description: >
+      Make failure nullable on Job. The API returns null for successful jobs.
+      GetCircuitJobResponse already uses Optional_Failure_ but Job does not.
+      Remove when spec makes this nullable.
+    update:
+      $ref: "#/components/schemas/Optional_Failure_"
+  - target: $.components.schemas.Job.properties.metadata
+    description: >
+      Make metadata nullable on Job. The API returns null when no metadata set.
+      GetCircuitJobResponse already uses Optional_JobMetadata_ but Job does not.
+      Remove when spec makes this nullable.
+    update:
+      $ref: "#/components/schemas/Optional_JobMetadata_"
   - target: $.components.schemas.Job.required
     description: >
-      Remove and replace required list to make shots optional.
-      The API omits shots from list responses. Remove when spec fixes this.
+      Make shots, failure, and metadata optional on Job. The API returns null
+      for failure/metadata on successful jobs, and omits shots from list responses.
+      Remove when spec marks these as optional/nullable.
     remove: true
   - target: $.components.schemas.Job
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, settings, stats, results]
   - target: $.components.schemas.GetCircuitJobResponse.required
-    description: Make shots optional on GetCircuitJobResponse (same reason as Job).
+    description: Same fixes as Job for GetCircuitJobResponse.
     remove: true
   - target: $.components.schemas.GetCircuitJobResponse
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, child_job_ids, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, child_job_ids, settings, stats, results]
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].required"
-    description: Make shots optional on BaseJobSummary (same reason as Job).
+    description: Same fixes as Job for BaseJobSummary.
     remove: true
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
     update:
-      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, settings, stats, results]
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, output, settings, stats, results]
