@@ -51,13 +51,13 @@ class GetCircuitJobResponse:
             predicted_wait_time_ms (float | None):
             predicted_execution_duration_ms (float | None):
             execution_duration_ms (float | None):
-            shots (int):
             failure (Failure | None):
             output (JsonObject):
             child_job_ids (list[str] | None):
             settings (CircuitJobSettings):
             stats (CircuitJobStats):
             results (CircuitJobResult | None):
+            shots (int | Unset):
             noise (Noise | Unset):
      """
 
@@ -78,13 +78,13 @@ class GetCircuitJobResponse:
     predicted_wait_time_ms: float | None
     predicted_execution_duration_ms: float | None
     execution_duration_ms: float | None
-    shots: int
     failure: Failure | None
     output: JsonObject
     child_job_ids: list[str] | None
     settings: CircuitJobSettings
     stats: CircuitJobStats
     results: CircuitJobResult | None
+    shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
 
 
@@ -146,8 +146,6 @@ class GetCircuitJobResponse:
         execution_duration_ms: float | None
         execution_duration_ms = self.execution_duration_ms
 
-        shots = self.shots
-
         failure: dict[str, Any] | None
         if isinstance(self.failure, Failure):
             failure = self.failure.to_dict()
@@ -174,6 +172,8 @@ class GetCircuitJobResponse:
         else:
             results = self.results
 
+        shots = self.shots
+
         noise: dict[str, Any] | Unset = UNSET
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
@@ -199,7 +199,6 @@ class GetCircuitJobResponse:
             "predicted_wait_time_ms": predicted_wait_time_ms,
             "predicted_execution_duration_ms": predicted_execution_duration_ms,
             "execution_duration_ms": execution_duration_ms,
-            "shots": shots,
             "failure": failure,
             "output": output,
             "child_job_ids": child_job_ids,
@@ -207,6 +206,8 @@ class GetCircuitJobResponse:
             "stats": stats,
             "results": results,
         })
+        if shots is not UNSET:
+            field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
 
@@ -331,8 +332,6 @@ class GetCircuitJobResponse:
         execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
 
 
-        shots = d.pop("shots")
-
         def _parse_failure(data: object) -> Failure | None:
             if data is None:
                 return data
@@ -400,6 +399,8 @@ class GetCircuitJobResponse:
         results = _parse_results(d.pop("results"))
 
 
+        shots = d.pop("shots", UNSET)
+
         _noise = d.pop("noise", UNSET)
         noise: Noise | Unset
         if isinstance(_noise,  Unset):
@@ -428,13 +429,13 @@ class GetCircuitJobResponse:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
-            shots=shots,
             failure=failure,
             output=output,
             child_job_ids=child_job_ids,
             settings=settings,
             stats=stats,
             results=results,
+            shots=shots,
             noise=noise,
         )
 

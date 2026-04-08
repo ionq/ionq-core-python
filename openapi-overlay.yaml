@@ -37,3 +37,23 @@ actions:
       Remove restrictive characterization backend enum for same reason as above.
       Remove when spec enums match reality.
     remove: true
+  - target: $.components.schemas.Job.required
+    description: >
+      Remove and replace required list to make shots optional.
+      The API omits shots from list responses. Remove when spec fixes this.
+    remove: true
+  - target: $.components.schemas.Job
+    update:
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, settings, stats, results]
+  - target: $.components.schemas.GetCircuitJobResponse.required
+    description: Make shots optional on GetCircuitJobResponse (same reason as Job).
+    remove: true
+  - target: $.components.schemas.GetCircuitJobResponse
+    update:
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, child_job_ids, settings, stats, results]
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].required"
+    description: Make shots optional on BaseJobSummary (same reason as Job).
+    remove: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
+    update:
+      required: [id, status, type, backend, dry_run, submitter_id, project_id, parent_job_id, session_id, metadata, name, submitted_at, started_at, completed_at, predicted_wait_time_ms, predicted_execution_duration_ms, execution_duration_ms, failure, output, settings, stats, results]

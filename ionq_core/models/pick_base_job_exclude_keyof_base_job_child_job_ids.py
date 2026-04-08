@@ -49,12 +49,12 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms (int):
             predicted_execution_duration_ms (int):
             execution_duration_ms (int):
-            shots (int):
             failure (Failure):
             output (JsonObject):
             settings (JsonObject):
             stats (JsonObject):
             results (JsonObject):
+            shots (int | Unset):
             noise (Noise | Unset):
      """
 
@@ -75,12 +75,12 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     predicted_wait_time_ms: int
     predicted_execution_duration_ms: int
     execution_duration_ms: int
-    shots: int
     failure: Failure
     output: JsonObject
     settings: JsonObject
     stats: JsonObject
     results: JsonObject
+    shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -127,8 +127,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         execution_duration_ms = self.execution_duration_ms
 
-        shots = self.shots
-
         failure = self.failure.to_dict()
 
         output = self.output.to_dict()
@@ -138,6 +136,8 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         stats = self.stats.to_dict()
 
         results = self.results.to_dict()
+
+        shots = self.shots
 
         noise: dict[str, Any] | Unset = UNSET
         if not isinstance(self.noise, Unset):
@@ -164,13 +164,14 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "predicted_wait_time_ms": predicted_wait_time_ms,
             "predicted_execution_duration_ms": predicted_execution_duration_ms,
             "execution_duration_ms": execution_duration_ms,
-            "shots": shots,
             "failure": failure,
             "output": output,
             "settings": settings,
             "stats": stats,
             "results": results,
         })
+        if shots is not UNSET:
+            field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
 
@@ -225,8 +226,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         execution_duration_ms = d.pop("execution_duration_ms")
 
-        shots = d.pop("shots")
-
         failure = Failure.from_dict(d.pop("failure"))
 
 
@@ -251,6 +250,8 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
+
+        shots = d.pop("shots", UNSET)
 
         _noise = d.pop("noise", UNSET)
         noise: Noise | Unset
@@ -280,12 +281,12 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
-            shots=shots,
             failure=failure,
             output=output,
             settings=settings,
             stats=stats,
             results=results,
+            shots=shots,
             noise=noise,
         )
 
