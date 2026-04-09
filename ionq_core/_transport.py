@@ -5,6 +5,7 @@ import logging
 import random
 import time
 from collections.abc import Generator
+from typing import NoReturn
 
 import httpx
 
@@ -39,6 +40,7 @@ def _backoff_delays(max_retries: int) -> Generator[float]:
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
     try:
+        response.read()
         return response.json()
     except Exception:
         return response.text or None
@@ -60,7 +62,7 @@ def _retry_delay(delay: float, last_response: httpx.Response | None) -> float:
     return delay
 
 
-def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception | None) -> None:
+def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception | None) -> NoReturn:
     if last_response is not None:
         _raise_for_response(last_response)
     if isinstance(last_exc, httpx.TimeoutException):

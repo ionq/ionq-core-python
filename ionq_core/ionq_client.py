@@ -98,12 +98,17 @@ def IonQClient(
     ext_ua = extension.user_agent_token if extension else None
     user_agent = _build_user_agent(additional_user_agent, ext_ua)
 
-    effective_timeout = (extension and extension.timeout) or timeout or _DEFAULT_TIMEOUT
-    effective_retries = (extension and extension.max_retries) or max_retries
+    effective_timeout = (
+        extension.timeout if (extension and extension.timeout is not None) else (timeout or _DEFAULT_TIMEOUT)
+    )
+    effective_retries = (
+        extension.max_retries if (extension and extension.max_retries is not None) else max_retries
+    )
 
-    headers: dict[str, str] = {"User-Agent": user_agent}
+    headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
+    headers["User-Agent"] = user_agent
 
     sync_transport = _build_sync_transport(effective_retries, extension)
     async_transport = _build_async_transport(effective_retries, extension)
