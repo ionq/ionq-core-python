@@ -298,4 +298,4 @@ uv run ty check ionq_core/           # Type check
 
 ## License
 
-MIT
+Apache-2.0. See [LICENSE](LICENSE) for details.
