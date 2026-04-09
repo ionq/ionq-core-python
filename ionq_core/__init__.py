@@ -12,6 +12,7 @@ from ._exceptions import (
     RateLimitError,
     ServerError,
 )
+from ._extensions import AsyncEventHook, ClientExtension, EventHook
 from ._pagination import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
 from ._polling import (
     JobFailedError,
@@ -26,10 +27,13 @@ __all__ = (
     "APIConnectionError",
     "APIError",
     "APITimeoutError",
+    "AsyncEventHook",
     "AuthenticatedClient",
     "AuthenticationError",
     "BadRequestError",
     "Client",
+    "ClientExtension",
+    "EventHook",
     "IonQClient",
     "IonQError",
     "JobFailedError",
