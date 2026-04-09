@@ -51,10 +51,9 @@ def zz_matrix(angle: float) -> Matrix4x4:
     """Two-qubit ZZ gate: diag(e^{-i*pi*a}, e^{i*pi*a}, e^{i*pi*a}, e^{-i*pi*a})."""
     em = cmath.exp(-1j * math.pi * angle)
     ep = cmath.exp(1j * math.pi * angle)
-    z = 0 + 0j
     return (
-        (em, z, z, z),
-        (z, ep, z, z),
-        (z, z, ep, z),
-        (z, z, z, em),
+        (em, 0, 0, 0),
+        (0, ep, 0, 0),
+        (0, 0, ep, 0),
+        (0, 0, 0, em),
     )

@@ -41,12 +41,7 @@ class SessionManager:
     @classmethod
     def from_id(cls, client: AuthenticatedClient, session_id: str) -> SessionManager:
         """Reconnect to an existing session without creating a new one."""
-        mgr = cls.__new__(cls)
-        mgr._client = client
-        mgr._backend = ""
-        mgr._max_jobs = None
-        mgr._max_time = None
-        mgr._max_cost = None
+        mgr = cls(client, backend="")
         mgr._session_id = session_id
         return mgr
 
@@ -55,19 +50,15 @@ class SessionManager:
         return self._session_id
 
     def _build_settings(self) -> SessionSettingsRequest | None:
-        has_settings = any(v is not None for v in (self._max_jobs, self._max_time, self._max_cost))
-        if not has_settings:
-            return None
-        cost_limit = (
-            SessionCostLimit(unit="usd", value=self._max_cost) if self._max_cost is not None else None
-        )
         kwargs: dict = {}
         if self._max_jobs is not None:
             kwargs["job_count_limit"] = self._max_jobs
         if self._max_time is not None:
             kwargs["duration_limit_min"] = self._max_time
-        if cost_limit is not None:
-            kwargs["cost_limit"] = cost_limit
+        if self._max_cost is not None:
+            kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
+        if not kwargs:
+            return None
         return SessionSettingsRequest(**kwargs)
 
     def open(self) -> None:
