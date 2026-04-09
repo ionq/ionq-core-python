@@ -112,3 +112,33 @@ actions:
   - target: $.components.schemas.Gate_NativeGate_
     update:
       required: [gate]
+
+  # Results endpoints: API v0.4 returns results as URLs that must be
+  # fetched separately.  The spec omits these endpoints entirely.
+  - target: $.paths
+    update:
+      /jobs/{UUID}/results/probabilities:
+        get:
+          operationId: getJobProbabilities
+          summary: Fetch the probability distribution for a completed job.
+          tags: [default]
+          parameters:
+            - description: The UUID of the job.
+              in: path
+              name: UUID
+              required: true
+              schema:
+                type: string
+          responses:
+            "200":
+              description: Probability distribution keyed by decimal qubit state.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties:
+                      type: number
+            "404":
+              description: Job not found or not yet completed.
+          security:
+            - apiKeyAuth: []

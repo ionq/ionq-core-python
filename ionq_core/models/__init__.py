@@ -43,6 +43,7 @@ from .get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCos
 from .get_job_estimate_query_params import GetJobEstimateQueryParams
 from .get_job_estimate_response import GetJobEstimateResponse
 from .get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
+from .get_job_probabilities_response_200 import GetJobProbabilitiesResponse200
 from .get_job_response import GetJobResponse
 from .get_jobs_query_params import GetJobsQueryParams
 from .get_jobs_response import GetJobsResponse
@@ -155,6 +156,7 @@ __all__ = (
     "GetJobEstimateQueryParams",
     "GetJobEstimateResponse",
     "GetJobEstimateResponseRateInformation",
+    "GetJobProbabilitiesResponse200",
     "GetJobResponse",
     "GetJobsQueryParams",
     "GetJobsResponse",
