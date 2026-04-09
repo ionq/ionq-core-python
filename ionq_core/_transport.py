@@ -31,35 +31,29 @@ def _parse_retry_after(response: httpx.Response) -> float | None:
         return None
 
 
-def _backoff_delays(max_retries: int) -> Generator[float, None, None]:
+def _backoff_delays(max_retries: int) -> Generator[float]:
     yield 0.0
     for attempt in range(max_retries):
         base = 0.5 * (2**attempt)
-        jitter = random.random() * base * 0.5  # noqa: S311
-        yield base + jitter
+        yield base + random.random() * base * 0.5  # noqa: S311
 
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
     try:
         return response.json()
     except Exception:
-        text = response.text
-        return text if text else None
+        return response.text or None
 
 
 def _raise_for_response(response: httpx.Response) -> None:
     if response.status_code < 400:
         return
     body = _parse_error_body(response)
-    retry_after = _parse_retry_after(response)
-    message = None
-    if isinstance(body, dict):
-        message = body.get("message") or body.get("error")
-    raise_for_status(response.status_code, body, retry_after, message)
+    message = body.get("message") or body.get("error") if isinstance(body, dict) else None
+    raise_for_status(response.status_code, body, _parse_retry_after(response), message)
 
 
 def _retry_wait(delay: float, last_response: httpx.Response | None) -> float:
-    """Compute how long to sleep before a retry attempt."""
     if last_response is not None:
         retry_after = _parse_retry_after(last_response)
         if retry_after is not None:
@@ -68,7 +62,6 @@ def _retry_wait(delay: float, last_response: httpx.Response | None) -> float:
 
 
 def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception | None) -> Never:
-    """Raise the appropriate error after all retry attempts are exhausted."""
     if last_response is not None:
         _raise_for_response(last_response)
         raise APIError(last_response.status_code)  # unreachable; satisfies type checker

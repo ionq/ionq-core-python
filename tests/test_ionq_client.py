@@ -1,7 +1,8 @@
+import httpx
 import pytest
 
 from ionq_core import IonQClient, __version__
-from ionq_core._transport import RetryTransport
+from ionq_core._transport import AsyncRetryTransport, RetryTransport
 
 
 class TestIonQClient:
@@ -65,8 +66,6 @@ class TestIonQClient:
         assert httpx_client.timeout.read == 60.0
 
     def test_custom_timeout(self):
-        import httpx
-
         client = IonQClient(api_key="key", timeout=httpx.Timeout(120.0))
         httpx_client = client.get_httpx_client()
         assert httpx_client.timeout.read == 120.0
@@ -82,8 +81,6 @@ class TestIonQClient:
         assert httpx_client._transport._max_retries == 5
 
     def test_async_client_wired(self):
-        from ionq_core._transport import AsyncRetryTransport
-
         client = IonQClient(api_key="key")
         async_client = client.get_async_httpx_client()
         assert isinstance(async_client._transport, AsyncRetryTransport)

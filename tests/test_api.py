@@ -5,6 +5,7 @@ from ionq_core.api.default import create_job, get_jobs
 from ionq_core.api.whoami import get_whoami
 from ionq_core.errors import UnexpectedStatus
 from ionq_core.models.backend import Backend
+from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
 from ionq_core.models.get_jobs_response import GetJobsResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.whoami import Whoami
@@ -25,7 +26,6 @@ class TestGetWhoami:
         assert response.status_code.value == 200
         assert response.parsed.key_name == "Test Key"
 
-    @pytest.mark.asyncio
     async def test_asyncio(self, httpx_mock, auth_client):
         httpx_mock.add_response(json=self.WHOAMI)
         result = await get_whoami.asyncio(client=auth_client)
@@ -110,8 +110,6 @@ class TestCreateJob:
             status_code=201,
             json={"id": "new-job-id", "status": "submitted", "session_id": None},
         )
-        from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
-
         body = CircuitJobCreationPayload.from_dict({
             "type": "ionq.circuit.v1",
             "backend": "simulator",

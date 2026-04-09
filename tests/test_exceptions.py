@@ -13,48 +13,39 @@ from ionq_core._exceptions import (
 
 
 class TestRaiseForStatus:
-    def test_200_does_not_raise(self):
-        raise_for_status(200)
+    @pytest.mark.parametrize("code", [200, 201, 204, 301])
+    def test_success_codes_do_not_raise(self, code):
+        raise_for_status(code)
 
-    def test_201_does_not_raise(self):
-        raise_for_status(201)
+    @pytest.mark.parametrize(
+        ("code", "exc_cls"),
+        [
+            (400, BadRequestError),
+            (401, AuthenticationError),
+            (403, PermissionDeniedError),
+            (404, NotFoundError),
+            (429, RateLimitError),
+            (500, ServerError),
+            (502, ServerError),
+            (503, ServerError),
+        ],
+    )
+    def test_error_codes_raise_correct_type(self, code, exc_cls):
+        with pytest.raises(exc_cls) as exc_info:
+            raise_for_status(code)
+        assert exc_info.value.status_code == code
 
-    def test_400_raises_bad_request(self):
+    def test_400_preserves_body(self):
         with pytest.raises(BadRequestError) as exc_info:
             raise_for_status(400, {"message": "invalid"})
-        assert exc_info.value.status_code == 400
         assert exc_info.value.body == {"message": "invalid"}
 
-    def test_401_raises_authentication_error(self):
-        with pytest.raises(AuthenticationError):
-            raise_for_status(401)
-
-    def test_403_raises_permission_denied(self):
-        with pytest.raises(PermissionDeniedError):
-            raise_for_status(403)
-
-    def test_404_raises_not_found(self):
-        with pytest.raises(NotFoundError):
-            raise_for_status(404)
-
-    def test_429_raises_rate_limit(self):
+    def test_429_preserves_retry_after(self):
         with pytest.raises(RateLimitError) as exc_info:
             raise_for_status(429, retry_after=30.0)
         assert exc_info.value.retry_after == 30.0
 
-    def test_500_raises_server_error(self):
-        with pytest.raises(ServerError):
-            raise_for_status(500)
-
-    def test_502_raises_server_error(self):
-        with pytest.raises(ServerError):
-            raise_for_status(502)
-
-    def test_503_raises_server_error(self):
-        with pytest.raises(ServerError):
-            raise_for_status(503)
-
-    def test_418_raises_api_error(self):
+    def test_unknown_4xx_raises_api_error(self):
         with pytest.raises(APIError) as exc_info:
             raise_for_status(418)
         assert exc_info.value.status_code == 418

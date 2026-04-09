@@ -1,5 +1,3 @@
-import json
-
 import httpx
 import pytest
 
@@ -34,12 +32,7 @@ class FakeTransport(httpx.BaseTransport):
 
 
 def _response(status_code, headers=None, json_body=None):
-    body = b""
-    resp_headers = dict(headers or {})
-    if json_body is not None:
-        body = json.dumps(json_body).encode()
-        resp_headers["content-type"] = "application/json"
-    return httpx.Response(status_code, headers=resp_headers, content=body)
+    return httpx.Response(status_code, headers=dict(headers or {}), json=json_body)
 
 
 class TestRetryTransport:

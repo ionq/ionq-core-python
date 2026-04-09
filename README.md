@@ -41,8 +41,8 @@ job = create_job.sync(
         "input": {
             "gateset": "qis",
             "circuit": [
-                {"type": "h", "targets": [0]},
-                {"type": "cnot", "targets": [0], "controls": [1]},
+                {"gate": "h", "targets": [0]},
+                {"gate": "cnot", "targets": [0], "controls": [1]},
             ],
         },
     }),

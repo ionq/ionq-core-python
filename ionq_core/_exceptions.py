@@ -14,13 +14,7 @@ class APITimeoutError(APIConnectionError):
 
 
 class APIError(IonQError):
-    """Raised when the IonQ API returns an error response.
-
-    Attributes:
-        status_code: HTTP status code.
-        body: Parsed response body, if available.
-        message: Human-readable error message.
-    """
+    """Raised when the IonQ API returns an error response."""
 
     def __init__(self, status_code: int, body: dict | str | None = None, message: str | None = None) -> None:
         self.status_code = status_code
@@ -46,17 +40,21 @@ class BadRequestError(APIError):
 
 
 class RateLimitError(APIError):
-    """Raised on 429 Too Many Requests.
+    """Raised on 429 Too Many Requests."""
 
-    Attributes:
-        retry_after: Seconds to wait before retrying, from Retry-After header.
-    """
-
-    retry_after: float | None = None
+    def __init__(
+        self,
+        status_code: int,
+        body: dict | str | None = None,
+        message: str | None = None,
+        retry_after: float | None = None,
+    ) -> None:
+        super().__init__(status_code, body, message)
+        self.retry_after = retry_after
 
 
 class ServerError(APIError):
-    """Raised on 500, 502, or 503."""
+    """Raised on 5xx server errors."""
 
 
 _STATUS_TO_EXCEPTION: dict[int, type[APIError]] = {
@@ -82,7 +80,6 @@ def raise_for_status(
     if exc_cls is None:
         exc_cls = ServerError if status_code >= 500 else APIError
 
-    exc = exc_cls(status_code, body, message)
-    if isinstance(exc, RateLimitError):
-        exc.retry_after = retry_after
-    raise exc
+    if exc_cls is RateLimitError:
+        raise RateLimitError(status_code, body, message, retry_after)
+    raise exc_cls(status_code, body, message)

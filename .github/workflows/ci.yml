@@ -28,8 +28,8 @@ jobs:
           python-version: "3.12"
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
-      - run: uv run ruff check tests/ ionq_core/ionq_client.py ionq_core/__init__.py
-      - run: uv run ruff format --check tests/ ionq_core/ionq_client.py ionq_core/__init__.py README.md
+      - run: uv run ruff check
+      - run: uv run ruff format --check
       - run: uv run ty check ionq_core/
 
   test:
