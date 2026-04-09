@@ -81,12 +81,16 @@ def IonQClient(
 ) -> AuthenticatedClient:
     """Create an authenticated IonQ API client.
 
+    This is a factory function (not a class) that returns a configured
+    ``AuthenticatedClient`` with retry transport, proper auth headers,
+    and User-Agent identification.
+
     Args:
         api_key: IonQ API key. Falls back to ``IONQ_API_KEY`` env var.
         base_url: API base URL.
         max_retries: Max retry attempts for transient errors (429, 5xx).
             Can be overridden by ``extension.max_retries``.
-        timeout: Request timeout. Default 60 s read, 10 s connect.
+        timeout: Request timeout. Default 60s read, 10s connect.
             Can be overridden by ``extension.timeout``.
         additional_user_agent: Extra token appended to User-Agent.
             Prefer ``extension.user_agent_token`` for downstream SDKs;

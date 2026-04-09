@@ -94,6 +94,19 @@ def _should_retry(request: httpx.Request, response: httpx.Response, retryable: f
     return response.status_code == 429
 
 
+def _is_retryable_exc(request: httpx.Request, exc: Exception) -> bool:
+    """Return True if this exception warrants a retry.
+
+    Connect errors are always retryable (no data was sent).
+    Other network/timeout errors are only retryable for idempotent methods.
+    """
+    if isinstance(exc, httpx.ConnectError):
+        return True
+    if isinstance(exc, (httpx.TimeoutException, httpx.NetworkError)):
+        return request.method in _IDEMPOTENT_METHODS
+    return False
+
+
 class RetryTransport(httpx.BaseTransport):
     """Wraps an httpx transport with retry logic and error raising."""
 
@@ -119,12 +132,8 @@ class RetryTransport(httpx.BaseTransport):
 
             try:
                 response = self._transport.handle_request(request)
-            except httpx.ConnectError as exc:
-                last_exc = exc
-                last_response = None
-                continue
-            except (httpx.TimeoutException, httpx.NetworkError) as exc:
-                if request.method not in _IDEMPOTENT_METHODS:
+            except Exception as exc:
+                if not _is_retryable_exc(request, exc):
                     raise APIConnectionError(str(exc)) from exc
                 last_exc = exc
                 last_response = None
@@ -169,12 +178,8 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
 
             try:
                 response = await self._transport.handle_async_request(request)
-            except httpx.ConnectError as exc:
-                last_exc = exc
-                last_response = None
-                continue
-            except (httpx.TimeoutException, httpx.NetworkError) as exc:
-                if request.method not in _IDEMPOTENT_METHODS:
+            except Exception as exc:
+                if not _is_retryable_exc(request, exc):
                     raise APIConnectionError(str(exc)) from exc
                 last_exc = exc
                 last_response = None

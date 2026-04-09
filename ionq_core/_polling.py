@@ -41,6 +41,19 @@ class JobFailedError(IonQError):
         super().__init__(f"Job {job_id} failed: {failure}")
 
 
+def _check_terminal(
+    job: GetJobResponse,
+    job_id: str,
+    raise_on_failure: bool,
+) -> GetJobResponse | None:
+    """Return the job if it reached a terminal state, else None."""
+    if job.status not in _TERMINAL_STATUSES:
+        return None
+    if raise_on_failure and job.status == "failed":
+        raise JobFailedError(job_id, getattr(job, "failure", None))
+    return job
+
+
 def wait_for_job(
     client: AuthenticatedClient,
     job_id: str,
@@ -67,23 +80,20 @@ def wait_for_job(
     """
     deadline = time.monotonic() + timeout
     interval = poll_interval
-    last_status = "unknown"
 
     while True:
         job = get_job.sync(uuid=job_id, client=client)
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
 
-        last_status = job.status
-        logger.debug("Job %s status: %s", job_id, last_status)
+        logger.debug("Job %s status: %s", job_id, job.status)
 
-        if last_status in _TERMINAL_STATUSES:
-            if raise_on_failure and last_status == "failed":
-                raise JobFailedError(job_id, getattr(job, "failure", None))
-            return job
+        result = _check_terminal(job, job_id, raise_on_failure)
+        if result is not None:
+            return result
 
         if time.monotonic() >= deadline:
-            raise JobTimeoutError(job_id, timeout, last_status)
+            raise JobTimeoutError(job_id, timeout, job.status)
 
         time.sleep(max(0, min(interval, deadline - time.monotonic())))
         interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
@@ -100,23 +110,20 @@ async def async_wait_for_job(
     """Async version of wait_for_job."""
     deadline = time.monotonic() + timeout
     interval = poll_interval
-    last_status = "unknown"
 
     while True:
         job = await get_job.asyncio(uuid=job_id, client=client)
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
 
-        last_status = job.status
-        logger.debug("Job %s status: %s", job_id, last_status)
+        logger.debug("Job %s status: %s", job_id, job.status)
 
-        if last_status in _TERMINAL_STATUSES:
-            if raise_on_failure and last_status == "failed":
-                raise JobFailedError(job_id, getattr(job, "failure", None))
-            return job
+        result = _check_terminal(job, job_id, raise_on_failure)
+        if result is not None:
+            return result
 
         if time.monotonic() >= deadline:
-            raise JobTimeoutError(job_id, timeout, last_status)
+            raise JobTimeoutError(job_id, timeout, job.status)
 
         await asyncio.sleep(max(0, min(interval, deadline - time.monotonic())))
         interval = min(interval * 1.5, _MAX_POLL_INTERVAL)

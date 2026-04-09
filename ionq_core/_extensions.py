@@ -34,12 +34,11 @@ class EventHook(Protocol):
     """Protocol for observing requests and responses.
 
     Implementations receive the httpx Request before it is sent and the
-    httpx Response after it is received.  Hooks are for **observation only**
-    (logging, metrics, telemetry) -- they must not mutate the request or
+    httpx Response after it is received.  Hooks are for observation only
+    (logging, metrics, telemetry) - they must not mutate the request or
     response.  For mutation, use a custom httpx transport instead.
 
-    Both methods have default no-op implementations so that concrete
-    classes can override only the events they care about.
+    Concrete classes must implement both methods.
     """
 
     def on_request(self, request: httpx.Request) -> None:
@@ -63,7 +62,7 @@ class AsyncEventHook(Protocol):
 class ClientExtension:
     """Declarative configuration bundle for downstream SDK integration.
 
-    All fields are optional and additive -- they layer on top of the
+    All fields are optional and additive - they layer on top of the
     defaults that IonQClient already provides.
 
     Attributes:
@@ -104,12 +103,7 @@ class ClientExtension:
 
 
 class HookTransport(httpx.BaseTransport):
-    """Transport decorator that invokes EventHook instances.
-
-    This sits in the transport chain so that hooks fire at the same
-    level as retry logic -- after retries resolve but before the
-    response reaches generated API code.
-    """
+    """Transport decorator that invokes EventHook instances."""
 
     def __init__(self, transport: httpx.BaseTransport, hooks: tuple[EventHook, ...]) -> None:
         self._transport = transport

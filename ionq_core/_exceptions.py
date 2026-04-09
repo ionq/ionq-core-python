@@ -46,7 +46,7 @@ class RateLimitError(APIError):
 
     def __init__(
         self,
-        status_code: int,
+        status_code: int = 429,
         body: dict | str | None = None,
         message: str | None = None,
         retry_after: float | None = None,
