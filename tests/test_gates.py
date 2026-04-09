@@ -1,7 +1,4 @@
-import cmath
 import math
-
-import pytest
 
 from ionq_core._gates import gpi_matrix, gpi2_matrix, ms_matrix, zz_matrix
 

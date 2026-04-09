@@ -20,7 +20,7 @@ def _get_kwargs(
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
     if not isinstance(sharpen, Unset):
-        params["sharpen"] = "true" if sharpen else "false"
+        params["sharpen"] = sharpen
 
     _kwargs: dict[str, Any] = {
         "method": "get",

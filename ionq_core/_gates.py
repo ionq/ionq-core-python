@@ -1,7 +1,8 @@
 """Pure-Python unitary matrices for IonQ native gates.
 
-All angles are in turns (fractions of 2*pi). Matrices are returned as
-nested tuples of complex numbers.
+Phase parameters (phi, phi0, phi1) are in turns (fractions of 2*pi).
+Interaction parameters (angle) are in units of pi (0.25 = pi/4 radians).
+Matrices are returned as nested tuples of complex numbers.
 """
 
 from __future__ import annotations
