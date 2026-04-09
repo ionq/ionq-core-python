@@ -15,12 +15,6 @@ pip install ionq-core-python
 
 Requires Python 3.12+.
 
-## Publish to PyPi
-```sh
-uv build
-uv publish
-```
-
 ## Usage
 
 ```python
@@ -358,6 +352,12 @@ uv run pytest              # Run tests
 uv run ruff check          # Lint
 uv run ruff format --check # Check formatting
 uv run ty check ionq_core/ # Type check
+```
+
+## Publish to PyPi
+```sh
+uv build
+uv publish
 ```
 
 ## License
