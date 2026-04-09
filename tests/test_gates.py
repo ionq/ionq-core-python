@@ -1,22 +1,19 @@
 import math
 
-from ionq_core._gates import gpi_matrix, gpi2_matrix, ms_matrix, zz_matrix
+from ionq_core._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 
 
 def _approx(a, b, tol=1e-12):
     """Check two nested tuples of complex numbers are close."""
-    for row_a, row_b in zip(a, b):
-        for va, vb in zip(row_a, row_b):
+    for row_a, row_b in zip(a, b, strict=True):
+        for va, vb in zip(row_a, row_b, strict=True):
             assert abs(va - vb) < tol, f"{va} != {vb}"
 
 
 def _matmul(a, b):
     """Multiply two square matrices (nested tuples)."""
     n = len(a)
-    return tuple(
-        tuple(sum(a[i][k] * b[k][j] for k in range(n)) for j in range(n))
-        for i in range(n)
-    )
+    return tuple(tuple(sum(a[i][k] * b[k][j] for k in range(n)) for j in range(n)) for i in range(n))
 
 
 def _dagger(m):

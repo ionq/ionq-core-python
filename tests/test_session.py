@@ -21,8 +21,14 @@ def _session_json(session_id="sess-1", status="created", active=True):
 
 class TestContextManager:
     def test_creates_and_ends_session(self, httpx_mock, auth_client):
-        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions")
-        httpx_mock.add_response(json=_session_json(active=False, status="ended"), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end")
+        httpx_mock.add_response(
+            status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions"
+        )
+        httpx_mock.add_response(
+            json=_session_json(active=False, status="ended"),
+            method="POST",
+            url="https://test.invalid/v0.4/sessions/sess-1/end",
+        )
 
         with SessionManager(auth_client, "qpu.aria-1") as mgr:
             assert mgr.session_id == "sess-1"
@@ -34,12 +40,15 @@ class TestContextManager:
         assert "/sessions/sess-1/end" in str(reqs[1].url)
 
     def test_end_called_on_exception(self, httpx_mock, auth_client):
-        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions")
-        httpx_mock.add_response(json=_session_json(active=False), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end")
+        httpx_mock.add_response(
+            status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions"
+        )
+        httpx_mock.add_response(
+            json=_session_json(active=False), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end"
+        )
 
-        with pytest.raises(ValueError, match="boom"):
-            with SessionManager(auth_client, "qpu.aria-1") as mgr:
-                raise ValueError("boom")
+        with pytest.raises(ValueError, match="boom"), SessionManager(auth_client, "qpu.aria-1"):
+            raise ValueError("boom")
 
         reqs = httpx_mock.get_requests()
         assert len(reqs) == 2
@@ -56,6 +65,7 @@ class TestSettings:
 
         body = httpx_mock.get_requests()[0].content
         import json
+
         data = json.loads(body)
         assert data["backend"] == "qpu.aria-1"
         settings = data["settings"]

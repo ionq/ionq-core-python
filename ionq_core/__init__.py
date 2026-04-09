@@ -1,6 +1,5 @@
 """A client library for accessing IonQ Cloud Platform API"""
 
-from ._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 from ._exceptions import (
     APIConnectionError,
     APIError,
@@ -14,14 +13,15 @@ from ._exceptions import (
     ServerError,
 )
 from ._extensions import AsyncEventHook, ClientExtension, EventHook
+from ._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 from ._pagination import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
-from ._session import SessionManager
 from ._polling import (
     JobFailedError,
     JobTimeoutError,
     async_wait_for_job,
     wait_for_job,
 )
+from ._session import SessionManager
 from .client import AuthenticatedClient, Client
 from .ionq_client import IonQClient, __version__
 
