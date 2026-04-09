@@ -186,6 +186,41 @@ print(completed_job.status)  # "completed"
 
 Polls with exponential backoff (1s initial, 30s max). Raises `JobTimeoutError` on timeout, `JobFailedError` if the job fails. Async: `async_wait_for_job`.
 
+## Native gate matrices
+
+Pure-Python unitary matrices for IonQ's native trapped-ion gates, useful for simulation and verification:
+
+```python
+from ionq_core import gpi_matrix, gpi2_matrix, ms_matrix, zz_matrix
+
+# Phase parameters (phi) are in turns (fractions of 2*pi)
+# Interaction parameters (angle) are in units of pi
+gpi_matrix(0)       # 2x2 Pauli X
+gpi2_matrix(0.25)   # 2x2 pi/2 rotation
+ms_matrix(0, 0)     # 4x4 maximally-entangling MS gate (angle defaults to 0.25)
+zz_matrix(0.1)      # 4x4 ZZ interaction
+```
+
+Matrices are returned as nested tuples of complex numbers (no numpy dependency).
+
+## Session management
+
+`SessionManager` provides a context manager for IonQ priority sessions:
+
+```python
+from ionq_core import IonQClient, SessionManager
+
+client = IonQClient()
+
+with SessionManager(client, "qpu.aria-1", max_jobs=10, max_time=60) as session:
+    # submit jobs using session.session_id
+    print(session.session_id)
+    print(session.status())
+
+# Reconnect to an existing session
+session = SessionManager.from_id(client, "existing-session-id")
+```
+
 ## Available endpoints
 
 ### Backends
@@ -331,11 +366,12 @@ else
     cp openapi.json /tmp/patched-spec.json
 fi
 
-# Regenerate (preserves ionq_client.py)
+# Regenerate (custom template preserves hand-written __init__.py exports)
 uvx openapi-python-client==0.28.3 generate \
     --path /tmp/patched-spec.json \
     --meta none \
     --config openapi-python-client-config.yaml \
+    --custom-template-path custom-templates \
     --output-path ionq_core \
     --overwrite
 ```
