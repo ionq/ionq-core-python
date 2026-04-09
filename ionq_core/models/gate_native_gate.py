@@ -32,6 +32,7 @@ class GateNativeGate:
             target (int | Unset): Single qubit target (alternative to targets array)
             phase (float | Unset): Phase for gpi/gpi2 gates
             phases (list[float] | Unset): Phases for ms gate
+            angle (float | Unset): Interaction angle for ms gate (in turns, default 0.25)
      """
 
     gate: NativeGate
@@ -40,6 +41,7 @@ class GateNativeGate:
     target: int | Unset = UNSET
     phase: float | Unset = UNSET
     phases: list[float] | Unset = UNSET
+    angle: float | Unset = UNSET
 
 
 
@@ -68,7 +70,7 @@ class GateNativeGate:
         if not isinstance(self.phases, Unset):
             phases = self.phases
 
-
+        angle = self.angle
 
 
         field_dict: dict[str, Any] = {}
@@ -86,6 +88,8 @@ class GateNativeGate:
             field_dict["phase"] = phase
         if phases is not UNSET:
             field_dict["phases"] = phases
+        if angle is not UNSET:
+            field_dict["angle"] = angle
 
         return field_dict
 
@@ -111,6 +115,7 @@ class GateNativeGate:
 
         phases = cast(list[float], d.pop("phases", UNSET))
 
+        angle = d.pop("angle", UNSET)
 
         gate_native_gate = cls(
             gate=gate,
@@ -119,6 +124,7 @@ class GateNativeGate:
             target=target,
             phase=phase,
             phases=phases,
+            angle=angle,
         )
 
         return gate_native_gate
