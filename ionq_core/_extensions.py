@@ -8,8 +8,7 @@ and composition through httpx's transport layer for advanced use cases.
 
 Typical usage from a downstream SDK::
 
-    from ionq_core import IonQClient
-    from ionq_core._extensions import ClientExtension
+    from ionq_core import IonQClient, ClientExtension
 
     ext = ClientExtension(
         user_agent_token="qiskit-ionq/1.1.0",

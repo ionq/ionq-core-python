@@ -19,6 +19,7 @@ logger = logging.getLogger("ionq_core")
 
 RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503})
 DEFAULT_MAX_RETRIES = 2
+_MAX_RETRY_AFTER = 60.0
 
 
 def _parse_retry_after(response: httpx.Response) -> float | None:
@@ -58,7 +59,7 @@ def _retry_delay(delay: float, last_response: httpx.Response | None) -> float:
     if last_response is not None:
         retry_after = _parse_retry_after(last_response)
         if retry_after is not None:
-            return max(retry_after, delay)
+            return min(max(retry_after, delay), _MAX_RETRY_AFTER)
     return delay
 
 
