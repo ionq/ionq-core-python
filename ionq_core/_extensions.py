@@ -76,6 +76,9 @@ class ClientExtension:
             sync request/response cycle, in order.
         async_event_hooks: A sequence of AsyncEventHook instances invoked
             on every async request/response cycle, in order.
+        retryable_status_codes: Override the set of HTTP status codes that
+            trigger a retry.  ``None`` means use the default set
+            (429, 500, 502, 503, 520-529).  Pass a ``frozenset`` to replace.
         max_retries: Override the default retry count.  ``None`` means
             use the IonQClient default.
         timeout: Override the default timeout.  ``None`` means use the
@@ -93,6 +96,7 @@ class ClientExtension:
     default_headers: dict[str, str] = field(default_factory=dict)
     event_hooks: tuple[EventHook, ...] = ()
     async_event_hooks: tuple[AsyncEventHook, ...] = ()
+    retryable_status_codes: frozenset[int] | None = None
     max_retries: int | None = None
     timeout: httpx.Timeout | None = None
     transport_wrapper: Callable[[httpx.BaseTransport], httpx.BaseTransport] | None = None

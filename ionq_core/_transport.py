@@ -17,7 +17,7 @@ from ._exceptions import (
 
 logger = logging.getLogger("ionq_core")
 
-RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503})
+RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, *range(520, 530)})
 DEFAULT_MAX_RETRIES = 2
 _MAX_RETRY_AFTER = 60.0
 
@@ -76,9 +76,15 @@ def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception |
 class RetryTransport(httpx.BaseTransport):
     """Wraps an httpx transport with retry logic and error raising."""
 
-    def __init__(self, transport: httpx.BaseTransport, max_retries: int = DEFAULT_MAX_RETRIES) -> None:
+    def __init__(
+        self,
+        transport: httpx.BaseTransport,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
+    ) -> None:
         self._transport = transport
         self._max_retries = max_retries
+        self._retryable = retryable_status_codes
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
         last_exc: Exception | None = None
@@ -97,7 +103,7 @@ class RetryTransport(httpx.BaseTransport):
                 last_response = None
                 continue
 
-            if response.status_code in RETRYABLE_STATUS_CODES:
+            if response.status_code in self._retryable:
                 last_response = response
                 last_exc = None
                 continue
@@ -114,9 +120,15 @@ class RetryTransport(httpx.BaseTransport):
 class AsyncRetryTransport(httpx.AsyncBaseTransport):
     """Wraps an async httpx transport with retry logic and error raising."""
 
-    def __init__(self, transport: httpx.AsyncBaseTransport, max_retries: int = DEFAULT_MAX_RETRIES) -> None:
+    def __init__(
+        self,
+        transport: httpx.AsyncBaseTransport,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
+    ) -> None:
         self._transport = transport
         self._max_retries = max_retries
+        self._retryable = retryable_status_codes
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         last_exc: Exception | None = None
@@ -135,7 +147,7 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
                 last_response = None
                 continue
 
-            if response.status_code in RETRYABLE_STATUS_CODES:
+            if response.status_code in self._retryable:
                 last_response = response
                 last_exc = None
                 continue

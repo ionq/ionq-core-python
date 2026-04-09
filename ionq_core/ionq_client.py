@@ -10,7 +10,7 @@ from importlib.metadata import version as _pkg_version
 import httpx
 
 from ._extensions import AsyncHookTransport, ClientExtension, HookTransport
-from ._transport import DEFAULT_MAX_RETRIES, AsyncRetryTransport, RetryTransport
+from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, AsyncRetryTransport, RetryTransport
 from .client import AuthenticatedClient
 
 try:
@@ -41,10 +41,13 @@ def _build_user_agent(*tokens: str | None) -> str:
 
 def _build_sync_transport(
     max_retries: int,
+    retryable_status_codes: frozenset[int],
     ext: ClientExtension | None,
 ) -> httpx.BaseTransport:
     """Assemble the sync transport chain: base -> retry -> hooks -> user wrapper."""
-    transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), max_retries=max_retries)
+    transport: httpx.BaseTransport = RetryTransport(
+        httpx.HTTPTransport(), max_retries=max_retries, retryable_status_codes=retryable_status_codes
+    )
     if ext and ext.event_hooks:
         transport = HookTransport(transport, ext.event_hooks)
     if ext and ext.transport_wrapper:
@@ -54,10 +57,13 @@ def _build_sync_transport(
 
 def _build_async_transport(
     max_retries: int,
+    retryable_status_codes: frozenset[int],
     ext: ClientExtension | None,
 ) -> httpx.AsyncBaseTransport:
     """Assemble the async transport chain: base -> retry -> hooks -> user wrapper."""
-    transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), max_retries=max_retries)
+    transport: httpx.AsyncBaseTransport = AsyncRetryTransport(
+        httpx.AsyncHTTPTransport(), max_retries=max_retries, retryable_status_codes=retryable_status_codes
+    )
     if ext and ext.async_event_hooks:
         transport = AsyncHookTransport(transport, ext.async_event_hooks)
     if ext and ext.async_transport_wrapper:
@@ -104,14 +110,19 @@ def IonQClient(
     effective_retries = (
         extension.max_retries if (extension and extension.max_retries is not None) else max_retries
     )
+    effective_retry_codes = (
+        extension.retryable_status_codes
+        if (extension and extension.retryable_status_codes is not None)
+        else RETRYABLE_STATUS_CODES
+    )
 
     headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    sync_transport = _build_sync_transport(effective_retries, extension)
-    async_transport = _build_async_transport(effective_retries, extension)
+    sync_transport = _build_sync_transport(effective_retries, effective_retry_codes, extension)
+    async_transport = _build_async_transport(effective_retries, effective_retry_codes, extension)
 
     client = AuthenticatedClient(
         base_url=base_url,
