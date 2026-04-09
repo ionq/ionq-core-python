@@ -70,6 +70,8 @@ class GateNativeGate:
         if not isinstance(self.phases, Unset):
             phases = self.phases
 
+
+
         angle = self.angle
 
 
@@ -114,6 +116,7 @@ class GateNativeGate:
         phase = d.pop("phase", UNSET)
 
         phases = cast(list[float], d.pop("phases", UNSET))
+
 
         angle = d.pop("angle", UNSET)
 
