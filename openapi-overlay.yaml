@@ -105,6 +105,10 @@ actions:
           type: number
           format: double
         description: Phases for ms gate
+      angle:
+        type: number
+        format: double
+        description: Interaction angle for ms gate (in turns, default 0.25)
   - target: $.components.schemas.Gate_NativeGate_.properties.type
     remove: true
   - target: $.components.schemas.Gate_NativeGate_.required
@@ -129,6 +133,12 @@ actions:
               required: true
               schema:
                 type: string
+            - description: Whether to apply sharpening to the probability distribution.
+              in: query
+              name: sharpen
+              required: false
+              schema:
+                type: boolean
           responses:
             "200":
               description: Probability distribution keyed by decimal qubit state.
