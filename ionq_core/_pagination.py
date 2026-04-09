@@ -16,8 +16,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("ionq_core")
 
-_MAX_PAGES = 10_000
-
 
 def iter_jobs(
     client: AuthenticatedClient,
@@ -28,12 +26,9 @@ def iter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs, automatically following pagination cursors.
-
-    Yields individual Job objects across all pages.
-    """
+    """Iterate over all jobs, automatically following pagination cursors."""
     next_cursor: str | Unset = UNSET
-    for _ in range(_MAX_PAGES):
+    while True:
         response = get_jobs.sync(
             client=client,
             status=status,
@@ -63,7 +58,7 @@ async def aiter_jobs(
 ) -> AsyncIterator[Job]:
     """Async iterate over all jobs, automatically following pagination cursors."""
     next_cursor: str | Unset = UNSET
-    for _ in range(_MAX_PAGES):
+    while True:
         response = await get_jobs.asyncio(
             client=client,
             status=status,
@@ -94,7 +89,7 @@ def iter_session_jobs(
 ) -> Iterator[Job]:
     """Iterate over all jobs in a session, automatically following pagination cursors."""
     next_cursor: str | Unset = UNSET
-    for _ in range(_MAX_PAGES):
+    while True:
         response = get_session_jobs.sync(
             session_id,
             client=client,
@@ -110,6 +105,7 @@ def iter_session_jobs(
         if response.next_ is None:
             return
         next_cursor = response.next_
+        logger.debug("Fetching next page of session jobs (cursor=%s)", next_cursor)
 
 
 async def aiter_session_jobs(
@@ -123,7 +119,7 @@ async def aiter_session_jobs(
 ) -> AsyncIterator[Job]:
     """Async iterate over all jobs in a session, automatically following pagination cursors."""
     next_cursor: str | Unset = UNSET
-    for _ in range(_MAX_PAGES):
+    while True:
         response = await get_session_jobs.asyncio(
             session_id,
             client=client,
@@ -140,3 +136,4 @@ async def aiter_session_jobs(
         if response.next_ is None:
             return
         next_cursor = response.next_
+        logger.debug("Fetching next page of session jobs (cursor=%s)", next_cursor)

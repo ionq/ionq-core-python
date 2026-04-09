@@ -53,24 +53,24 @@ def IonQClient(
     if not key:
         raise ValueError("api_key or IONQ_API_KEY environment variable required")
 
-    ua = _build_user_agent(additional_user_agent)
-    t = timeout or _DEFAULT_TIMEOUT
+    user_agent = _build_user_agent(additional_user_agent)
+    timeout = timeout or _DEFAULT_TIMEOUT
 
     client = AuthenticatedClient(
         base_url=base_url,
         token=key,
         prefix="apiKey",
         auth_header_name="Authorization",
-        timeout=t,
-        headers={"User-Agent": ua},
+        timeout=timeout,
+        headers={"User-Agent": user_agent},
         httpx_args={"transport": RetryTransport(httpx.HTTPTransport(), max_retries=max_retries)},
         **kwargs,
     )
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,
-            headers={"User-Agent": ua, "Authorization": f"apiKey {key}"},
-            timeout=t,
+            headers={"User-Agent": user_agent, "Authorization": f"apiKey {key}"},
+            timeout=timeout,
             transport=AsyncRetryTransport(httpx.AsyncHTTPTransport(), max_retries=max_retries),
         )
     )

@@ -1,16 +1,15 @@
 """Retry transport for httpx with exponential backoff."""
 
+import asyncio
 import logging
 import random
 import time
 from collections.abc import Generator
-from typing import Never
 
 import httpx
 
 from ._exceptions import (
     APIConnectionError,
-    APIError,
     APITimeoutError,
     raise_for_status,
 )
@@ -53,7 +52,7 @@ def _raise_for_response(response: httpx.Response) -> None:
     raise_for_status(response.status_code, body, _parse_retry_after(response), message)
 
 
-def _retry_wait(delay: float, last_response: httpx.Response | None) -> float:
+def _retry_delay(delay: float, last_response: httpx.Response | None) -> float:
     if last_response is not None:
         retry_after = _parse_retry_after(last_response)
         if retry_after is not None:
@@ -61,10 +60,9 @@ def _retry_wait(delay: float, last_response: httpx.Response | None) -> float:
     return delay
 
 
-def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception | None) -> Never:
+def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception | None) -> None:
     if last_response is not None:
         _raise_for_response(last_response)
-        raise APIError(last_response.status_code)  # unreachable; satisfies type checker
     if isinstance(last_exc, httpx.TimeoutException):
         raise APITimeoutError(str(last_exc)) from last_exc
     if last_exc is not None:
@@ -85,7 +83,7 @@ class RetryTransport(httpx.BaseTransport):
 
         for delay in _backoff_delays(self._max_retries):
             if delay > 0:
-                wait = _retry_wait(delay, last_response)
+                wait = _retry_delay(delay, last_response)
                 logger.debug("Retrying request to %s after %.1fs", request.url, wait)
                 time.sleep(wait)
 
@@ -118,14 +116,12 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
         self._max_retries = max_retries
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        import asyncio
-
         last_exc: Exception | None = None
         last_response: httpx.Response | None = None
 
         for delay in _backoff_delays(self._max_retries):
             if delay > 0:
-                wait = _retry_wait(delay, last_response)
+                wait = _retry_delay(delay, last_response)
                 logger.debug("Retrying request to %s after %.1fs", request.url, wait)
                 await asyncio.sleep(wait)
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from typing import TYPE_CHECKING
@@ -97,8 +98,6 @@ async def async_wait_for_job(
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
     """Async version of wait_for_job."""
-    import asyncio
-
     deadline = time.monotonic() + timeout
     interval = poll_interval
     last_status = "unknown"
