@@ -354,10 +354,11 @@ uv run ruff format --check # Check formatting
 uv run ty check ionq_core/ # Type check
 ```
 
-## Publish to PyPi
+### Publishing
+
 ```sh
 uv build
-uv publish
+uv publish --token $PYPI_TOKEN
 ```
 
 ## License
