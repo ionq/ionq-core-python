@@ -354,7 +354,20 @@ uv run ruff format --check # Check formatting
 uv run ty check ionq_core/ # Type check
 ```
 
-## Publish to PyPi
+## Publishing to PyPi
+
+For a new build to be accepted to PyPi the version number in pyproject.toml must be incremented. 
+
+For publishing you have two options, first is preferred:
+
+(1) There is a CI/CD action that runs on every new tag and publishes the package to PyPi:
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+(2) Alternatively you can publish the package to PyPi manually:
+
 ```sh
 uv build
 uv publish
