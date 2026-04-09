@@ -77,11 +77,7 @@ def raise_for_status(
     """Raise the appropriate exception for an error status code."""
     if status_code < 400:
         return
-
-    exc_cls = _STATUS_TO_EXCEPTION.get(status_code)
-    if exc_cls is None:
-        exc_cls = ServerError if status_code >= 500 else APIError
-
+    exc_cls = _STATUS_TO_EXCEPTION.get(status_code, ServerError if status_code >= 500 else APIError)
     if exc_cls is RateLimitError:
         raise RateLimitError(status_code, body, message, retry_after)
     raise exc_cls(status_code, body, message)

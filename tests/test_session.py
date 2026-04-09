@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from ionq_core._session import SessionManager
@@ -19,15 +21,16 @@ def _session_json(session_id="sess-1", status="created", active=True):
     }
 
 
+_ENDED = {"active": False, "status": "ended"}
+
+
 class TestContextManager:
     def test_creates_and_ends_session(self, httpx_mock, auth_client):
         httpx_mock.add_response(
             status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions"
         )
         httpx_mock.add_response(
-            json=_session_json(active=False, status="ended"),
-            method="POST",
-            url="https://test.invalid/v0.4/sessions/sess-1/end",
+            json=_session_json(**_ENDED), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end"
         )
 
         with SessionManager(auth_client, "qpu.aria-1") as mgr:
@@ -50,9 +53,7 @@ class TestContextManager:
         with pytest.raises(ValueError, match="boom"), SessionManager(auth_client, "qpu.aria-1"):
             raise ValueError("boom")
 
-        reqs = httpx_mock.get_requests()
-        assert len(reqs) == 2
-        assert "/sessions/sess-1/end" in str(reqs[1].url)
+        assert "/sessions/sess-1/end" in str(httpx_mock.get_requests()[1].url)
 
 
 class TestSettings:
@@ -63,15 +64,11 @@ class TestSettings:
         with SessionManager(auth_client, "qpu.aria-1", max_jobs=10, max_time=60, max_cost=5.0):
             pass
 
-        body = httpx_mock.get_requests()[0].content
-        import json
-
-        data = json.loads(body)
+        data = json.loads(httpx_mock.get_requests()[0].content)
         assert data["backend"] == "qpu.aria-1"
-        settings = data["settings"]
-        assert settings["job_count_limit"] == 10
-        assert settings["duration_limit_min"] == 60
-        assert settings["cost_limit"] == {"unit": "usd", "value": 5.0}
+        assert data["settings"]["job_count_limit"] == 10
+        assert data["settings"]["duration_limit_min"] == 60
+        assert data["settings"]["cost_limit"] == {"unit": "usd", "value": 5.0}
 
 
 class TestFromId:
@@ -84,9 +81,7 @@ class TestFromId:
         httpx_mock.add_response(json=_session_json(session_id="sess-existing", active=False), method="POST")
         mgr = SessionManager.from_id(auth_client, "sess-existing")
         mgr.close()
-        reqs = httpx_mock.get_requests()
-        assert len(reqs) == 1
-        assert "/sessions/sess-existing/end" in str(reqs[0].url)
+        assert "/sessions/sess-existing/end" in str(httpx_mock.get_requests()[0].url)
 
 
 class TestStatus:

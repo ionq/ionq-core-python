@@ -11,11 +11,7 @@ from typing import NoReturn
 
 import httpx
 
-from ._exceptions import (
-    APIConnectionError,
-    APITimeoutError,
-    raise_for_status,
-)
+from ._exceptions import APIConnectionError, APITimeoutError, raise_for_status
 
 logger = logging.getLogger("ionq_core")
 
@@ -32,11 +28,10 @@ def _parse_retry_after(response: httpx.Response) -> float | None:
     try:
         return float(header)
     except ValueError:
-        pass
-    parsed = email.utils.parsedate(header)
-    if parsed is not None:
-        return max(0.0, calendar.timegm(parsed) - time.time())
-    return None
+        parsed = email.utils.parsedate(header)
+        if parsed is not None:
+            return max(0.0, calendar.timegm(parsed) - time.time())
+        return None
 
 
 def _backoff_delays(max_retries: int) -> Iterator[float]:
@@ -89,9 +84,7 @@ def _should_retry(request: httpx.Request, response: httpx.Response, retryable: f
     """
     if response.status_code not in retryable:
         return False
-    if request.method in _IDEMPOTENT_METHODS:
-        return True
-    return response.status_code == 429
+    return request.method in _IDEMPOTENT_METHODS or response.status_code == 429
 
 
 def _is_retryable_exc(request: httpx.Request, exc: Exception) -> bool:
@@ -135,13 +128,11 @@ class RetryTransport(httpx.BaseTransport):
             except Exception as exc:
                 if not _is_retryable_exc(request, exc):
                     raise APIConnectionError(str(exc)) from exc
-                last_exc = exc
-                last_response = None
+                last_exc, last_response = exc, None
                 continue
 
             if _should_retry(request, response, self._retryable):
-                last_response = response
-                last_exc = None
+                last_response, last_exc = response, None
                 continue
 
             _raise_for_response(response)
@@ -181,13 +172,11 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
             except Exception as exc:
                 if not _is_retryable_exc(request, exc):
                     raise APIConnectionError(str(exc)) from exc
-                last_exc = exc
-                last_response = None
+                last_exc, last_response = exc, None
                 continue
 
             if _should_retry(request, response, self._retryable):
-                last_response = response
-                last_exc = None
+                last_response, last_exc = response, None
                 continue
 
             _raise_for_response(response)

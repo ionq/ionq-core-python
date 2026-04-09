@@ -57,17 +57,12 @@ class SessionManager:
             kwargs["duration_limit_min"] = self._max_time
         if self._max_cost is not None:
             kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
-        if not kwargs:
-            return None
-        return SessionSettingsRequest(**kwargs)
+        return SessionSettingsRequest(**kwargs) if kwargs else None
 
     def open(self) -> None:
         """Create a new session on the backend."""
         settings = self._build_settings()
-        body_kwargs: dict = {"backend": self._backend}
-        if settings is not None:
-            body_kwargs["settings"] = settings
-        body = CreateSessionRequest(**body_kwargs)
+        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
         session = create_session.sync(client=self._client, body=body)
         if session is None:
             raise RuntimeError("Failed to create session")
