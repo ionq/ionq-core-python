@@ -84,7 +84,7 @@ def wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, last_status)
 
-        time.sleep(min(interval, deadline - time.monotonic()))
+        time.sleep(max(0, min(interval, deadline - time.monotonic())))
         interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
 
 
@@ -119,5 +119,5 @@ async def async_wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, last_status)
 
-        await asyncio.sleep(min(interval, deadline - time.monotonic()))
+        await asyncio.sleep(max(0, min(interval, deadline - time.monotonic())))
         interval = min(interval * 1.5, _MAX_POLL_INTERVAL)

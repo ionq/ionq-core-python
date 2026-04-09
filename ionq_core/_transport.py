@@ -35,7 +35,7 @@ def _backoff_delays(max_retries: int) -> Generator[float]:
     yield 0.0
     for attempt in range(max_retries):
         base = 0.5 * (2**attempt)
-        yield base + random.random() * base * 0.5  # noqa: S311
+        yield base + random.random() * base * 0.5
 
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
