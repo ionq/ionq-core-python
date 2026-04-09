@@ -1,5 +1,6 @@
 """A client library for accessing IonQ Cloud Platform API"""
 
+from ._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 from ._exceptions import (
     APIConnectionError,
     APIError,
@@ -35,6 +36,8 @@ __all__ = (
     "ClientExtension",
     "EventHook",
     "IonQClient",
+    "gpi2_matrix",
+    "gpi_matrix",
     "IonQError",
     "JobFailedError",
     "JobTimeoutError",
@@ -48,5 +51,7 @@ __all__ = (
     "async_wait_for_job",
     "iter_jobs",
     "iter_session_jobs",
+    "ms_matrix",
     "wait_for_job",
+    "zz_matrix",
 )
