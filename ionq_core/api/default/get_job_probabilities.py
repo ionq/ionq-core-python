@@ -9,23 +9,33 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.get_job_probabilities_response_200 import GetJobProbabilitiesResponse200
+from ...types import UNSET, Unset
 from typing import cast
 
 
 
 def _get_kwargs(
     uuid: str,
+    *,
+    sharpen: bool | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
 
     
 
-    
+    params: dict[str, Any] = {}
+
+    params["sharpen"] = sharpen
+
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
 
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/jobs/{uuid}/results/probabilities".format(uuid=quote(str(uuid), safe=""),),
+        "params": params,
     }
 
 
@@ -64,12 +74,14 @@ def sync_detailed(
     uuid: str,
     *,
     client: AuthenticatedClient,
+    sharpen: bool | Unset = UNSET,
 
 ) -> Response[Any | GetJobProbabilitiesResponse200]:
     """ Fetch the probability distribution for a completed job.
 
     Args:
         uuid (str):
+        sharpen (bool | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -82,6 +94,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         uuid=uuid,
+sharpen=sharpen,
 
     )
 
@@ -95,12 +108,14 @@ def sync(
     uuid: str,
     *,
     client: AuthenticatedClient,
+    sharpen: bool | Unset = UNSET,
 
 ) -> Any | GetJobProbabilitiesResponse200 | None:
     """ Fetch the probability distribution for a completed job.
 
     Args:
         uuid (str):
+        sharpen (bool | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -114,6 +129,7 @@ def sync(
     return sync_detailed(
         uuid=uuid,
 client=client,
+sharpen=sharpen,
 
     ).parsed
 
@@ -121,12 +137,14 @@ async def asyncio_detailed(
     uuid: str,
     *,
     client: AuthenticatedClient,
+    sharpen: bool | Unset = UNSET,
 
 ) -> Response[Any | GetJobProbabilitiesResponse200]:
     """ Fetch the probability distribution for a completed job.
 
     Args:
         uuid (str):
+        sharpen (bool | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -139,6 +157,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         uuid=uuid,
+sharpen=sharpen,
 
     )
 
@@ -152,12 +171,14 @@ async def asyncio(
     uuid: str,
     *,
     client: AuthenticatedClient,
+    sharpen: bool | Unset = UNSET,
 
 ) -> Any | GetJobProbabilitiesResponse200 | None:
     """ Fetch the probability distribution for a completed job.
 
     Args:
         uuid (str):
+        sharpen (bool | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -171,5 +192,6 @@ async def asyncio(
     return (await asyncio_detailed(
         uuid=uuid,
 client=client,
+sharpen=sharpen,
 
     )).parsed

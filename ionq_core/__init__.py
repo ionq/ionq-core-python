@@ -13,6 +13,7 @@ from ._exceptions import (
     ServerError,
 )
 from ._extensions import AsyncEventHook, ClientExtension, EventHook
+from ._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 from ._pagination import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
 from ._polling import (
     JobFailedError,
@@ -20,6 +21,7 @@ from ._polling import (
     async_wait_for_job,
     wait_for_job,
 )
+from ._session import SessionManager
 from .client import AuthenticatedClient, Client
 from .ionq_client import IonQClient, __version__
 
@@ -42,11 +44,16 @@ __all__ = (
     "PermissionDeniedError",
     "RateLimitError",
     "ServerError",
+    "SessionManager",
     "__version__",
     "aiter_jobs",
     "aiter_session_jobs",
     "async_wait_for_job",
+    "gpi2_matrix",
+    "gpi_matrix",
     "iter_jobs",
     "iter_session_jobs",
+    "ms_matrix",
     "wait_for_job",
+    "zz_matrix",
 )

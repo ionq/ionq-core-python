@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from ._exceptions import IonQError
 from .api.default import get_job
+from .types import Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
@@ -16,10 +17,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("ionq_core")
 
-_TERMINAL_STATUSES = frozenset({"completed", "failed", "canceled"})
-_DEFAULT_POLL_INTERVAL = 1.0
+_TERMINAL = frozenset({"completed", "failed", "canceled"})
+_DEFAULT_INTERVAL = 1.0
 _DEFAULT_TIMEOUT = 300.0
-_MAX_POLL_INTERVAL = 30.0
+_MAX_INTERVAL = 30.0
 
 
 class JobTimeoutError(IonQError):
@@ -41,38 +42,27 @@ class JobFailedError(IonQError):
         super().__init__(f"Job {job_id} failed: {failure}")
 
 
-def _check_terminal(
-    job: GetJobResponse,
-    job_id: str,
-    raise_on_failure: bool,
-) -> GetJobResponse | None:
-    """Return the job if it reached a terminal state, else None."""
-    if job.status not in _TERMINAL_STATUSES:
-        return None
+def _check_terminal(job: GetJobResponse, job_id: str, raise_on_failure: bool) -> bool:
+    """Return True if the job reached a terminal state, raising on failure if configured."""
+    if job.status not in _TERMINAL:
+        return False
     if raise_on_failure and job.status == "failed":
-        raise JobFailedError(job_id, getattr(job, "failure", None))
-    return job
+        failure = job.failure if not isinstance(job.failure, Unset) else None
+        raise JobFailedError(job_id, failure)
+    return True
 
 
 def wait_for_job(
     client: AuthenticatedClient,
     job_id: str,
     *,
-    poll_interval: float = _DEFAULT_POLL_INTERVAL,
+    poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
     """Poll a job until it reaches a terminal state (completed, failed, canceled).
 
-    Args:
-        client: Authenticated IonQ client.
-        job_id: The UUID of the job to poll.
-        poll_interval: Initial seconds between polls. Backs off up to 30s.
-        timeout: Max seconds to wait before raising JobTimeoutError.
-        raise_on_failure: If True, raise JobFailedError when job status is 'failed'.
-
-    Returns:
-        The final GetJobResponse.
+    Uses exponential backoff (up to 30s between polls).
 
     Raises:
         JobTimeoutError: If the job does not finish within the timeout.
@@ -85,25 +75,20 @@ def wait_for_job(
         job = get_job.sync(uuid=job_id, client=client)
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
-
         logger.debug("Job %s status: %s", job_id, job.status)
-
-        result = _check_terminal(job, job_id, raise_on_failure)
-        if result is not None:
-            return result
-
+        if _check_terminal(job, job_id, raise_on_failure):
+            return job
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
-
         time.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
+        interval = min(interval * 1.5, _MAX_INTERVAL)
 
 
 async def async_wait_for_job(
     client: AuthenticatedClient,
     job_id: str,
     *,
-    poll_interval: float = _DEFAULT_POLL_INTERVAL,
+    poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
@@ -115,15 +100,10 @@ async def async_wait_for_job(
         job = await get_job.asyncio(uuid=job_id, client=client)
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
-
         logger.debug("Job %s status: %s", job_id, job.status)
-
-        result = _check_terminal(job, job_id, raise_on_failure)
-        if result is not None:
-            return result
-
+        if _check_terminal(job, job_id, raise_on_failure):
+            return job
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
-
         await asyncio.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
+        interval = min(interval * 1.5, _MAX_INTERVAL)
