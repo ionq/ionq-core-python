@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from ._exceptions import IonQError
 from .api.default import get_job
+from .types import Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
@@ -46,7 +47,8 @@ def _check_terminal(job: GetJobResponse, job_id: str, raise_on_failure: bool) ->
     if job.status not in _TERMINAL_STATUSES:
         return False
     if raise_on_failure and job.status == "failed":
-        raise JobFailedError(job_id, getattr(job, "failure", None))
+        failure = job.failure if not isinstance(job.failure, Unset) else None
+        raise JobFailedError(job_id, failure)
     return True
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from ._exceptions import IonQError
 from .api.default import create_session, end_session, get_session
 from .models.create_session_request import CreateSessionRequest
 from .models.session_cost_limit import SessionCostLimit
@@ -61,11 +62,13 @@ class SessionManager:
 
     def open(self) -> None:
         """Create a new session on the backend."""
+        if self._session_id is not None:
+            raise IonQError("Session already open")
         settings = self._build_settings()
         body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
         session = create_session.sync(client=self._client, body=body)
         if session is None:
-            raise RuntimeError("Failed to create session")
+            raise IonQError("Failed to create session")
         self._session_id = session.id
         logger.info("Opened session %s", self._session_id)
 
@@ -82,10 +85,10 @@ class SessionManager:
     def status(self) -> str:
         """Query current session status."""
         if self._session_id is None:
-            raise RuntimeError("No session ID; call open() first")
+            raise IonQError("No session ID; call open() first")
         session = get_session.sync(session_id=self._session_id, client=self._client)
         if session is None:
-            raise RuntimeError(f"Failed to fetch session {self._session_id}")
+            raise IonQError(f"Failed to fetch session {self._session_id}")
         return session.status
 
     def __enter__(self) -> SessionManager:
