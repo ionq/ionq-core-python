@@ -15,6 +15,7 @@ from ._exceptions import (
 )
 from ._extensions import AsyncEventHook, ClientExtension, EventHook
 from ._pagination import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
+from ._session import SessionManager
 from ._polling import (
     JobFailedError,
     JobTimeoutError,
@@ -45,6 +46,7 @@ __all__ = (
     "PermissionDeniedError",
     "RateLimitError",
     "ServerError",
+    "SessionManager",
     "__version__",
     "aiter_jobs",
     "aiter_session_jobs",

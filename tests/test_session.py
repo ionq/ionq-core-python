@@ -1,0 +1,104 @@
+import pytest
+
+from ionq_core._session import SessionManager
+
+
+def _session_json(session_id="sess-1", status="created", active=True):
+    return {
+        "id": session_id,
+        "created_at": "2025-01-01T00:00:00Z",
+        "organization_id": "org-1",
+        "backend": "qpu.aria-1",
+        "project_id": None,
+        "creator_id": None,
+        "ended_at": None,
+        "ender_id": None,
+        "active": active,
+        "status": status,
+        "started_at": None,
+    }
+
+
+class TestContextManager:
+    def test_creates_and_ends_session(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions")
+        httpx_mock.add_response(json=_session_json(active=False, status="ended"), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end")
+
+        with SessionManager(auth_client, "qpu.aria-1") as mgr:
+            assert mgr.session_id == "sess-1"
+
+        reqs = httpx_mock.get_requests()
+        assert reqs[0].method == "POST"
+        assert reqs[0].url.path == "/v0.4/sessions"
+        assert reqs[1].method == "POST"
+        assert "/sessions/sess-1/end" in str(reqs[1].url)
+
+    def test_end_called_on_exception(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end")
+
+        with pytest.raises(ValueError, match="boom"):
+            with SessionManager(auth_client, "qpu.aria-1") as mgr:
+                raise ValueError("boom")
+
+        reqs = httpx_mock.get_requests()
+        assert len(reqs) == 2
+        assert "/sessions/sess-1/end" in str(reqs[1].url)
+
+
+class TestSettings:
+    def test_settings_passed_in_body(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST")
+
+        with SessionManager(auth_client, "qpu.aria-1", max_jobs=10, max_time=60, max_cost=5.0):
+            pass
+
+        body = httpx_mock.get_requests()[0].content
+        import json
+        data = json.loads(body)
+        assert data["backend"] == "qpu.aria-1"
+        settings = data["settings"]
+        assert settings["job_count_limit"] == 10
+        assert settings["duration_limit_min"] == 60
+        assert settings["cost_limit"] == {"unit": "usd", "value": 5.0}
+
+
+class TestFromId:
+    def test_reconnects_without_creating(self, httpx_mock, auth_client):
+        mgr = SessionManager.from_id(auth_client, "sess-existing")
+        assert mgr.session_id == "sess-existing"
+        assert httpx_mock.get_requests() == []
+
+    def test_close_from_id(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_session_json(session_id="sess-existing", active=False), method="POST")
+        mgr = SessionManager.from_id(auth_client, "sess-existing")
+        mgr.close()
+        reqs = httpx_mock.get_requests()
+        assert len(reqs) == 1
+        assert "/sessions/sess-existing/end" in str(reqs[0].url)
+
+
+class TestStatus:
+    def test_queries_session(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_response(json=_session_json(status="started"), method="GET")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST")
+
+        with SessionManager(auth_client, "qpu.aria-1") as mgr:
+            assert mgr.status() == "started"
+
+
+class TestOpenClose:
+    def test_open_close_outside_context(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST")
+
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        mgr.open()
+        assert mgr.session_id == "sess-1"
+        mgr.close()
+
+        reqs = httpx_mock.get_requests()
+        assert reqs[0].url.path == "/v0.4/sessions"
+        assert "/sessions/sess-1/end" in str(reqs[1].url)
