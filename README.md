@@ -356,9 +356,11 @@ uv run ty check ionq_core/ # Type check
 
 ### Publishing
 
+Publishing is handled automatically via trusted publishing on tagged releases.
+
 ```sh
 uv build
-uv publish --token $PYPI_TOKEN
+uv publish
 ```
 
 ## License
