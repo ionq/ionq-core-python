@@ -35,8 +35,8 @@ def _response(status_code, headers=None, json_body=None):
     return httpx.Response(status_code, headers=dict(headers or {}), json=json_body)
 
 
-def _request():
-    return httpx.Request("GET", "https://api.ionq.co/v0.4/backends")
+def _request(method="GET"):
+    return httpx.Request(method, "https://api.ionq.co/v0.4/backends")
 
 
 class TestRetryTransport:
@@ -202,3 +202,51 @@ class TestAsyncRetryTransport:
         transport, fake = self._make_transport([httpx.ReadTimeout("timed out"), _response(200)])
         resp = await transport.handle_async_request(_request())
         assert resp.status_code == 200
+
+
+class TestIdempotencyAwareRetry:
+    def _make_transport(self, responses, max_retries=2):
+        fake = FakeTransport(responses)
+        return RetryTransport(fake, max_retries=max_retries), fake
+
+    def test_post_503_not_retried(self):
+        transport, fake = self._make_transport([_response(503)])
+        with pytest.raises(ServerError):
+            transport.handle_request(_request("POST"))
+        assert fake._call_count == 1
+
+    def test_post_429_retried(self):
+        transport, fake = self._make_transport([_response(429), _response(200)])
+        resp = transport.handle_request(_request("POST"))
+        assert resp.status_code == 200
+        assert fake._call_count == 2
+
+    def test_get_503_retried(self):
+        transport, fake = self._make_transport([_response(503), _response(200)])
+        resp = transport.handle_request(_request("GET"))
+        assert resp.status_code == 200
+        assert fake._call_count == 2
+
+    def test_put_503_retried(self):
+        transport, fake = self._make_transport([_response(503), _response(200)])
+        resp = transport.handle_request(_request("PUT"))
+        assert resp.status_code == 200
+        assert fake._call_count == 2
+
+    def test_delete_503_retried(self):
+        transport, fake = self._make_transport([_response(503), _response(200)])
+        resp = transport.handle_request(_request("DELETE"))
+        assert resp.status_code == 200
+        assert fake._call_count == 2
+
+    def test_post_connect_error_retried(self):
+        transport, fake = self._make_transport([httpx.ConnectError("refused"), _response(200)])
+        resp = transport.handle_request(_request("POST"))
+        assert resp.status_code == 200
+        assert fake._call_count == 2
+
+    def test_post_read_error_not_retried(self):
+        transport, fake = self._make_transport([httpx.ReadError("broken pipe")])
+        with pytest.raises(APIConnectionError):
+            transport.handle_request(_request("POST"))
+        assert fake._call_count == 1

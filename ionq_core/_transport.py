@@ -1,6 +1,7 @@
 """Retry transport for httpx with exponential backoff."""
 
 import asyncio
+import email.utils
 import logging
 import random
 import time
@@ -20,6 +21,7 @@ logger = logging.getLogger("ionq_core")
 RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, *range(520, 530)})
 DEFAULT_MAX_RETRIES = 2
 _MAX_RETRY_AFTER = 60.0
+_IDEMPOTENT_METHODS = frozenset({"GET", "HEAD", "PUT", "DELETE", "OPTIONS"})
 
 
 def _parse_retry_after(response: httpx.Response) -> float | None:
@@ -29,7 +31,11 @@ def _parse_retry_after(response: httpx.Response) -> float | None:
     try:
         return float(header)
     except ValueError:
-        return None
+        pass
+    parsed = email.utils.parsedate(header)
+    if parsed is not None:
+        return max(0.0, time.mktime(parsed) - time.time())
+    return None
 
 
 def _backoff_delays(max_retries: int) -> Generator[float]:
@@ -44,7 +50,8 @@ def _parse_error_body(response: httpx.Response) -> dict | str | None:
         response.read()
         return response.json()
     except Exception:
-        return response.text or None
+        text = response.text
+        return text[:500] if text else None
 
 
 def _raise_for_response(response: httpx.Response) -> None:
@@ -73,6 +80,19 @@ def _raise_exhausted(last_response: httpx.Response | None, last_exc: Exception |
     raise APIConnectionError("Request failed with no response")
 
 
+def _should_retry(request: httpx.Request, response: httpx.Response, retryable: frozenset[int]) -> bool:
+    """Return True if this response should be retried.
+
+    Non-idempotent methods (POST) are only retried on 429 (rate limit)
+    since the server may have already processed the request on 5xx.
+    """
+    if response.status_code not in retryable:
+        return False
+    if request.method in _IDEMPOTENT_METHODS:
+        return True
+    return response.status_code == 429
+
+
 class RetryTransport(httpx.BaseTransport):
     """Wraps an httpx transport with retry logic and error raising."""
 
@@ -98,12 +118,18 @@ class RetryTransport(httpx.BaseTransport):
 
             try:
                 response = self._transport.handle_request(request)
+            except httpx.ConnectError as exc:
+                last_exc = exc
+                last_response = None
+                continue
             except (httpx.TimeoutException, httpx.NetworkError) as exc:
+                if request.method not in _IDEMPOTENT_METHODS:
+                    raise APIConnectionError(str(exc)) from exc
                 last_exc = exc
                 last_response = None
                 continue
 
-            if response.status_code in self._retryable:
+            if _should_retry(request, response, self._retryable):
                 last_response = response
                 last_exc = None
                 continue
@@ -142,12 +168,18 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
 
             try:
                 response = await self._transport.handle_async_request(request)
+            except httpx.ConnectError as exc:
+                last_exc = exc
+                last_response = None
+                continue
             except (httpx.TimeoutException, httpx.NetworkError) as exc:
+                if request.method not in _IDEMPOTENT_METHODS:
+                    raise APIConnectionError(str(exc)) from exc
                 last_exc = exc
                 last_response = None
                 continue
 
-            if response.status_code in self._retryable:
+            if _should_retry(request, response, self._retryable):
                 last_response = response
                 last_exc = None
                 continue
