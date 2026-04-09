@@ -15,6 +15,12 @@ pip install ionq-core-python
 
 Requires Python 3.12+.
 
+## Publish to PyPi
+```sh
+uv build
+uv publish
+```
+
 ## Usage
 
 ```python
