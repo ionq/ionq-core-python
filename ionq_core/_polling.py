@@ -17,10 +17,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("ionq_core")
 
-_TERMINAL_STATUSES = frozenset({"completed", "failed", "canceled"})
-_DEFAULT_POLL_INTERVAL = 1.0
+_TERMINAL = frozenset({"completed", "failed", "canceled"})
+_DEFAULT_INTERVAL = 1.0
 _DEFAULT_TIMEOUT = 300.0
-_MAX_POLL_INTERVAL = 30.0
+_MAX_INTERVAL = 30.0
 
 
 class JobTimeoutError(IonQError):
@@ -44,7 +44,7 @@ class JobFailedError(IonQError):
 
 def _check_terminal(job: GetJobResponse, job_id: str, raise_on_failure: bool) -> bool:
     """Return True if the job reached a terminal state, raising on failure if configured."""
-    if job.status not in _TERMINAL_STATUSES:
+    if job.status not in _TERMINAL:
         return False
     if raise_on_failure and job.status == "failed":
         failure = job.failure if not isinstance(job.failure, Unset) else None
@@ -56,7 +56,7 @@ def wait_for_job(
     client: AuthenticatedClient,
     job_id: str,
     *,
-    poll_interval: float = _DEFAULT_POLL_INTERVAL,
+    poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
@@ -81,14 +81,14 @@ def wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
         time.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
+        interval = min(interval * 1.5, _MAX_INTERVAL)
 
 
 async def async_wait_for_job(
     client: AuthenticatedClient,
     job_id: str,
     *,
-    poll_interval: float = _DEFAULT_POLL_INTERVAL,
+    poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
@@ -106,4 +106,4 @@ async def async_wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
         await asyncio.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_POLL_INTERVAL)
+        interval = min(interval * 1.5, _MAX_INTERVAL)

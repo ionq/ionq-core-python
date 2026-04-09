@@ -4,6 +4,8 @@ import pytest
 
 from ionq_core._session import SessionManager
 
+_BASE = "https://test.invalid/v0.4"
+
 
 def _session_json(session_id="sess-1", status="created", active=True):
     return {
@@ -26,29 +28,19 @@ _ENDED = {"active": False, "status": "ended"}
 
 class TestContextManager:
     def test_creates_and_ends_session(self, httpx_mock, auth_client):
-        httpx_mock.add_response(
-            status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions"
-        )
-        httpx_mock.add_response(
-            json=_session_json(**_ENDED), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end"
-        )
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url=f"{_BASE}/sessions")
+        httpx_mock.add_response(json=_session_json(**_ENDED), method="POST", url=f"{_BASE}/sessions/sess-1/end")
 
         with SessionManager(auth_client, "qpu.aria-1") as mgr:
             assert mgr.session_id == "sess-1"
 
         reqs = httpx_mock.get_requests()
-        assert reqs[0].method == "POST"
-        assert reqs[0].url.path == "/v0.4/sessions"
-        assert reqs[1].method == "POST"
+        assert reqs[0].method == "POST" and reqs[0].url.path == "/v0.4/sessions"
         assert "/sessions/sess-1/end" in str(reqs[1].url)
 
     def test_end_called_on_exception(self, httpx_mock, auth_client):
-        httpx_mock.add_response(
-            status_code=201, json=_session_json(), method="POST", url="https://test.invalid/v0.4/sessions"
-        )
-        httpx_mock.add_response(
-            json=_session_json(active=False), method="POST", url="https://test.invalid/v0.4/sessions/sess-1/end"
-        )
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url=f"{_BASE}/sessions")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST", url=f"{_BASE}/sessions/sess-1/end")
 
         with pytest.raises(ValueError, match="boom"), SessionManager(auth_client, "qpu.aria-1"):
             raise ValueError("boom")

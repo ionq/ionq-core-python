@@ -22,7 +22,6 @@ _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 
 def _build_user_agent(*tokens: str | None) -> str:
-    """Build the User-Agent string from core info plus optional extra tokens."""
     parts = [
         f"ionq-core-python/{__version__}",
         f"python/{platform.python_version()}",
@@ -88,17 +87,15 @@ def IonQClient(
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    sync_transport: httpx.BaseTransport = RetryTransport(
-        httpx.HTTPTransport(), max_retries=effective_retries, retryable_status_codes=effective_retry_codes
-    )
+    retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
+
+    sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
     if extension and extension.event_hooks:
         sync_transport = HookTransport(sync_transport, extension.event_hooks)
     if extension and extension.transport_wrapper:
         sync_transport = extension.transport_wrapper(sync_transport)
 
-    async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(
-        httpx.AsyncHTTPTransport(), max_retries=effective_retries, retryable_status_codes=effective_retry_codes
-    )
+    async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), **retry_kwargs)
     if extension and extension.async_event_hooks:
         async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks)
     if extension and extension.async_transport_wrapper:

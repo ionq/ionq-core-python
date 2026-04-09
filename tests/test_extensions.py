@@ -51,25 +51,24 @@ class TestClientExtensionDefaults:
             ClientExtension().user_agent_token = "something"  # type: ignore[misc]
 
 
+def _ua(client):
+    return client.get_httpx_client().headers["User-Agent"]
+
+
 class TestUserAgentToken:
     def test_extension_user_agent_appended(self):
-        client = IonQClient(api_key="key", extension=ClientExtension(user_agent_token="qiskit-ionq/1.1.0"))
-        ua = client.get_httpx_client().headers["User-Agent"]
+        ua = _ua(IonQClient(api_key="key", extension=ClientExtension(user_agent_token="qiskit-ionq/1.1.0")))
         assert "qiskit-ionq/1.1.0" in ua
         assert ua.startswith("ionq-core-python/")
 
     def test_additional_user_agent_and_extension_both_present(self):
         ext = ClientExtension(user_agent_token="qiskit-ionq/1.1.0")
-        ua = (
-            IonQClient(api_key="key", additional_user_agent="custom/2.0", extension=ext)
-            .get_httpx_client()
-            .headers["User-Agent"]
-        )
+        ua = _ua(IonQClient(api_key="key", additional_user_agent="custom/2.0", extension=ext))
         assert "custom/2.0" in ua
         assert "qiskit-ionq/1.1.0" in ua
 
     def test_no_extension_still_works(self):
-        assert IonQClient(api_key="key").get_httpx_client().headers["User-Agent"].startswith("ionq-core-python/")
+        assert _ua(IonQClient(api_key="key")).startswith("ionq-core-python/")
 
     def test_async_client_user_agent(self):
         client = IonQClient(api_key="key", extension=ClientExtension(user_agent_token="cirq-ionq/0.5.0"))
@@ -95,16 +94,14 @@ class TestDefaultHeaders:
 
 class TestTimeoutOverride:
     def test_extension_timeout_overrides_default(self):
-        client = IonQClient(api_key="key", extension=ClientExtension(timeout=httpx.Timeout(120.0, connect=5.0)))
-        assert client.get_httpx_client().timeout.read == 120.0
-        assert client.get_httpx_client().timeout.connect == 5.0
+        t = IonQClient(api_key="key", extension=ClientExtension(timeout=httpx.Timeout(120.0, connect=5.0)))
+        assert t.get_httpx_client().timeout.read == 120.0
+        assert t.get_httpx_client().timeout.connect == 5.0
 
     def test_extension_timeout_overrides_explicit(self):
         ext = ClientExtension(timeout=httpx.Timeout(120.0))
-        assert (
-            IonQClient(api_key="key", timeout=httpx.Timeout(30.0), extension=ext).get_httpx_client().timeout.read
-            == 120.0
-        )
+        t = IonQClient(api_key="key", timeout=httpx.Timeout(30.0), extension=ext)
+        assert t.get_httpx_client().timeout.read == 120.0
 
     def test_no_extension_timeout_uses_explicit(self):
         assert IonQClient(api_key="key", timeout=httpx.Timeout(30.0)).get_httpx_client().timeout.read == 30.0
@@ -116,10 +113,8 @@ class TestMaxRetriesOverride:
         assert _find_retry_transport(client.get_httpx_client()._transport)._max_retries == 5
 
     def test_no_extension_retries_uses_explicit(self):
-        assert (
-            _find_retry_transport(IonQClient(api_key="key", max_retries=3).get_httpx_client()._transport)._max_retries
-            == 3
-        )
+        transport = IonQClient(api_key="key", max_retries=3).get_httpx_client()._transport
+        assert _find_retry_transport(transport)._max_retries == 3
 
 
 def _find_retry_transport(transport) -> RetryTransport:

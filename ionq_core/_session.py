@@ -16,6 +16,11 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("ionq_core")
 
+_SETTINGS_MAP = {
+    "_max_jobs": "job_count_limit",
+    "_max_time": "duration_limit_min",
+}
+
 
 class SessionManager:
     """Convenience wrapper around session create / end / status APIs.
@@ -51,11 +56,7 @@ class SessionManager:
         return self._session_id
 
     def _build_settings(self) -> SessionSettingsRequest | None:
-        kwargs: dict = {}
-        if self._max_jobs is not None:
-            kwargs["job_count_limit"] = self._max_jobs
-        if self._max_time is not None:
-            kwargs["duration_limit_min"] = self._max_time
+        kwargs = {api: getattr(self, attr) for attr, api in _SETTINGS_MAP.items() if getattr(self, attr) is not None}
         if self._max_cost is not None:
             kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
         return SessionSettingsRequest(**kwargs) if kwargs else None

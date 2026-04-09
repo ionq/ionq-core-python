@@ -66,6 +66,22 @@ class ClientExtension:
     async_transport_wrapper: Callable[[httpx.AsyncBaseTransport], httpx.AsyncBaseTransport] | None = None
 
 
+def _fire_hooks(hooks, method: str, *args) -> None:
+    for hook in hooks:
+        try:
+            getattr(hook, method)(*args)
+        except Exception:
+            logger.exception("%s raised; ignoring", method)
+
+
+async def _afire_hooks(hooks, method: str, *args) -> None:
+    for hook in hooks:
+        try:
+            await getattr(hook, method)(*args)
+        except Exception:
+            logger.exception("%s raised; ignoring", method)
+
+
 class HookTransport(httpx.BaseTransport):
     """Transport decorator that invokes EventHook instances."""
 
@@ -74,20 +90,9 @@ class HookTransport(httpx.BaseTransport):
         self._hooks = hooks
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
-        for hook in self._hooks:
-            try:
-                hook.on_request(request)
-            except Exception:
-                logger.exception("EventHook.on_request raised; ignoring")
-
+        _fire_hooks(self._hooks, "on_request", request)
         response = self._transport.handle_request(request)
-
-        for hook in self._hooks:
-            try:
-                hook.on_response(request, response)
-            except Exception:
-                logger.exception("EventHook.on_response raised; ignoring")
-
+        _fire_hooks(self._hooks, "on_response", request, response)
         return response
 
     def close(self) -> None:
@@ -102,20 +107,9 @@ class AsyncHookTransport(httpx.AsyncBaseTransport):
         self._hooks = hooks
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        for hook in self._hooks:
-            try:
-                await hook.on_request(request)
-            except Exception:
-                logger.exception("AsyncEventHook.on_request raised; ignoring")
-
+        await _afire_hooks(self._hooks, "on_request", request)
         response = await self._transport.handle_async_request(request)
-
-        for hook in self._hooks:
-            try:
-                await hook.on_response(request, response)
-            except Exception:
-                logger.exception("AsyncEventHook.on_response raised; ignoring")
-
+        await _afire_hooks(self._hooks, "on_response", request, response)
         return response
 
     async def aclose(self) -> None:

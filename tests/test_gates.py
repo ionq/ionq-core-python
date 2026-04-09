@@ -1,8 +1,10 @@
 import math
 
+import pytest
+
 from ionq_core._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 
-_TEST_PHIS = [0, 0.1, 0.25, 0.5, 0.73]
+_PHIS = [0, 0.1, 0.25, 0.5, 0.73]
 
 
 def _approx(a, b, tol=1e-12):
@@ -21,12 +23,12 @@ def _dagger(m):
     return tuple(tuple(m[j][i].conjugate() for j in range(n)) for i in range(n))
 
 
-def _identity(n):
+def _eye(n):
     return tuple(tuple(1 + 0j if i == j else 0 + 0j for j in range(n)) for i in range(n))
 
 
 def _assert_unitary(m):
-    _approx(_matmul(m, _dagger(m)), _identity(len(m)))
+    _approx(_matmul(m, _dagger(m)), _eye(len(m)))
 
 
 class TestGPI:
@@ -36,13 +38,13 @@ class TestGPI:
     def test_phi025_is_pauli_y(self):
         _approx(gpi_matrix(0.25), ((0, -1j), (1j, 0)))
 
-    def test_involution(self):
-        for phi in _TEST_PHIS:
-            _approx(_matmul(gpi_matrix(phi), gpi_matrix(phi)), _identity(2))
+    @pytest.mark.parametrize("phi", _PHIS)
+    def test_involution(self, phi):
+        _approx(_matmul(gpi_matrix(phi), gpi_matrix(phi)), _eye(2))
 
-    def test_unitary(self):
-        for phi in _TEST_PHIS:
-            _assert_unitary(gpi_matrix(phi))
+    @pytest.mark.parametrize("phi", _PHIS)
+    def test_unitary(self, phi):
+        _assert_unitary(gpi_matrix(phi))
 
 
 class TestGPI2:
@@ -50,23 +52,26 @@ class TestGPI2:
         s = 1 / math.sqrt(2)
         _approx(gpi2_matrix(0), ((s, -1j * s), (-1j * s, s)))
 
-    def test_unitary(self):
-        for phi in _TEST_PHIS:
-            _assert_unitary(gpi2_matrix(phi))
+    @pytest.mark.parametrize("phi", _PHIS)
+    def test_unitary(self, phi):
+        _assert_unitary(gpi2_matrix(phi))
 
 
 class TestMS:
     def test_default_angle_equals_025(self):
         _approx(ms_matrix(0.1, 0.2), ms_matrix(0.1, 0.2, 0.25))
 
-    def test_unitary(self):
-        for phi0, phi1, angle in [(0, 0, 0.25), (0.1, 0.2, 0.25), (0.3, 0.7, 0.1)]:
-            _assert_unitary(ms_matrix(phi0, phi1, angle))
+    @pytest.mark.parametrize(
+        ("phi0", "phi1", "angle"),
+        [(0, 0, 0.25), (0.1, 0.2, 0.25), (0.3, 0.7, 0.1)],
+    )
+    def test_unitary(self, phi0, phi1, angle):
+        _assert_unitary(ms_matrix(phi0, phi1, angle))
 
 
 class TestZZ:
     def test_zero_is_identity(self):
-        _approx(zz_matrix(0), _identity(4))
+        _approx(zz_matrix(0), _eye(4))
 
     def test_diagonal(self):
         m = zz_matrix(0.3)
@@ -75,6 +80,6 @@ class TestZZ:
                 if i != j:
                     assert abs(m[i][j]) < 1e-15
 
-    def test_unitary(self):
-        for angle in [0, 0.1, 0.25, 0.5, 1.0]:
-            _assert_unitary(zz_matrix(angle))
+    @pytest.mark.parametrize("angle", [0, 0.1, 0.25, 0.5, 1.0])
+    def test_unitary(self, angle):
+        _assert_unitary(zz_matrix(angle))

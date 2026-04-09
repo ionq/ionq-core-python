@@ -10,51 +10,82 @@ from ionq_core.models.get_jobs_response import GetJobsResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.whoami import Whoami
 
+WHOAMI_JSON = {"key_id": "e060759f-4348-4767-a645-8c0301265791", "key_name": "Test Key"}
+
+BACKENDS_JSON = [
+    {
+        "backend": "qpu.aria-1",
+        "status": "available",
+        "degraded": False,
+        "qubits": 25,
+        "average_queue_time": 1181215,
+        "last_updated": "2025-06-16T00:00:00Z",
+    },
+    {
+        "backend": "qpu.forte-1",
+        "status": "unavailable",
+        "degraded": True,
+        "qubits": 36,
+        "average_queue_time": 0,
+        "last_updated": "2025-06-15T00:00:00Z",
+    },
+]
+
+JOBS_JSON = {
+    "jobs": [
+        {
+            "id": "job-1",
+            "status": "completed",
+            "type": "ionq.circuit.v1",
+            "backend": "simulator",
+            "dry_run": False,
+            "submitter_id": "user-1",
+            "project_id": "proj-1",
+            "parent_job_id": "parent-1",
+            "session_id": "sess-1",
+            "metadata": {},
+            "name": "Test",
+            "submitted_at": "2025-05-28T20:47:05.440Z",
+            "started_at": "2025-05-28T20:48:00Z",
+            "completed_at": "2025-05-28T20:49:00Z",
+            "predicted_wait_time_ms": 5000,
+            "predicted_execution_duration_ms": 3000,
+            "execution_duration_ms": 2800,
+            "shots": 1000,
+            "failure": {"code": "InternalError", "message": "test"},
+            "output": {},
+            "settings": {},
+            "stats": {},
+            "results": {},
+        }
+    ],
+    "next": "cursor-token",
+}
+
 
 class TestGetWhoami:
-    WHOAMI = {"key_id": "e060759f-4348-4767-a645-8c0301265791", "key_name": "Test Key"}
-
     def test_sync(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=self.WHOAMI)
+        httpx_mock.add_response(json=WHOAMI_JSON)
         result = get_whoami.sync(client=auth_client)
         assert isinstance(result, Whoami)
         assert result.key_name == "Test Key"
 
     def test_sync_detailed(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=self.WHOAMI)
-        response = get_whoami.sync_detailed(client=auth_client)
-        assert response.status_code.value == 200
-        assert response.parsed.key_name == "Test Key"
+        httpx_mock.add_response(json=WHOAMI_JSON)
+        resp = get_whoami.sync_detailed(client=auth_client)
+        assert resp.status_code.value == 200
+        assert resp.parsed.key_name == "Test Key"
 
     async def test_asyncio(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=self.WHOAMI)
+        httpx_mock.add_response(json=WHOAMI_JSON)
         result = await get_whoami.asyncio(client=auth_client)
         assert isinstance(result, Whoami)
         assert result.key_name == "Test Key"
 
 
 class TestGetBackends:
-    BACKENDS_RESPONSE = [
-        {
-            "backend": "qpu.aria-1",
-            "status": "available",
-            "degraded": False,
-            "qubits": 25,
-            "average_queue_time": 1181215,
-            "last_updated": "2025-06-16T00:00:00Z",
-        },
-        {
-            "backend": "qpu.forte-1",
-            "status": "unavailable",
-            "degraded": True,
-            "qubits": 36,
-            "average_queue_time": 0,
-            "last_updated": "2025-06-15T00:00:00Z",
-        },
-    ]
-
     def test_sync(self, httpx_mock, client):
-        httpx_mock.add_response(json=self.BACKENDS_RESPONSE)
+        httpx_mock.add_response(json=BACKENDS_JSON)
         result = get_backends.sync(client=client)
         assert isinstance(result, list)
         assert len(result) == 2
@@ -64,39 +95,8 @@ class TestGetBackends:
 
 
 class TestGetJobs:
-    JOBS_RESPONSE = {
-        "jobs": [
-            {
-                "id": "job-1",
-                "status": "completed",
-                "type": "ionq.circuit.v1",
-                "backend": "simulator",
-                "dry_run": False,
-                "submitter_id": "user-1",
-                "project_id": "proj-1",
-                "parent_job_id": "parent-1",
-                "session_id": "sess-1",
-                "metadata": {},
-                "name": "Test",
-                "submitted_at": "2025-05-28T20:47:05.440Z",
-                "started_at": "2025-05-28T20:48:00Z",
-                "completed_at": "2025-05-28T20:49:00Z",
-                "predicted_wait_time_ms": 5000,
-                "predicted_execution_duration_ms": 3000,
-                "execution_duration_ms": 2800,
-                "shots": 1000,
-                "failure": {"code": "InternalError", "message": "test"},
-                "output": {},
-                "settings": {},
-                "stats": {},
-                "results": {},
-            }
-        ],
-        "next": "cursor-token",
-    }
-
     def test_sync(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=self.JOBS_RESPONSE)
+        httpx_mock.add_response(json=JOBS_JSON)
         result = get_jobs.sync(client=auth_client)
         assert isinstance(result, GetJobsResponse)
         assert len(result.jobs) == 1
@@ -106,19 +106,13 @@ class TestGetJobs:
 
 class TestCreateJob:
     def test_sync(self, httpx_mock, auth_client):
-        httpx_mock.add_response(
-            status_code=201,
-            json={"id": "new-job-id", "status": "submitted", "session_id": None},
-        )
+        httpx_mock.add_response(status_code=201, json={"id": "new-job-id", "status": "submitted", "session_id": None})
         body = CircuitJobCreationPayload.from_dict(
             {
                 "type": "ionq.circuit.v1",
                 "backend": "simulator",
                 "shots": 100,
-                "input": {
-                    "gateset": "qis",
-                    "circuit": [{"gate": "h", "targets": [0]}],
-                },
+                "input": {"gateset": "qis", "circuit": [{"gate": "h", "targets": [0]}]},
             }
         )
         result = create_job.sync(client=auth_client, body=body)
@@ -130,8 +124,7 @@ class TestCreateJob:
 class TestUnexpectedStatus:
     def test_returns_none_by_default(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=418, content=b"teapot")
-        result = get_whoami.sync(client=auth_client)
-        assert result is None
+        assert get_whoami.sync(client=auth_client) is None
 
     def test_raises_when_configured(self, httpx_mock, auth_client):
         auth_client.raise_on_unexpected_status = True
