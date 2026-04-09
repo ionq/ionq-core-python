@@ -111,22 +111,80 @@ async with IonQClient() as client:
 
 ## Handling errors
 
-By default, undocumented status codes return `None`. Enable `raise_on_unexpected_status` to raise exceptions instead:
+The client raises typed exceptions for all HTTP error responses:
 
 ```python
-from ionq_core import IonQClient
-from ionq_core.api.whoami import get_whoami
-from ionq_core.errors import UnexpectedStatus
+from ionq_core import IonQClient, RateLimitError, AuthenticationError, ServerError
 
-client = IonQClient(raise_on_unexpected_status=True)
+client = IonQClient()
 
 try:
-    whoami = get_whoami.sync(client=client)
-except UnexpectedStatus as e:
-    print(f"HTTP {e.status_code}: {e.content}")
+    job = create_job.sync(client=client, body=payload)
+except AuthenticationError:
+    print("Invalid API key")
+except RateLimitError as e:
+    print(f"Rate limited, retry after {e.retry_after}s")
+except ServerError as e:
+    print(f"Server error: {e.status_code}")
 ```
 
-`UnexpectedStatus` includes both `status_code` (int) and `content` (bytes) for inspection.
+| Status code | Exception |
+|---|---|
+| 400 | `BadRequestError` |
+| 401 | `AuthenticationError` |
+| 403 | `PermissionDeniedError` |
+| 404 | `NotFoundError` |
+| 429 | `RateLimitError` |
+| 5xx | `ServerError` |
+
+All exceptions inherit from `APIError`, which inherits from `IonQError`. Connection failures raise `APIConnectionError`; timeouts raise `APITimeoutError`.
+
+## Retries
+
+The client automatically retries transient errors (429, 500, 502, 503) and connection/timeout failures with exponential backoff. Default: 2 retries.
+
+```python
+client = IonQClient(max_retries=5)  # more retries
+client = IonQClient(max_retries=0)  # disable retries
+```
+
+`Retry-After` headers on 429 responses are respected.
+
+## Pagination
+
+Endpoints that return paginated results have auto-pagination helpers:
+
+```python
+from ionq_core import IonQClient, iter_jobs
+
+client = IonQClient()
+for job in iter_jobs(client, status="completed"):
+    print(job.id)
+```
+
+Async:
+
+```python
+from ionq_core import aiter_jobs
+
+async for job in aiter_jobs(client):
+    print(job.id)
+```
+
+Also available: `iter_session_jobs` / `aiter_session_jobs`.
+
+## Waiting for job completion
+
+```python
+from ionq_core import IonQClient, wait_for_job
+
+client = IonQClient()
+job = create_job.sync(client=client, body=payload)
+completed_job = wait_for_job(client, job.id, timeout=300)
+print(completed_job.status)  # "completed"
+```
+
+Polls with exponential backoff (1s initial, 30s max). Raises `JobTimeoutError` on timeout, `JobFailedError` if the job fails. Async: `async_wait_for_job`.
 
 ## Available endpoints
 
