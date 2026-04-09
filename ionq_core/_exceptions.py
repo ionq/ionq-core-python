@@ -1,5 +1,7 @@
 """Structured exceptions for the IonQ API client."""
 
+from __future__ import annotations
+
 
 class IonQError(Exception):
     """Base exception for all IonQ API errors."""

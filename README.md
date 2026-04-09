@@ -141,7 +141,7 @@ All exceptions inherit from `APIError`, which inherits from `IonQError`. Connect
 
 ## Retries
 
-The client automatically retries transient errors (429, 500, 502, 503) and connection/timeout failures with exponential backoff. Default: 2 retries.
+The client automatically retries transient errors (429, 500, 502, 503, 520-529) and connection/timeout failures with exponential backoff. Default: 2 retries.
 
 ```python
 client = IonQClient(max_retries=5)  # more retries
@@ -332,7 +332,7 @@ else
 fi
 
 # Regenerate (preserves ionq_client.py)
-uvx openapi-python-client generate \
+uvx openapi-python-client==0.28.3 generate \
     --path /tmp/patched-spec.json \
     --meta none \
     --config openapi-python-client-config.yaml \
@@ -347,11 +347,11 @@ If the upstream spec contains patterns that the code generator cannot handle, fi
 ## Development
 
 ```sh
-uv sync                              # Install dependencies
-uv run pytest                        # Run tests
-uv run ruff check ionq_core/ tests/  # Lint
-uv run ruff format ionq_core/ tests/ # Format
-uv run ty check ionq_core/           # Type check
+uv sync                    # Install dependencies
+uv run pytest              # Run tests
+uv run ruff check          # Lint
+uv run ruff format --check # Check formatting
+uv run ty check ionq_core/ # Type check
 ```
 
 ## License

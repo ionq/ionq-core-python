@@ -32,6 +32,7 @@ Most of the code in `ionq_core/` is **auto-generated** from the IonQ OpenAPI spe
 - `ionq_core/__init__.py` -- public API exports
 - `ionq_core/ionq_client.py` -- IonQClient convenience wrapper
 - `ionq_core/_exceptions.py` -- exception hierarchy
+- `ionq_core/_extensions.py` -- extension API for downstream SDKs
 - `ionq_core/_transport.py` -- retry transport
 - `ionq_core/_pagination.py` -- pagination helpers
 - `ionq_core/_polling.py` -- job polling helpers
@@ -48,7 +49,7 @@ else
     cp openapi.json /tmp/patched-spec.json
 fi
 
-uvx openapi-python-client generate \
+uvx openapi-python-client==0.28.3 generate \
     --path /tmp/patched-spec.json \
     --meta none \
     --config openapi-python-client-config.yaml \

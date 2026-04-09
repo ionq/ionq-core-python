@@ -1,4 +1,4 @@
-from ionq_core import aiter_jobs, iter_jobs
+from ionq_core import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
 
 
 def _jobs_page(job_ids, next_cursor=None):
@@ -46,4 +46,30 @@ class TestAiterJobs:
         httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="cursor1"))
         httpx_mock.add_response(json=_jobs_page(["j2"]))
         jobs = [j async for j in aiter_jobs(auth_client)]
+        assert [j.id for j in jobs] == ["j1", "j2"]
+
+
+class TestIterSessionJobs:
+    def test_single_page(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1", "j2"]))
+        jobs = list(iter_session_jobs(auth_client, "sess-1"))
+        assert [j.id for j in jobs] == ["j1", "j2"]
+
+    def test_multiple_pages(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="cursor1"))
+        httpx_mock.add_response(json=_jobs_page(["j2"]))
+        jobs = list(iter_session_jobs(auth_client, "sess-1"))
+        assert [j.id for j in jobs] == ["j1", "j2"]
+
+
+class TestAiterSessionJobs:
+    async def test_single_page(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"]))
+        jobs = [j async for j in aiter_session_jobs(auth_client, "sess-1")]
+        assert [j.id for j in jobs] == ["j1"]
+
+    async def test_multiple_pages(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="cursor1"))
+        httpx_mock.add_response(json=_jobs_page(["j2"]))
+        jobs = [j async for j in aiter_session_jobs(auth_client, "sess-1")]
         assert [j.id for j in jobs] == ["j1", "j2"]

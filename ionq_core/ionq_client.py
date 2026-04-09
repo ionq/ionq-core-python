@@ -32,10 +32,8 @@ def _build_user_agent(*tokens: str | None) -> str:
         f"python/{platform.python_version()}",
         f"httpx/{httpx.__version__}",
         f"os/{platform.system().lower()}",
+        *filter(None, tokens),
     ]
-    for token in tokens:
-        if token:
-            parts.append(token)
     return " ".join(parts)
 
 
@@ -107,9 +105,7 @@ def IonQClient(
     effective_timeout = (
         extension.timeout if (extension and extension.timeout is not None) else (timeout or _DEFAULT_TIMEOUT)
     )
-    effective_retries = (
-        extension.max_retries if (extension and extension.max_retries is not None) else max_retries
-    )
+    effective_retries = extension.max_retries if (extension and extension.max_retries is not None) else max_retries
     effective_retry_codes = (
         extension.retryable_status_codes
         if (extension and extension.retryable_status_codes is not None)

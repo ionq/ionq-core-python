@@ -10,7 +10,9 @@ authors = [{name = "IonQ", email = "support@ionq.co"}]
 keywords = ["ionq", "quantum", "quantum-computing", "sdk", "api-client"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -49,9 +51,8 @@ build-backend = "hatchling.build"
 packages = ["ionq_core"]
 
 [tool.ruff]
-line-length = 120
 target-version = "py312"
-preview = true
+line-length = 120
 extend-exclude = [
     "ionq_core/api",
     "ionq_core/models",
@@ -64,10 +65,13 @@ extend-exclude = [
 docstring-code-format = true
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["ionq_core"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["RUF012"]
 
 [tool.ty.environment]
 python-version = "3.12"
@@ -80,7 +84,9 @@ invalid-argument-type = "ignore"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+xfail_strict = true
+filterwarnings = ["error"]
 markers = [
     "integration: marks tests that hit the real IonQ API (deselect with '-m \"not integration\"')",
 ]
-addopts = "-m 'not integration'"
+addopts = "-m 'not integration' --tb=short"

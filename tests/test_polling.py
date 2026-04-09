@@ -1,6 +1,6 @@
 import pytest
 
-from ionq_core._polling import JobFailedError, JobTimeoutError, wait_for_job
+from ionq_core._polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
 
 
 def _job_response(job_id, status, failure=None):
@@ -57,3 +57,22 @@ class TestWaitForJob:
             httpx_mock.add_response(json=_job_response("j1", "submitted"))
         with pytest.raises(JobTimeoutError, match="j1"):
             wait_for_job(auth_client, "j1", poll_interval=0.01, timeout=0.0)
+
+
+class TestAsyncWaitForJob:
+    async def test_already_completed(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_job_response("j1", "completed"))
+        job = await async_wait_for_job(auth_client, "j1", timeout=5)
+        assert job.status == "completed"
+
+    async def test_raises_on_failure(self, httpx_mock, auth_client):
+        httpx_mock.add_response(
+            json=_job_response("j1", "failed", failure={"code": "SimulationError", "message": "boom"})
+        )
+        with pytest.raises(JobFailedError, match="j1"):
+            await async_wait_for_job(auth_client, "j1", timeout=5)
+
+    async def test_canceled_returns(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_job_response("j1", "canceled"))
+        job = await async_wait_for_job(auth_client, "j1", timeout=5)
+        assert job.status == "canceled"

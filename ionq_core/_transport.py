@@ -1,11 +1,12 @@
 """Retry transport for httpx with exponential backoff."""
 
 import asyncio
+import calendar
 import email.utils
 import logging
 import random
 import time
-from collections.abc import Generator
+from collections.abc import Iterator
 from typing import NoReturn
 
 import httpx
@@ -34,11 +35,11 @@ def _parse_retry_after(response: httpx.Response) -> float | None:
         pass
     parsed = email.utils.parsedate(header)
     if parsed is not None:
-        return max(0.0, time.mktime(parsed) - time.time())
+        return max(0.0, calendar.timegm(parsed) - time.time())
     return None
 
 
-def _backoff_delays(max_retries: int) -> Generator[float]:
+def _backoff_delays(max_retries: int) -> Iterator[float]:
     yield 0.0
     for attempt in range(max_retries):
         base = 0.5 * (2**attempt)

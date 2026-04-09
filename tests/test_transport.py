@@ -32,7 +32,7 @@ class FakeTransport(httpx.BaseTransport):
 
 
 def _response(status_code, headers=None, json_body=None):
-    return httpx.Response(status_code, headers=dict(headers or {}), json=json_body)
+    return httpx.Response(status_code, headers=headers or {}, json=json_body)
 
 
 def _request(method="GET"):
@@ -57,10 +57,12 @@ class TestRetryTransport:
         assert fake._call_count == 2
 
     def test_retries_on_429_then_succeeds(self):
-        transport, fake = self._make_transport([
-            _response(429, headers={"retry-after": "0"}),
-            _response(200),
-        ])
+        transport, fake = self._make_transport(
+            [
+                _response(429, headers={"retry-after": "0"}),
+                _response(200),
+            ]
+        )
         resp = transport.handle_request(_request())
         assert resp.status_code == 200
         assert fake._call_count == 2
@@ -131,27 +133,33 @@ class TestRetryTransport:
         assert fake._call_count == 1
 
     def test_error_body_parsed(self):
-        transport, _ = self._make_transport([
-            _response(400, json_body={"error": "Bad Request", "message": "Invalid input"}),
-        ])
+        transport, _ = self._make_transport(
+            [
+                _response(400, json_body={"error": "Bad Request", "message": "Invalid input"}),
+            ]
+        )
         with pytest.raises(BadRequestError) as exc_info:
             transport.handle_request(_request())
         assert exc_info.value.body == {"error": "Bad Request", "message": "Invalid input"}
 
     def test_error_message_surfaced(self):
-        transport, _ = self._make_transport([
-            _response(404, json_body={"message": "Job not found"}),
-        ])
+        transport, _ = self._make_transport(
+            [
+                _response(404, json_body={"message": "Job not found"}),
+            ]
+        )
         with pytest.raises(NotFoundError, match="Job not found"):
             transport.handle_request(_request())
 
     def test_retry_after_header_respected(self, monkeypatch):
         sleeps = []
         monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
-        transport, _ = self._make_transport([
-            _response(429, headers={"retry-after": "10"}),
-            _response(200),
-        ])
+        transport, _ = self._make_transport(
+            [
+                _response(429, headers={"retry-after": "10"}),
+                _response(200),
+            ]
+        )
         transport.handle_request(_request())
         assert sleeps[0] >= 10.0
 
@@ -199,7 +207,7 @@ class TestAsyncRetryTransport:
         assert fake._call_count == 3
 
     async def test_timeout_retried(self):
-        transport, fake = self._make_transport([httpx.ReadTimeout("timed out"), _response(200)])
+        transport, _fake = self._make_transport([httpx.ReadTimeout("timed out"), _response(200)])
         resp = await transport.handle_async_request(_request())
         assert resp.status_code == 200
 

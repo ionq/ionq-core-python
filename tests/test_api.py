@@ -110,15 +110,17 @@ class TestCreateJob:
             status_code=201,
             json={"id": "new-job-id", "status": "submitted", "session_id": None},
         )
-        body = CircuitJobCreationPayload.from_dict({
-            "type": "ionq.circuit.v1",
-            "backend": "simulator",
-            "shots": 100,
-            "input": {
-                "gateset": "qis",
-                "circuit": [{"gate": "h", "targets": [0]}],
-            },
-        })
+        body = CircuitJobCreationPayload.from_dict(
+            {
+                "type": "ionq.circuit.v1",
+                "backend": "simulator",
+                "shots": 100,
+                "input": {
+                    "gateset": "qis",
+                    "circuit": [{"gate": "h", "targets": [0]}],
+                },
+            }
+        )
         result = create_job.sync(client=auth_client, body=body)
         assert isinstance(result, JobCreationResponse)
         assert result.id == "new-job-id"

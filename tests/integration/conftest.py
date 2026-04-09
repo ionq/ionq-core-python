@@ -5,11 +5,8 @@ import os
 
 import pytest
 
-from ionq_core import IonQClient
+from ionq_core import AuthenticatedClient, IonQClient
 from ionq_core.api.default import delete_job
-from ionq_core.client import AuthenticatedClient
-
-pytestmark = pytest.mark.integration
 
 _job_ids: list[str] = []
 
