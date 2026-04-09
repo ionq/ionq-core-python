@@ -5,7 +5,7 @@ description = "Python client for the IonQ Cloud Platform API"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4"
 authors = [{name = "IonQ", email = "support@ionq.co"}]
 keywords = ["ionq", "quantum", "quantum-computing", "sdk", "api-client"]
 classifiers = [
@@ -46,6 +46,10 @@ dev = [
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.poetry]
+requires-poetry = ">=2.3"
+packages = [{ include = "ionq_core" }]
 
 [tool.hatch.build.targets.wheel]
 packages = ["ionq_core"]

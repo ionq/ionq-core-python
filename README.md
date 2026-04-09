@@ -15,6 +15,20 @@ pip install ionq-core-python
 
 Requires Python 3.12+.
 
+## Using Poetry to create local virtualenv and/or publish to PyPi
+```sh
+# install latest version of Poetry
+pipx install poetry --force
+
+# create a local virtualenv
+poetry install
+# activate the virtualenv
+eval $(poetry env activate)
+
+# publish to PyPi
+poetry build
+poetry publish
+```
 ## Usage
 
 ```python
