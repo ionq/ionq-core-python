@@ -1,5 +1,6 @@
-"""A client library for accessing IonQ Cloud Platform API"""
+{% from "helpers.jinja" import safe_docstring %}
 
+{{ safe_docstring(package_description) }}
 from ._exceptions import (
     APIConnectionError,
     APIError,

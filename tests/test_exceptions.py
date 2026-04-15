@@ -52,9 +52,9 @@ class TestRaiseForStatus:
 
 
 class TestExceptionHierarchy:
-    def test_all_inherit_from_api_error(self):
-        for exc_cls in (AuthenticationError, NotFoundError, RateLimitError, ServerError, BadRequestError):
-            assert issubclass(exc_cls, APIError)
+    @pytest.mark.parametrize("cls", [AuthenticationError, NotFoundError, RateLimitError, ServerError, BadRequestError])
+    def test_all_inherit_from_api_error(self, cls):
+        assert issubclass(cls, APIError)
 
     def test_api_error_has_status_code(self):
         exc = APIError(500, {"error": "oops"}, "Server error")

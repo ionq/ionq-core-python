@@ -105,6 +105,10 @@ actions:
           type: number
           format: double
         description: Phases for ms gate
+      angle:
+        type: number
+        format: double
+        description: Interaction angle for ms gate (in turns, default 0.25)
   - target: $.components.schemas.Gate_NativeGate_.properties.type
     remove: true
   - target: $.components.schemas.Gate_NativeGate_.required
@@ -112,3 +116,39 @@ actions:
   - target: $.components.schemas.Gate_NativeGate_
     update:
       required: [gate]
+
+  # Results endpoints: API v0.4 returns results as URLs that must be
+  # fetched separately.  The spec omits these endpoints entirely.
+  - target: $.paths
+    update:
+      /jobs/{UUID}/results/probabilities:
+        get:
+          operationId: getJobProbabilities
+          summary: Fetch the probability distribution for a completed job.
+          tags: [default]
+          parameters:
+            - description: The UUID of the job.
+              in: path
+              name: UUID
+              required: true
+              schema:
+                type: string
+            - description: Whether to apply sharpening to the probability distribution.
+              in: query
+              name: sharpen
+              required: false
+              schema:
+                type: boolean
+          responses:
+            "200":
+              description: Probability distribution keyed by decimal qubit state.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    additionalProperties:
+                      type: number
+            "404":
+              description: Job not found or not yet completed.
+          security:
+            - apiKeyAuth: []

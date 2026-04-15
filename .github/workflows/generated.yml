@@ -36,6 +36,7 @@ jobs:
             --path /tmp/patched-spec.json \
             --meta none \
             --config openapi-python-client-config.yaml \
+            --custom-template-path custom-templates \
             --output-path ionq_core \
             --overwrite
       - name: Check for uncommitted changes

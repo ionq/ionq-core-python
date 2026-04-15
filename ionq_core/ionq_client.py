@@ -22,11 +22,6 @@ _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 
 def _build_user_agent(*tokens: str | None) -> str:
-    """Build the User-Agent string from core info plus optional extra tokens.
-
-    Each non-None token is appended in order.  Convention for tokens is
-    ``"library-name/version"`` (e.g. ``"qiskit-ionq/1.1.0"``).
-    """
     parts = [
         f"ionq-core/{__version__}",
         f"python/{platform.python_version()}",
@@ -37,36 +32,13 @@ def _build_user_agent(*tokens: str | None) -> str:
     return " ".join(parts)
 
 
-def _build_sync_transport(
-    max_retries: int,
-    retryable_status_codes: frozenset[int],
-    ext: ClientExtension | None,
-) -> httpx.BaseTransport:
-    """Assemble the sync transport chain: base -> retry -> hooks -> user wrapper."""
-    transport: httpx.BaseTransport = RetryTransport(
-        httpx.HTTPTransport(), max_retries=max_retries, retryable_status_codes=retryable_status_codes
-    )
-    if ext and ext.event_hooks:
-        transport = HookTransport(transport, ext.event_hooks)
-    if ext and ext.transport_wrapper:
-        transport = ext.transport_wrapper(transport)
-    return transport
-
-
-def _build_async_transport(
-    max_retries: int,
-    retryable_status_codes: frozenset[int],
-    ext: ClientExtension | None,
-) -> httpx.AsyncBaseTransport:
-    """Assemble the async transport chain: base -> retry -> hooks -> user wrapper."""
-    transport: httpx.AsyncBaseTransport = AsyncRetryTransport(
-        httpx.AsyncHTTPTransport(), max_retries=max_retries, retryable_status_codes=retryable_status_codes
-    )
-    if ext and ext.async_event_hooks:
-        transport = AsyncHookTransport(transport, ext.async_event_hooks)
-    if ext and ext.async_transport_wrapper:
-        transport = ext.async_transport_wrapper(transport)
-    return transport
+def _ext_or(ext: ClientExtension | None, attr: str, default):
+    """Return extension.attr if set, otherwise default."""
+    if ext is not None:
+        val = getattr(ext, attr)
+        if val is not None:
+            return val
+    return default
 
 
 def IonQClient(
@@ -106,23 +78,28 @@ def IonQClient(
     ext_ua = extension.user_agent_token if extension else None
     user_agent = _build_user_agent(additional_user_agent, ext_ua)
 
-    effective_timeout = (
-        extension.timeout if (extension and extension.timeout is not None) else (timeout or _DEFAULT_TIMEOUT)
-    )
-    effective_retries = extension.max_retries if (extension and extension.max_retries is not None) else max_retries
-    effective_retry_codes = (
-        extension.retryable_status_codes
-        if (extension and extension.retryable_status_codes is not None)
-        else RETRYABLE_STATUS_CODES
-    )
+    effective_timeout = _ext_or(extension, "timeout", timeout or _DEFAULT_TIMEOUT)
+    effective_retries = _ext_or(extension, "max_retries", max_retries)
+    effective_retry_codes = _ext_or(extension, "retryable_status_codes", RETRYABLE_STATUS_CODES)
 
     headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    sync_transport = _build_sync_transport(effective_retries, effective_retry_codes, extension)
-    async_transport = _build_async_transport(effective_retries, effective_retry_codes, extension)
+    retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
+
+    sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
+    if extension and extension.event_hooks:
+        sync_transport = HookTransport(sync_transport, extension.event_hooks)
+    if extension and extension.transport_wrapper:
+        sync_transport = extension.transport_wrapper(sync_transport)
+
+    async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), **retry_kwargs)
+    if extension and extension.async_event_hooks:
+        async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks)
+    if extension and extension.async_transport_wrapper:
+        async_transport = extension.async_transport_wrapper(async_transport)
 
     client = AuthenticatedClient(
         base_url=base_url,
