@@ -14,7 +14,7 @@ from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, AsyncRetryT
 from .client import AuthenticatedClient
 
 try:
-    __version__ = _pkg_version("ionq-core-python")
+    __version__ = _pkg_version("ionq-core")
 except PackageNotFoundError:
     __version__ = "0.0.0"
 
@@ -28,7 +28,7 @@ def _build_user_agent(*tokens: str | None) -> str:
     ``"library-name/version"`` (e.g. ``"qiskit-ionq/1.1.0"``).
     """
     parts = [
-        f"ionq-core-python/{__version__}",
+        f"ionq-core/{__version__}",
         f"python/{platform.python_version()}",
         f"httpx/{httpx.__version__}",
         f"os/{platform.system().lower()}",

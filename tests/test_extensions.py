@@ -60,7 +60,7 @@ class TestUserAgentToken:
         client = IonQClient(api_key="key", extension=ext)
         ua = client.get_httpx_client().headers["User-Agent"]
         assert "qiskit-ionq/1.1.0" in ua
-        assert ua.startswith("ionq-core-python/")
+        assert ua.startswith("ionq-core/")
 
     def test_additional_user_agent_and_extension_both_present(self):
         ext = ClientExtension(user_agent_token="qiskit-ionq/1.1.0")
@@ -72,7 +72,7 @@ class TestUserAgentToken:
     def test_no_extension_still_works(self):
         client = IonQClient(api_key="key")
         ua = client.get_httpx_client().headers["User-Agent"]
-        assert ua.startswith("ionq-core-python/")
+        assert ua.startswith("ionq-core/")
 
     def test_async_client_user_agent(self):
         ext = ClientExtension(user_agent_token="cirq-ionq/0.5.0")

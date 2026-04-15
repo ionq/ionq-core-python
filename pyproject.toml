@@ -1,5 +1,5 @@
 [project]
-name = "ionq-core-python"
+name = "ionq-core"
 version = "0.1.0"
 description = "Python client for the IonQ Cloud Platform API"
 license = "Apache-2.0"

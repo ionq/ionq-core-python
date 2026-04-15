@@ -1,6 +1,6 @@
-# ionq-core-python
+# ionq-core
 
-[![PyPI version](https://img.shields.io/pypi/v/ionq-core-python.svg)](https://pypi.org/project/ionq-core-python/)
+[![PyPI version](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 A Python client library for the [IonQ Cloud Platform API](https://docs.ionq.com/), providing full access to IonQ's quantum computing services. Supports both synchronous and asynchronous usage, with typed models for all request and response objects.
@@ -10,7 +10,7 @@ Auto-generated from the [IonQ OpenAPI specification](https://docs.ionq.com/api-r
 ## Installation
 
 ```sh
-pip install ionq-core-python
+pip install ionq-core
 ```
 
 Requires Python 3.12+.
@@ -354,24 +354,19 @@ uv run ruff format --check # Check formatting
 uv run ty check ionq_core/ # Type check
 ```
 
-## Publishing to PyPi
+## Publishing
 
-For a new build to be accepted to PyPi the version number in pyproject.toml must be incremented. 
+Publishing is handled automatically via trusted publishing on tagged releases:
 
-For publishing you have two options, first is preferred:
-
-(1) There is a CI/CD action that runs on every new tag and publishes the package to PyPi:
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-(2) Alternatively you can publish the package to PyPi manually:
+For a new build to be accepted at PyPi the version number in pyproject.toml must be incremented.
 
-```sh
-uv build
-uv publish
-```
+In principle you can also publish the package to PyPi manually using the uv package manager but the automatic approach is recommended.
+
 
 ## License
 

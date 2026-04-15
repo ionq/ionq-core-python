@@ -48,7 +48,7 @@ class TestIonQClient:
         client = IonQClient(api_key="key")
         httpx_client = client.get_httpx_client()
         ua = httpx_client.headers["User-Agent"]
-        assert ua.startswith("ionq-core-python/")
+        assert ua.startswith("ionq-core/")
         assert "python/" in ua
         assert "httpx/" in ua
         assert "os/" in ua
@@ -85,7 +85,7 @@ class TestIonQClient:
         async_client = client.get_async_httpx_client()
         assert isinstance(async_client._transport, AsyncRetryTransport)
         assert "apiKey key" in async_client.headers["Authorization"]
-        assert async_client.headers["User-Agent"].startswith("ionq-core-python/")
+        assert async_client.headers["User-Agent"].startswith("ionq-core/")
 
     def test_version_exposed(self):
         assert isinstance(__version__, str)
