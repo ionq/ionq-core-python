@@ -82,7 +82,7 @@ jobs:
               if exc.code != 404:
                   raise
 
-          print(f"OK: releasing {project_name} {project_version}")
+          print(f"Project version validated, next releasing {project_name} {project_version}")
           PY
 
   test:
