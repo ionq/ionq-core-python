@@ -1,4 +1,4 @@
-# Contributing to ionq-core-python
+# Contributing to ionq-core
 
 Thank you for your interest in contributing to the IonQ Python client.
 

@@ -98,7 +98,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ionq-core-python"
+name = "ionq-core"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

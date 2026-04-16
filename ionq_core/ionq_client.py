@@ -14,7 +14,7 @@ from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, AsyncRetryT
 from .client import AuthenticatedClient
 
 try:
-    __version__ = _pkg_version("ionq-core-python")
+    __version__ = _pkg_version("ionq-core")
 except PackageNotFoundError:
     __version__ = "0.0.0"
 
@@ -23,7 +23,7 @@ _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
 def _build_user_agent(*tokens: str | None) -> str:
     parts = [
-        f"ionq-core-python/{__version__}",
+        f"ionq-core/{__version__}",
         f"python/{platform.python_version()}",
         f"httpx/{httpx.__version__}",
         f"os/{platform.system().lower()}",

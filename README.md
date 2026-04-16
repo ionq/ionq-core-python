@@ -1,6 +1,6 @@
-# ionq-core-python
+# ionq-core
 
-[![PyPI version](https://img.shields.io/pypi/v/ionq-core-python.svg)](https://pypi.org/project/ionq-core-python/)
+[![PyPI version](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
 A Python client library for the [IonQ Cloud Platform API](https://docs.ionq.com/), providing full access to IonQ's quantum computing services. Supports both synchronous and asynchronous usage, with typed models for all request and response objects.
@@ -10,7 +10,7 @@ Auto-generated from the [IonQ OpenAPI specification](https://docs.ionq.com/api-r
 ## Installation
 
 ```sh
-pip install ionq-core-python
+pip install ionq-core
 ```
 
 Requires Python 3.12+.
@@ -388,6 +388,15 @@ uv run pytest              # Run tests
 uv run ruff check          # Lint
 uv run ruff format --check # Check formatting
 uv run ty check ionq_core/ # Type check
+```
+
+## Publishing
+
+For a new build to be accepted at PyPI, the version number in pyproject.toml must be incremented. Publishing is handled automatically via trusted publishing on tagged releases:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
 ```
 
 ## License

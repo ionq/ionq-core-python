@@ -1,4 +1,4 @@
-"""Extension API for downstream SDKs building on ionq-core-python.
+"""Extension API for downstream SDKs building on ionq-core.
 
 Provides hooks that downstream libraries (qiskit-ionq, cirq-ionq, etc.)
 use to customize client behavior without forking or monkey-patching.
