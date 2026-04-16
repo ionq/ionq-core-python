@@ -392,17 +392,12 @@ uv run ty check ionq_core/ # Type check
 
 ## Publishing
 
-Publishing is handled automatically via trusted publishing on tagged releases:
+For a new build to be accepted at PyPI, the version number in pyproject.toml must be incremented. Publishing is handled automatically via trusted publishing on tagged releases:
 
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
 ```
-
-For a new build to be accepted at PyPi the version number in pyproject.toml must be incremented.
-
-In principle you can also publish the package to PyPi manually using the uv package manager but the automatic approach is recommended.
-
 
 ## License
 

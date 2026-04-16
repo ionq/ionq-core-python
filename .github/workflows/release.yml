@@ -27,7 +27,7 @@ jobs:
 
       - name: Verify tag matches pyproject version and version is not already on PyPI
         run: |
-          uv run python - <<'PY'
+          uv run --no-project python - <<'PY'
           import os
           import pathlib
           import tomllib
@@ -81,29 +81,35 @@ jobs:
           except urllib.error.HTTPError as exc:
               if exc.code != 404:
                   raise
+          except urllib.error.URLError as exc:
+              print(f"Could not reach PyPI to check for duplicates: {exc}")
+              raise
 
           print(f"Project version validated, next releasing {project_name} {project_version}")
           PY
 
   test:
-    name: Test Python ionq-core distribution
-    needs: verify-version
+    name: Test Python ionq-core distribution (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           enable-cache: false
       - run: uv sync
       - run: uv run pytest
 
   build:
     name: Build Python ionq-core distribution
-    needs: test
+    needs: [verify-version, test]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -115,7 +121,7 @@ jobs:
           python-version: "3.12"
           enable-cache: false
       - run: uv build
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: dist
           path: dist/
@@ -130,9 +136,10 @@ jobs:
       url: https://pypi.org/p/ionq-core
     permissions:
       id-token: write
+      contents: read
     steps:
       - name: Download all the dists
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: dist
           path: dist/
