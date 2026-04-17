@@ -2,6 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml)
+[![API Docs](https://img.shields.io/badge/docs-API%20reference-blue)](https://ionq.github.io/ionq-core-python/)
 
 A Python client library for the [IonQ Cloud Platform API](https://docs.ionq.com/), providing full access to IonQ's quantum computing services. Supports both synchronous and asynchronous usage, with typed models for all request and response objects.
 
@@ -249,6 +251,7 @@ session = SessionManager.from_id(client, "existing-session-id")
 | Cancel a job | `ionq_core.api.default.cancel_job` | Yes |
 | Cancel jobs (bulk) | `ionq_core.api.default.cancel_jobs` | Yes |
 | Get job cost | `ionq_core.api.default.get_job_cost` | Yes |
+| Get compiled circuit | `ionq_core.api.default.get_compiled_file` | Yes |
 | Estimate job cost | `ionq_core.api.default.estimate_job_cost` | Yes |
 
 ### Sessions

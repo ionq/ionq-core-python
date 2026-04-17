@@ -1,0 +1,12 @@
+name: Feature Request
+description: Suggest a feature for ionq-core
+labels: [enhancement]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What problem would this solve, and how would you like it to work?
+    validations:
+      required: true

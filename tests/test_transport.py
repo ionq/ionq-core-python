@@ -10,7 +10,7 @@ from ionq_core._exceptions import (
     RateLimitError,
     ServerError,
 )
-from ionq_core._transport import AsyncRetryTransport, RetryTransport
+from ionq_core._transport import AsyncRetryTransport, RetryTransport, _parse_retry_after
 
 _URL = "https://api.ionq.co/v0.4/backends"
 
@@ -171,6 +171,48 @@ class TestAsyncRetryTransport:
     async def test_timeout_retried(self):
         transport, _ = _async([httpx.ReadTimeout("timed out"), _resp(200)])
         assert (await transport.handle_async_request(_req())).status_code == 200
+
+
+class TestParseRetryAfter:
+    def test_http_date_returns_positive(self):
+        r = httpx.Response(429, headers={"retry-after": "Mon, 01 Jan 2035 00:00:00 GMT"})
+        assert _parse_retry_after(r) > 0
+
+    def test_unparseable_returns_none(self):
+        r = httpx.Response(429, headers={"retry-after": "not-a-date-or-number"})
+        assert _parse_retry_after(r) is None
+
+
+class TestRaiseExhaustedEdgeCases:
+    def test_no_response_no_exception(self):
+        from ionq_core._transport import _raise_exhausted
+
+        with pytest.raises(APIConnectionError, match="no response"):
+            _raise_exhausted(None, None)
+
+
+class TestRetryableExcEdgeCases:
+    def test_post_timeout_not_retried(self):
+        transport, fake = _sync([httpx.ReadTimeout("timed out")])
+        with pytest.raises(APIConnectionError):
+            transport.handle_request(_req("POST"))
+        assert fake.call_count == 1
+
+
+class TestAsyncRetryTransportEdgeCases:
+    async def test_connection_error_retried(self):
+        transport, fake = _async([httpx.ConnectError("refused"), _resp(200)])
+        assert (await transport.handle_async_request(_req())).status_code == 200
+        assert fake.call_count == 2
+
+    async def test_non_retryable_exc_raises(self):
+        transport, _ = _async([RuntimeError("unexpected")])
+        with pytest.raises(APIConnectionError):
+            await transport.handle_async_request(_req())
+
+    async def test_aclose_delegates(self):
+        transport, _ = _async([_resp(200)])
+        await transport.aclose()
 
 
 class TestIdempotencyAwareRetry:

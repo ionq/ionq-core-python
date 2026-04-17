@@ -1,3 +1,5 @@
+import pytest
+
 from ionq_core import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
 
 
@@ -16,6 +18,32 @@ def _jobs_page(job_ids, next_cursor=None):
         ],
         "next": next_cursor,
     }
+
+
+class TestIterJobsNoneResponse:
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    def test_sync_none_response(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500)
+        auth_client.raise_on_unexpected_status = False
+        assert list(iter_jobs(auth_client)) == []
+
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    async def test_async_none_response(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500)
+        auth_client.raise_on_unexpected_status = False
+        assert [j async for j in aiter_jobs(auth_client)] == []
+
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    def test_sync_session_none_response(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500)
+        auth_client.raise_on_unexpected_status = False
+        assert list(iter_session_jobs(auth_client, "sess-1")) == []
+
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    async def test_async_session_none_response(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500)
+        auth_client.raise_on_unexpected_status = False
+        assert [j async for j in aiter_session_jobs(auth_client, "sess-1")] == []
 
 
 class TestIterJobs:
