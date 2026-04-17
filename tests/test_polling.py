@@ -1,9 +1,11 @@
-import pytest
+import asyncio
 
-_real_sleep = __import__("asyncio").sleep
+import pytest
 
 from ionq_core._exceptions import IonQError
 from ionq_core._polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
+
+_real_sleep = asyncio.sleep
 
 
 def _job_json(job_id, status, failure=None):

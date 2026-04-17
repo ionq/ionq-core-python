@@ -73,4 +73,3 @@ class TestIonQClient:
     def test_version_exposed(self):
         assert isinstance(__version__, str)
         assert __version__ != ""
-
