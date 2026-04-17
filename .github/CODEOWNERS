@@ -1,0 +1,7 @@
+# Default owners for everything in the repo.
+* @ionq/sdk-team
+
+# CI/CD and repo configuration require additional review.
+.github/ @ionq/sdk-team
+pyproject.toml @ionq/sdk-team
+SECURITY.md @ionq/sdk-team

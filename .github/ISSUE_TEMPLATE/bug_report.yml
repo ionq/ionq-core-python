@@ -1,0 +1,32 @@
+name: Bug Report
+description: Report a bug in ionq-core
+labels: [bug]
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Minimal code or steps to reproduce the bug.
+      render: Python
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Version Information
+      description: |
+        Paste the output of:
+        ```bash
+        python -c "import ionq_core; print(ionq_core.__version__); import platform; print(platform.python_version()); print(platform.platform())"
+        ```
+      render: Text
+    validations:
+      required: true
