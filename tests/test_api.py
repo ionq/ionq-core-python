@@ -1,7 +1,7 @@
 import pytest
 
 from ionq_core.api.backends import get_backends
-from ionq_core.api.default import create_job, get_jobs
+from ionq_core.api.default import create_job, get_compiled_file, get_jobs
 from ionq_core.api.whoami import get_whoami
 from ionq_core.errors import UnexpectedStatus
 from ionq_core.models.backend import Backend
@@ -119,6 +119,30 @@ class TestCreateJob:
         assert isinstance(result, JobCreationResponse)
         assert result.id == "new-job-id"
         assert result.status == "submitted"
+
+
+class TestGetCompiledFile:
+    def test_sync(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json="OPENQASM 3.0;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];")
+        result = get_compiled_file.sync(uuid="job-123", lang="qasm3", client=auth_client)
+        assert isinstance(result, str)
+        assert "OPENQASM" in result
+
+    def test_sync_detailed(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json="compiled-native-circuit")
+        resp = get_compiled_file.sync_detailed(uuid="job-123", lang="native", client=auth_client)
+        assert resp.status_code.value == 200
+        assert resp.parsed == "compiled-native-circuit"
+
+    async def test_asyncio(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json="OPENQASM 3.0;\nh q[0];")
+        result = await get_compiled_file.asyncio(uuid="job-123", lang="qasm3", client=auth_client)
+        assert isinstance(result, str)
+
+    def test_not_found(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=404)
+        result = get_compiled_file.sync(uuid="nonexistent", lang="native", client=auth_client)
+        assert result is None
 
 
 class TestUnexpectedStatus:
