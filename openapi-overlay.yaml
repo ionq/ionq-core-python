@@ -4,12 +4,9 @@ info:
   version: 3.0.0
 extends: ./openapi.json
 actions:
-  # Nullable schemas: these are always null when the value is absent.
-  # Making the schema itself nullable is simpler than patching every property
-  # that references it, and all current uses are in nullable contexts.
-  - target: $.components.schemas.JsonObject
-    update:
-      nullable: true
+  # Nullable schemas: the API returns null for these when the value is absent.
+  # All current uses are in nullable contexts, so making the schema nullable
+  # is simpler than patching every referencing property individually.
   - target: $.components.schemas.Failure
     update:
       nullable: true
@@ -25,24 +22,16 @@ actions:
     update:
       required: [backend, status, qubits, average_queue_time, last_updated]
 
-  # CircuitJobSettings/CircuitJobStats cannot be made nullable at the schema
-  # level because the generator creates duplicate model names. Instead we
-  # remove the bare-$ref property and re-add it with allOf+nullable.
-  - target: $.components.schemas.GetCircuitJobResponse.properties.settings
+  # Job.results: the API returns null for non-completed jobs but the spec has
+  # a bare non-nullable $ref to JsonObject. Replace with allOf+nullable.
+  # (output, settings, stats always return {} and are correctly non-nullable.)
+  - target: $.components.schemas.Job.properties.results
     remove: true
-  - target: $.components.schemas.GetCircuitJobResponse.properties
+  - target: $.components.schemas.Job.properties
     update:
-      settings:
+      results:
         allOf:
-          - $ref: "#/components/schemas/CircuitJobSettings"
-        nullable: true
-  - target: $.components.schemas.GetCircuitJobResponse.properties.stats
-    remove: true
-  - target: $.components.schemas.GetCircuitJobResponse.properties
-    update:
-      stats:
-        allOf:
-          - $ref: "#/components/schemas/CircuitJobStats"
+          - $ref: "#/components/schemas/JsonObject"
         nullable: true
 
   # Job: nullable primitive fields.
@@ -79,7 +68,15 @@ actions:
     update:
       nullable: true
 
-  # BaseJobSummary (Pick_BaseJob...): same nullable primitives as Job.
+  # BaseJobSummary (Pick_BaseJob...): same fixes as Job.
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.results"
+    remove: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties"
+    update:
+      results:
+        allOf:
+          - $ref: "#/components/schemas/JsonObject"
+        nullable: true
   - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.project_id"
     update:
       nullable: true

@@ -28,10 +28,10 @@ def _job_json(job_id, status, failure=None):
         "predicted_execution_duration_ms": None,
         "execution_duration_ms": None,
         "failure": failure,
-        "output": None,
+        "output": {},
         "child_job_ids": None,
-        "settings": None,
-        "stats": None,
+        "settings": {},
+        "stats": {},
         "results": None,
     }
 

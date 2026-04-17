@@ -78,7 +78,7 @@ from .json_multi_circuit_job_settings import JSONMultiCircuitJobSettings
 from .json_multi_circuit_job_settings_compilation import JSONMultiCircuitJobSettingsCompilation
 from .json_multi_circuit_job_settings_error_mitigation import JSONMultiCircuitJobSettingsErrorMitigation
 from .json_multi_circuit_job_type import JSONMultiCircuitJobType
-from .json_object_type_0 import JsonObjectType0
+from .json_object import JsonObject
 from .linear_constraint import LinearConstraint
 from .modality import Modality
 from .native_circuit import NativeCircuit
@@ -191,7 +191,7 @@ __all__ = (
     "JSONMultiCircuitJobSettingsCompilation",
     "JSONMultiCircuitJobSettingsErrorMitigation",
     "JSONMultiCircuitJobType",
-    "JsonObjectType0",
+    "JsonObject",
     "LinearConstraint",
     "Modality",
     "NativeCircuit",

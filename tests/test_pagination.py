@@ -25,9 +25,9 @@ def _jobs_page(job_ids, next_cursor=None):
                 "predicted_execution_duration_ms": None,
                 "execution_duration_ms": None,
                 "failure": None,
-                "output": None,
-                "settings": None,
-                "stats": None,
+                "output": {},
+                "settings": {},
+                "stats": {},
                 "results": None,
             }
             for jid in job_ids

@@ -16,7 +16,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.failure_type_0 import FailureType0
   from ..models.job_metadata_type_0 import JobMetadataType0
-  from ..models.json_object_type_0 import JsonObjectType0
+  from ..models.json_object import JsonObject
   from ..models.noise import Noise
 
 
@@ -50,10 +50,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_execution_duration_ms (int | None):
             execution_duration_ms (int | None):
             failure (FailureType0 | None):
-            output (JsonObjectType0 | None):
-            settings (JsonObjectType0 | None):
-            stats (JsonObjectType0 | None):
-            results (JsonObjectType0 | None):
+            output (JsonObject):
+            settings (JsonObject):
+            stats (JsonObject):
+            results (JsonObject | None):
             shots (int | Unset):
             noise (Noise | Unset):
      """
@@ -76,10 +76,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     predicted_execution_duration_ms: int | None
     execution_duration_ms: int | None
     failure: FailureType0 | None
-    output: JsonObjectType0 | None
-    settings: JsonObjectType0 | None
-    stats: JsonObjectType0 | None
-    results: JsonObjectType0 | None
+    output: JsonObject
+    settings: JsonObject
+    stats: JsonObject
+    results: JsonObject | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -91,7 +91,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     def to_dict(self) -> dict[str, Any]:
         from ..models.failure_type_0 import FailureType0
         from ..models.job_metadata_type_0 import JobMetadataType0
-        from ..models.json_object_type_0 import JsonObjectType0
+        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         id = self.id
 
@@ -147,26 +147,14 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         else:
             failure = self.failure
 
-        output: dict[str, Any] | None
-        if isinstance(self.output, JsonObjectType0):
-            output = self.output.to_dict()
-        else:
-            output = self.output
+        output = self.output.to_dict()
 
-        settings: dict[str, Any] | None
-        if isinstance(self.settings, JsonObjectType0):
-            settings = self.settings.to_dict()
-        else:
-            settings = self.settings
+        settings = self.settings.to_dict()
 
-        stats: dict[str, Any] | None
-        if isinstance(self.stats, JsonObjectType0):
-            stats = self.stats.to_dict()
-        else:
-            stats = self.stats
+        stats = self.stats.to_dict()
 
         results: dict[str, Any] | None
-        if isinstance(self.results, JsonObjectType0):
+        if isinstance(self.results, JsonObject):
             results = self.results.to_dict()
         else:
             results = self.results
@@ -217,7 +205,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.failure_type_0 import FailureType0
         from ..models.job_metadata_type_0 import JobMetadataType0
-        from ..models.json_object_type_0 import JsonObjectType0
+        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         d = dict(src_dict)
         id = d.pop("id")
@@ -351,74 +339,35 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         failure = _parse_failure(d.pop("failure"))
 
 
-        def _parse_output(data: object) -> JsonObjectType0 | None:
+        output = JsonObject.from_dict(d.pop("output"))
+
+
+
+
+        settings = JsonObject.from_dict(d.pop("settings"))
+
+
+
+
+        stats = JsonObject.from_dict(d.pop("stats"))
+
+
+
+
+        def _parse_results(data: object) -> JsonObject | None:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+                results_type_1 = JsonObject.from_dict(data)
 
 
 
-                return componentsschemas_json_object_type_0
+                return results_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(JsonObjectType0 | None, data)
-
-        output = _parse_output(d.pop("output"))
-
-
-        def _parse_settings(data: object) -> JsonObjectType0 | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None, data)
-
-        settings = _parse_settings(d.pop("settings"))
-
-
-        def _parse_stats(data: object) -> JsonObjectType0 | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None, data)
-
-        stats = _parse_stats(d.pop("stats"))
-
-
-        def _parse_results(data: object) -> JsonObjectType0 | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None, data)
+            return cast(JsonObject | None, data)
 
         results = _parse_results(d.pop("results"))
 

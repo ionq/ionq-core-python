@@ -19,7 +19,7 @@ if TYPE_CHECKING:
   from ..models.circuit_job_stats import CircuitJobStats
   from ..models.failure_type_0 import FailureType0
   from ..models.job_metadata_type_0 import JobMetadataType0
-  from ..models.json_object_type_0 import JsonObjectType0
+  from ..models.json_object import JsonObject
   from ..models.noise import Noise
 
 
@@ -52,11 +52,11 @@ class GetCircuitJobResponse:
             predicted_execution_duration_ms (float | None):
             execution_duration_ms (float | None):
             failure (FailureType0 | None):
-            output (JsonObjectType0 | None):
+            output (JsonObject):
             child_job_ids (list[str] | None):
+            settings (CircuitJobSettings):
+            stats (CircuitJobStats):
             results (CircuitJobResult | None):
-            settings (CircuitJobSettings | None):
-            stats (CircuitJobStats | None):
             shots (int | Unset):
             noise (Noise | Unset):
      """
@@ -79,11 +79,11 @@ class GetCircuitJobResponse:
     predicted_execution_duration_ms: float | None
     execution_duration_ms: float | None
     failure: FailureType0 | None
-    output: JsonObjectType0 | None
+    output: JsonObject
     child_job_ids: list[str] | None
+    settings: CircuitJobSettings
+    stats: CircuitJobStats
     results: CircuitJobResult | None
-    settings: CircuitJobSettings | None
-    stats: CircuitJobStats | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
 
@@ -97,7 +97,7 @@ class GetCircuitJobResponse:
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure_type_0 import FailureType0
         from ..models.job_metadata_type_0 import JobMetadataType0
-        from ..models.json_object_type_0 import JsonObjectType0
+        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         id = self.id
 
@@ -152,11 +152,7 @@ class GetCircuitJobResponse:
         else:
             failure = self.failure
 
-        output: dict[str, Any] | None
-        if isinstance(self.output, JsonObjectType0):
-            output = self.output.to_dict()
-        else:
-            output = self.output
+        output = self.output.to_dict()
 
         child_job_ids: list[str] | None
         if isinstance(self.child_job_ids, list):
@@ -166,23 +162,15 @@ class GetCircuitJobResponse:
         else:
             child_job_ids = self.child_job_ids
 
+        settings = self.settings.to_dict()
+
+        stats = self.stats.to_dict()
+
         results: dict[str, Any] | None
         if isinstance(self.results, CircuitJobResult):
             results = self.results.to_dict()
         else:
             results = self.results
-
-        settings: dict[str, Any] | None
-        if isinstance(self.settings, CircuitJobSettings):
-            settings = self.settings.to_dict()
-        else:
-            settings = self.settings
-
-        stats: dict[str, Any] | None
-        if isinstance(self.stats, CircuitJobStats):
-            stats = self.stats.to_dict()
-        else:
-            stats = self.stats
 
         shots = self.shots
 
@@ -214,9 +202,9 @@ class GetCircuitJobResponse:
             "failure": failure,
             "output": output,
             "child_job_ids": child_job_ids,
-            "results": results,
             "settings": settings,
             "stats": stats,
+            "results": results,
         })
         if shots is not UNSET:
             field_dict["shots"] = shots
@@ -234,7 +222,7 @@ class GetCircuitJobResponse:
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure_type_0 import FailureType0
         from ..models.job_metadata_type_0 import JobMetadataType0
-        from ..models.json_object_type_0 import JsonObjectType0
+        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         d = dict(src_dict)
         id = d.pop("id")
@@ -362,22 +350,9 @@ class GetCircuitJobResponse:
         failure = _parse_failure(d.pop("failure"))
 
 
-        def _parse_output(data: object) -> JsonObjectType0 | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+        output = JsonObject.from_dict(d.pop("output"))
 
 
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None, data)
-
-        output = _parse_output(d.pop("output"))
 
 
         def _parse_child_job_ids(data: object) -> list[str] | None:
@@ -396,6 +371,16 @@ class GetCircuitJobResponse:
         child_job_ids = _parse_child_job_ids(d.pop("child_job_ids"))
 
 
+        settings = CircuitJobSettings.from_dict(d.pop("settings"))
+
+
+
+
+        stats = CircuitJobStats.from_dict(d.pop("stats"))
+
+
+
+
         def _parse_results(data: object) -> CircuitJobResult | None:
             if data is None:
                 return data
@@ -412,42 +397,6 @@ class GetCircuitJobResponse:
             return cast(CircuitJobResult | None, data)
 
         results = _parse_results(d.pop("results"))
-
-
-        def _parse_settings(data: object) -> CircuitJobSettings | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                settings_type_1 = CircuitJobSettings.from_dict(data)
-
-
-
-                return settings_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(CircuitJobSettings | None, data)
-
-        settings = _parse_settings(d.pop("settings"))
-
-
-        def _parse_stats(data: object) -> CircuitJobStats | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                stats_type_1 = CircuitJobStats.from_dict(data)
-
-
-
-                return stats_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(CircuitJobStats | None, data)
-
-        stats = _parse_stats(d.pop("stats"))
 
 
         shots = d.pop("shots", UNSET)
@@ -483,9 +432,9 @@ class GetCircuitJobResponse:
             failure=failure,
             output=output,
             child_job_ids=child_job_ids,
-            results=results,
             settings=settings,
             stats=stats,
+            results=results,
             shots=shots,
             noise=noise,
         )
