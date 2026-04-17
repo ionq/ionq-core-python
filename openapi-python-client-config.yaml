@@ -15,9 +15,3 @@ class_overrides:
   Gate_NativeGate:
     class_name: NativeGateInstruction
     module_name: native_gate_instruction
-  Optional_IsoTimestamp_:
-    class_name: OptionalIsoTimestamp
-    module_name: optional_iso_timestamp
-  Optional_number_:
-    class_name: OptionalNumber
-    module_name: optional_number

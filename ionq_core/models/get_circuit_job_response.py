@@ -48,9 +48,10 @@ class GetCircuitJobResponse:
             submitted_at (str):
             started_at (None | str):
             completed_at (None | str):
-            predicted_wait_time_ms (float | None):
-            predicted_execution_duration_ms (float | None):
-            execution_duration_ms (float | None):
+            predicted_wait_time_ms (int | None):
+            predicted_execution_duration_ms (int | None):
+            execution_duration_ms (int | None): How long the job actually took to run on the QPU. Null if the job hasn't run
+                yet.
             failure (Failure | None):
             output (JsonObject):
             settings (CircuitJobSettings):
@@ -75,9 +76,9 @@ class GetCircuitJobResponse:
     submitted_at: str
     started_at: None | str
     completed_at: None | str
-    predicted_wait_time_ms: float | None
-    predicted_execution_duration_ms: float | None
-    execution_duration_ms: float | None
+    predicted_wait_time_ms: int | None
+    predicted_execution_duration_ms: int | None
+    execution_duration_ms: int | None
     failure: Failure | None
     output: JsonObject
     settings: CircuitJobSettings
@@ -137,13 +138,13 @@ class GetCircuitJobResponse:
         completed_at: None | str
         completed_at = self.completed_at
 
-        predicted_wait_time_ms: float | None
+        predicted_wait_time_ms: int | None
         predicted_wait_time_ms = self.predicted_wait_time_ms
 
-        predicted_execution_duration_ms: float | None
+        predicted_execution_duration_ms: int | None
         predicted_execution_duration_ms = self.predicted_execution_duration_ms
 
-        execution_duration_ms: float | None
+        execution_duration_ms: int | None
         execution_duration_ms = self.execution_duration_ms
 
         failure: dict[str, Any] | None
@@ -308,26 +309,26 @@ class GetCircuitJobResponse:
         completed_at = _parse_completed_at(d.pop("completed_at"))
 
 
-        def _parse_predicted_wait_time_ms(data: object) -> float | None:
+        def _parse_predicted_wait_time_ms(data: object) -> int | None:
             if data is None:
                 return data
-            return cast(float | None, data)
+            return cast(int | None, data)
 
         predicted_wait_time_ms = _parse_predicted_wait_time_ms(d.pop("predicted_wait_time_ms"))
 
 
-        def _parse_predicted_execution_duration_ms(data: object) -> float | None:
+        def _parse_predicted_execution_duration_ms(data: object) -> int | None:
             if data is None:
                 return data
-            return cast(float | None, data)
+            return cast(int | None, data)
 
         predicted_execution_duration_ms = _parse_predicted_execution_duration_ms(d.pop("predicted_execution_duration_ms"))
 
 
-        def _parse_execution_duration_ms(data: object) -> float | None:
+        def _parse_execution_duration_ms(data: object) -> int | None:
             if data is None:
                 return data
-            return cast(float | None, data)
+            return cast(int | None, data)
 
         execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
 

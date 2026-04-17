@@ -2473,19 +2473,6 @@
       "IsoTimestamp": {
         "type": "string"
       },
-      "Optional_IsoTimestamp_": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/IsoTimestamp"
-          }
-        ],
-        "nullable": true
-      },
-      "Optional_number_": {
-        "type": "number",
-        "format": "double",
-        "nullable": true
-      },
       "CircuitJobCompilationSettings": {
         "properties": {
           "precision": {
@@ -2673,19 +2660,36 @@
             "$ref": "#/components/schemas/IsoTimestamp"
           },
           "started_at": {
-            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IsoTimestamp"
+              }
+            ],
+            "nullable": true
           },
           "completed_at": {
-            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IsoTimestamp"
+              }
+            ],
+            "nullable": true
           },
           "predicted_wait_time_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "predicted_execution_duration_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "execution_duration_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "How long the job actually took to run on the QPU. Null if the job hasn't run yet."
           },
           "shots": {
             "type": "integer",
@@ -3709,19 +3713,36 @@
             "$ref": "#/components/schemas/IsoTimestamp"
           },
           "started_at": {
-            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IsoTimestamp"
+              }
+            ],
+            "nullable": true
           },
           "completed_at": {
-            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IsoTimestamp"
+              }
+            ],
+            "nullable": true
           },
           "predicted_wait_time_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "predicted_execution_duration_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "execution_duration_ms": {
-            "$ref": "#/components/schemas/Optional_number_"
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "How long the job actually took to run on the QPU. Null if the job hasn't run yet."
           },
           "shots": {
             "type": "integer",
