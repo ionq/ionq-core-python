@@ -251,6 +251,7 @@ session = SessionManager.from_id(client, "existing-session-id")
 | Cancel a job | `ionq_core.api.default.cancel_job` | Yes |
 | Cancel jobs (bulk) | `ionq_core.api.default.cancel_jobs` | Yes |
 | Get job cost | `ionq_core.api.default.get_job_cost` | Yes |
+| Get compiled circuit | `ionq_core.api.default.get_compiled_file` | Yes |
 | Estimate job cost | `ionq_core.api.default.estimate_job_cost` | Yes |
 
 ### Sessions

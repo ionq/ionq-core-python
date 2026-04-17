@@ -110,6 +110,5 @@ exclude_also = [
     "class .*\\bProtocol\\):",
     "except PackageNotFoundError:",
     "@overload",
-    "raise NotImplementedError",
     'if __name__ == "__main__":',
 ]

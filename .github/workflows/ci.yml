@@ -61,5 +61,4 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: ${{ github.event_name == 'push' }}
-      - run: uv sync
       - run: uvx pip-audit --require-hashes --strict -r <(uv pip compile pyproject.toml --generate-hashes)
