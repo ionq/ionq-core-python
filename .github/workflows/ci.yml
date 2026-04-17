@@ -62,6 +62,4 @@ jobs:
           python-version: "3.12"
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
-      - uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
-        with:
-          virtual-environment: .venv/
+      - run: uvx pip-audit --require-hashes --strict -r <(uv pip compile pyproject.toml --generate-hashes)
