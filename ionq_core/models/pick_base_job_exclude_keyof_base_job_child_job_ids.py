@@ -15,7 +15,7 @@ from typing import cast
 
 if TYPE_CHECKING:
   from ..models.failure_type_0 import FailureType0
-  from ..models.job_metadata_type_0 import JobMetadataType0
+  from ..models.job_metadata import JobMetadata
   from ..models.json_object import JsonObject
   from ..models.noise import Noise
 
@@ -41,7 +41,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id (None | str):
             parent_job_id (None | str):
             session_id (None | str):
-            metadata (JobMetadataType0 | None):
             name (None | str):
             submitted_at (None | str):
             started_at (None | str):
@@ -53,6 +52,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             output (JsonObject):
             settings (JsonObject):
             stats (JsonObject):
+            metadata (JobMetadata | None):
             results (JsonObject | None):
             shots (int | Unset):
             noise (Noise | Unset):
@@ -67,7 +67,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     project_id: None | str
     parent_job_id: None | str
     session_id: None | str
-    metadata: JobMetadataType0 | None
     name: None | str
     submitted_at: None | str
     started_at: None | str
@@ -79,6 +78,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     output: JsonObject
     settings: JsonObject
     stats: JsonObject
+    metadata: JobMetadata | None
     results: JsonObject | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
@@ -90,7 +90,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.failure_type_0 import FailureType0
-        from ..models.job_metadata_type_0 import JobMetadataType0
+        from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
         id = self.id
@@ -113,12 +113,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         session_id: None | str
         session_id = self.session_id
-
-        metadata: dict[str, Any] | None
-        if isinstance(self.metadata, JobMetadataType0):
-            metadata = self.metadata.to_dict()
-        else:
-            metadata = self.metadata
 
         name: None | str
         name = self.name
@@ -153,6 +147,12 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         stats = self.stats.to_dict()
 
+        metadata: dict[str, Any] | None
+        if isinstance(self.metadata, JobMetadata):
+            metadata = self.metadata.to_dict()
+        else:
+            metadata = self.metadata
+
         results: dict[str, Any] | None
         if isinstance(self.results, JsonObject):
             results = self.results.to_dict()
@@ -178,7 +178,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "project_id": project_id,
             "parent_job_id": parent_job_id,
             "session_id": session_id,
-            "metadata": metadata,
             "name": name,
             "submitted_at": submitted_at,
             "started_at": started_at,
@@ -190,6 +189,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "output": output,
             "settings": settings,
             "stats": stats,
+            "metadata": metadata,
             "results": results,
         })
         if shots is not UNSET:
@@ -204,7 +204,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.failure_type_0 import FailureType0
-        from ..models.job_metadata_type_0 import JobMetadataType0
+        from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
         d = dict(src_dict)
@@ -245,24 +245,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             return cast(None | str, data)
 
         session_id = _parse_session_id(d.pop("session_id"))
-
-
-        def _parse_metadata(data: object) -> JobMetadataType0 | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_job_metadata_type_0 = JobMetadataType0.from_dict(data)
-
-
-
-                return componentsschemas_job_metadata_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JobMetadataType0 | None, data)
-
-        metadata = _parse_metadata(d.pop("metadata"))
 
 
         def _parse_name(data: object) -> None | str:
@@ -354,6 +336,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
+        def _parse_metadata(data: object) -> JobMetadata | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                metadata_type_1 = JobMetadata.from_dict(data)
+
+
+
+                return metadata_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JobMetadata | None, data)
+
+        metadata = _parse_metadata(d.pop("metadata"))
+
+
         def _parse_results(data: object) -> JsonObject | None:
             if data is None:
                 return data
@@ -394,7 +394,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id=project_id,
             parent_job_id=parent_job_id,
             session_id=session_id,
-            metadata=metadata,
             name=name,
             submitted_at=submitted_at,
             started_at=started_at,
@@ -406,6 +405,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             output=output,
             settings=settings,
             stats=stats,
+            metadata=metadata,
             results=results,
             shots=shots,
             noise=noise,

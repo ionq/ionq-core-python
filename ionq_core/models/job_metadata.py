@@ -14,12 +14,12 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="JobMetadataType0")
+T = TypeVar("T", bound="JobMetadata")
 
 
 
 @_attrs_define
-class JobMetadataType0:
+class JobMetadata:
     """ 
      """
 
@@ -41,12 +41,12 @@ class JobMetadataType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        job_metadata_type_0 = cls(
+        job_metadata = cls(
         )
 
 
-        job_metadata_type_0.additional_properties = d
-        return job_metadata_type_0
+        job_metadata.additional_properties = d
+        return job_metadata
 
     @property
     def additional_keys(self) -> list[str]:

@@ -4,15 +4,31 @@ info:
   version: 3.0.0
 extends: ./openapi.json
 actions:
-  # Nullable schemas: the API returns null for these when the value is absent.
-  # All current uses are in nullable contexts, so making the schema nullable
-  # is simpler than patching every referencing property individually.
+  # Failure schema: only used in response contexts (Job, BaseJobSummary,
+  # GetCircuitJobResponse) where the API returns null for non-failed jobs.
   - target: $.components.schemas.Failure
     update:
       nullable: true
-  - target: $.components.schemas.JobMetadata
+
+  # JobMetadata: nullable in responses but NOT in creation payloads (where
+  # null fails validation). Use allOf+nullable on the response properties
+  # instead of making the schema itself nullable.
+  - target: $.components.schemas.Job.properties.metadata
+    remove: true
+  - target: $.components.schemas.Job.properties
     update:
-      nullable: true
+      metadata:
+        allOf:
+          - $ref: "#/components/schemas/JobMetadata"
+        nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.metadata"
+    remove: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties"
+    update:
+      metadata:
+        allOf:
+          - $ref: "#/components/schemas/JobMetadata"
+        nullable: true
 
   # Backend.degraded: not returned by all backends (e.g. qpu.forte-enterprise-1
   # omits it). Remove from required so the field becomes optional.

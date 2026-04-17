@@ -15,7 +15,7 @@ from typing import cast
 
 if TYPE_CHECKING:
   from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
-  from ..models.job_metadata_type_0 import JobMetadataType0
+  from ..models.job_metadata import JobMetadata
   from ..models.native_circuit_input import NativeCircuitInput
   from ..models.noise import Noise
   from ..models.qis_circuit_input import QisCircuitInput
@@ -37,7 +37,7 @@ class CircuitJobCreationPayload:
             type_ (CircuitJobCreationPayloadType):
             input_ (NativeCircuitInput | QisCircuitInput):
             name (str | Unset):
-            metadata (JobMetadataType0 | None | Unset):
+            metadata (JobMetadata | Unset):
             shots (int | Unset):  Default: 100.
             session_id (str | Unset):
             settings (CircuitJobCreationPayloadSettings | Unset):
@@ -49,7 +49,7 @@ class CircuitJobCreationPayload:
     type_: CircuitJobCreationPayloadType
     input_: NativeCircuitInput | QisCircuitInput
     name: str | Unset = UNSET
-    metadata: JobMetadataType0 | None | Unset = UNSET
+    metadata: JobMetadata | Unset = UNSET
     shots: int | Unset = 100
     session_id: str | Unset = UNSET
     settings: CircuitJobCreationPayloadSettings | Unset = UNSET
@@ -62,7 +62,7 @@ class CircuitJobCreationPayload:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
-        from ..models.job_metadata_type_0 import JobMetadataType0
+        from ..models.job_metadata import JobMetadata
         from ..models.native_circuit_input import NativeCircuitInput
         from ..models.noise import Noise
         from ..models.qis_circuit_input import QisCircuitInput
@@ -79,13 +79,9 @@ class CircuitJobCreationPayload:
 
         name = self.name
 
-        metadata: dict[str, Any] | None | Unset
-        if isinstance(self.metadata, Unset):
-            metadata = UNSET
-        elif isinstance(self.metadata, JobMetadataType0):
+        metadata: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.metadata, Unset):
             metadata = self.metadata.to_dict()
-        else:
-            metadata = self.metadata
 
         shots = self.shots
 
@@ -131,7 +127,7 @@ class CircuitJobCreationPayload:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.circuit_job_creation_payload_settings import CircuitJobCreationPayloadSettings
-        from ..models.job_metadata_type_0 import JobMetadataType0
+        from ..models.job_metadata import JobMetadata
         from ..models.native_circuit_input import NativeCircuitInput
         from ..models.noise import Noise
         from ..models.qis_circuit_input import QisCircuitInput
@@ -167,24 +163,14 @@ class CircuitJobCreationPayload:
 
         name = d.pop("name", UNSET)
 
-        def _parse_metadata(data: object) -> JobMetadataType0 | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_job_metadata_type_0 = JobMetadataType0.from_dict(data)
+        _metadata = d.pop("metadata", UNSET)
+        metadata: JobMetadata | Unset
+        if isinstance(_metadata,  Unset):
+            metadata = UNSET
+        else:
+            metadata = JobMetadata.from_dict(_metadata)
 
 
-
-                return componentsschemas_job_metadata_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JobMetadataType0 | None | Unset, data)
-
-        metadata = _parse_metadata(d.pop("metadata", UNSET))
 
 
         shots = d.pop("shots", UNSET)

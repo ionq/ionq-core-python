@@ -63,7 +63,7 @@ from .job_canceled_response_status import JobCanceledResponseStatus
 from .job_creation_response import JobCreationResponse
 from .job_deleted_response import JobDeletedResponse
 from .job_deleted_response_status import JobDeletedResponseStatus
-from .job_metadata_type_0 import JobMetadataType0
+from .job_metadata import JobMetadata
 from .job_q_ctrl_status import JobQCtrlStatus
 from .job_status import JobStatus
 from .jobs_bulk_operation_request import JobsBulkOperationRequest
@@ -176,7 +176,7 @@ __all__ = (
     "JobCreationResponse",
     "JobDeletedResponse",
     "JobDeletedResponseStatus",
-    "JobMetadataType0",
+    "JobMetadata",
     "JobQCtrlStatus",
     "JobsBulkOperationRequest",
     "JobsCanceledResponse",
