@@ -4,6 +4,7 @@ package_version_override: "0.1.0"
 literal_enums: true
 
 post_hooks:
+  - "python -Ic \"p=__import__('pathlib').Path('client.py');p.write_text(p.read_text().replace('    token: str\\n','    token: str = field(repr=False)\\n'))\""
   - "ruff check . --fix-only"
   - "ruff format ."
 

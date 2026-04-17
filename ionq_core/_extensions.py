@@ -33,6 +33,10 @@ class EventHook(Protocol):
     Hooks are for observation only (logging, metrics, telemetry) - they
     must not mutate the request or response.  For mutation, use a custom
     httpx transport instead.
+
+    ``on_error`` is called when the underlying transport raises an
+    exception (after retries are exhausted).  Hooks that do not implement
+    ``on_error`` are silently skipped.
     """
 
     def on_request(self, request: httpx.Request) -> None: ...
@@ -53,6 +57,9 @@ class ClientExtension:
 
     All fields are optional and additive - they layer on top of the
     defaults that IonQClient already provides.
+
+    Explicit caller arguments to ``IonQClient()`` take precedence over
+    extension values, which in turn take precedence over factory defaults.
     """
 
     user_agent_token: str | None = None
@@ -64,35 +71,57 @@ class ClientExtension:
     timeout: httpx.Timeout | None = None
     transport_wrapper: Callable[[httpx.BaseTransport], httpx.BaseTransport] | None = None
     async_transport_wrapper: Callable[[httpx.AsyncBaseTransport], httpx.AsyncBaseTransport] | None = None
+    error_mapper: Callable[[Exception], Exception] | None = None  # return same object to skip mapping
+    debug_hooks: bool = False
 
 
-def _fire_hooks(hooks, method: str, *args) -> None:
+def _fire_hooks(hooks: tuple, method: str, *args, debug: bool = False) -> None:
     for hook in hooks:
+        fn = getattr(hook, method, None)
+        if fn is None:
+            continue
         try:
-            getattr(hook, method)(*args)
+            fn(*args)
         except Exception:
+            if debug:
+                raise
             logger.exception("%s raised; ignoring", method)
 
 
-async def _afire_hooks(hooks, method: str, *args) -> None:
+async def _afire_hooks(hooks: tuple, method: str, *args, debug: bool = False) -> None:
     for hook in hooks:
+        fn = getattr(hook, method, None)
+        if fn is None:
+            continue
         try:
-            await getattr(hook, method)(*args)
+            await fn(*args)
         except Exception:
+            if debug:
+                raise
             logger.exception("%s raised; ignoring", method)
 
 
 class HookTransport(httpx.BaseTransport):
-    """Transport decorator that invokes EventHook instances."""
+    """Transport decorator that invokes EventHook instances.
 
-    def __init__(self, transport: httpx.BaseTransport, hooks: tuple[EventHook, ...]) -> None:
+    Sits between the retry transport (inner) and the user wrapper (outer).
+    Hooks observe the final request/response after retries resolve.
+    ``on_error`` fires when the inner transport raises.
+    """
+
+    def __init__(self, transport: httpx.BaseTransport, hooks: tuple[EventHook, ...], *, debug: bool = False) -> None:
         self._transport = transport
         self._hooks = hooks
+        self._debug = debug
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
-        _fire_hooks(self._hooks, "on_request", request)
-        response = self._transport.handle_request(request)
-        _fire_hooks(self._hooks, "on_response", request, response)
+        _fire_hooks(self._hooks, "on_request", request, debug=self._debug)
+        try:
+            response = self._transport.handle_request(request)
+        except Exception as exc:
+            _fire_hooks(self._hooks, "on_error", request, exc, debug=self._debug)
+            raise
+        _fire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
 
     def close(self) -> None:
@@ -102,15 +131,62 @@ class HookTransport(httpx.BaseTransport):
 class AsyncHookTransport(httpx.AsyncBaseTransport):
     """Async counterpart of HookTransport."""
 
-    def __init__(self, transport: httpx.AsyncBaseTransport, hooks: tuple[AsyncEventHook, ...]) -> None:
+    def __init__(
+        self, transport: httpx.AsyncBaseTransport, hooks: tuple[AsyncEventHook, ...], *, debug: bool = False
+    ) -> None:
         self._transport = transport
         self._hooks = hooks
+        self._debug = debug
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        await _afire_hooks(self._hooks, "on_request", request)
-        response = await self._transport.handle_async_request(request)
-        await _afire_hooks(self._hooks, "on_response", request, response)
+        await _afire_hooks(self._hooks, "on_request", request, debug=self._debug)
+        try:
+            response = await self._transport.handle_async_request(request)
+        except Exception as exc:
+            await _afire_hooks(self._hooks, "on_error", request, exc, debug=self._debug)
+            raise
+        await _afire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
+
+    async def aclose(self) -> None:
+        await self._transport.aclose()
+
+
+class _ErrorMapperTransport(httpx.BaseTransport):
+    """Translates exceptions via an error_mapper callback for downstream SDKs."""
+
+    def __init__(self, transport: httpx.BaseTransport, mapper: Callable[[Exception], Exception]) -> None:
+        self._transport = transport
+        self._mapper = mapper
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        try:
+            return self._transport.handle_request(request)
+        except Exception as exc:
+            mapped = self._mapper(exc)
+            if mapped is not exc:
+                raise mapped from exc
+            raise
+
+    def close(self) -> None:
+        self._transport.close()
+
+
+class _AsyncErrorMapperTransport(httpx.AsyncBaseTransport):
+    """Async counterpart of _ErrorMapperTransport."""
+
+    def __init__(self, transport: httpx.AsyncBaseTransport, mapper: Callable[[Exception], Exception]) -> None:
+        self._transport = transport
+        self._mapper = mapper
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        try:
+            return await self._transport.handle_async_request(request)
+        except Exception as exc:
+            mapped = self._mapper(exc)
+            if mapped is not exc:
+                raise mapped from exc
+            raise
 
     async def aclose(self) -> None:
         await self._transport.aclose()

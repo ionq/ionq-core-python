@@ -63,6 +63,9 @@ class TestIonQClient:
     def test_retry_transport_wired(self):
         assert isinstance(IonQClient(api_key="key").get_httpx_client()._transport, RetryTransport)
 
+    def test_default_max_retries(self):
+        assert IonQClient(api_key="key").get_httpx_client()._transport._max_retries == 2
+
     def test_max_retries_configurable(self):
         assert IonQClient(api_key="key", max_retries=5).get_httpx_client()._transport._max_retries == 5
 

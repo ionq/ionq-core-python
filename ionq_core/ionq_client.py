@@ -10,7 +10,13 @@ from importlib.metadata import version as _pkg_version
 
 import httpx
 
-from ._extensions import AsyncHookTransport, ClientExtension, HookTransport
+from ._extensions import (
+    AsyncHookTransport,
+    ClientExtension,
+    HookTransport,
+    _AsyncErrorMapperTransport,
+    _ErrorMapperTransport,
+)
 from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, AsyncRetryTransport, RetryTransport
 from .client import AuthenticatedClient
 
@@ -20,6 +26,8 @@ except PackageNotFoundError:
     __version__ = "0.0.0"
 
 _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+_AUTH_PREFIX = "apiKey"
+_AUTH_HEADER = "Authorization"
 
 
 def _build_user_agent(*tokens: str | None) -> str:
@@ -33,20 +41,11 @@ def _build_user_agent(*tokens: str | None) -> str:
     return " ".join(parts)
 
 
-def _ext_or(ext: ClientExtension | None, attr: str, default):
-    """Return extension.attr if set, otherwise default."""
-    if ext is not None:
-        val = getattr(ext, attr)
-        if val is not None:
-            return val
-    return default
-
-
 def IonQClient(
     *,
     api_key: str | None = None,
     base_url: str = "https://api.ionq.co/v0.4",
-    max_retries: int = DEFAULT_MAX_RETRIES,
+    max_retries: int | None = None,
     timeout: httpx.Timeout | None = None,
     additional_user_agent: str | None = None,
     extension: ClientExtension | None = None,
@@ -58,13 +57,16 @@ def IonQClient(
     ``AuthenticatedClient`` with retry transport, proper auth headers,
     and User-Agent identification.
 
+    Precedence for configurable values: explicit caller arguments take
+    priority over extension values, which take priority over defaults.
+
     Args:
         api_key: IonQ API key. Falls back to ``IONQ_API_KEY`` env var.
         base_url: API base URL.
         max_retries: Max retry attempts for transient errors (429, 5xx).
-            Can be overridden by ``extension.max_retries``.
-        timeout: Request timeout. Default 60s read, 10s connect.
-            Can be overridden by ``extension.timeout``.
+            Falls back to ``extension.max_retries``, then default (2).
+        timeout: Request timeout.
+            Falls back to ``extension.timeout``, then default (60s read, 10s connect).
         additional_user_agent: Extra token appended to User-Agent.
             Prefer ``extension.user_agent_token`` for downstream SDKs;
             both can be used simultaneously.
@@ -94,34 +96,54 @@ def IonQClient(
     ext_ua = extension.user_agent_token if extension else None
     user_agent = _build_user_agent(additional_user_agent, ext_ua)
 
-    effective_timeout = _ext_or(extension, "timeout", timeout or _DEFAULT_TIMEOUT)
-    effective_retries = _ext_or(extension, "max_retries", max_retries)
-    effective_retry_codes = _ext_or(extension, "retryable_status_codes", RETRYABLE_STATUS_CODES)
+    if timeout is not None:
+        effective_timeout = timeout
+    elif extension is not None and extension.timeout is not None:
+        effective_timeout = extension.timeout
+    else:
+        effective_timeout = _DEFAULT_TIMEOUT
+
+    if max_retries is not None:
+        effective_retries = max_retries
+    elif extension is not None and extension.max_retries is not None:
+        effective_retries = extension.max_retries
+    else:
+        effective_retries = DEFAULT_MAX_RETRIES
+
+    if extension is not None and extension.retryable_status_codes is not None:
+        effective_retry_codes = extension.retryable_status_codes
+    else:
+        effective_retry_codes = RETRYABLE_STATUS_CODES
 
     headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
+    debug_hooks = extension.debug_hooks if extension else False
     retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
 
     sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
     if extension and extension.event_hooks:
-        sync_transport = HookTransport(sync_transport, extension.event_hooks)
+        sync_transport = HookTransport(sync_transport, extension.event_hooks, debug=debug_hooks)
+    if extension and extension.error_mapper:
+        sync_transport = _ErrorMapperTransport(sync_transport, extension.error_mapper)
     if extension and extension.transport_wrapper:
         sync_transport = extension.transport_wrapper(sync_transport)
 
     async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), **retry_kwargs)
     if extension and extension.async_event_hooks:
-        async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks)
+        async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
+    if extension and extension.error_mapper:
+        async_transport = _AsyncErrorMapperTransport(async_transport, extension.error_mapper)
     if extension and extension.async_transport_wrapper:
         async_transport = extension.async_transport_wrapper(async_transport)
 
     client = AuthenticatedClient(
         base_url=base_url,
         token=key,
-        prefix="apiKey",
-        auth_header_name="Authorization",
+        prefix=_AUTH_PREFIX,
+        auth_header_name=_AUTH_HEADER,
         timeout=effective_timeout,
         headers=headers,
         httpx_args={"transport": sync_transport},
@@ -130,7 +152,7 @@ def IonQClient(
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,
-            headers={**headers, "Authorization": f"apiKey {key}"},
+            headers={**headers, _AUTH_HEADER: f"{_AUTH_PREFIX} {key}"},
             timeout=effective_timeout,
             transport=async_transport,
         )

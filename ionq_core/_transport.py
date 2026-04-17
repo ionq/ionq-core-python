@@ -43,7 +43,6 @@ def _backoff_delays(max_retries: int) -> Iterator[float]:
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
     try:
-        response.read()
         return response.json()
     except Exception:
         text = response.text
