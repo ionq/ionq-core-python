@@ -28,7 +28,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://ionq.com"
-Documentation = "https://docs.ionq.com"
+Documentation = "https://ionq.github.io/ionq-core-python/"
 Repository = "https://github.com/ionq/ionq-core-python"
 Changelog = "https://github.com/ionq/ionq-core-python/blob/main/CHANGELOG.md"
 Issues = "https://github.com/ionq/ionq-core-python/issues"

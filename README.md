@@ -2,6 +2,8 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml)
+[![API Docs](https://img.shields.io/badge/docs-API%20reference-blue)](https://ionq.github.io/ionq-core-python/)
 
 A Python client library for the [IonQ Cloud Platform API](https://docs.ionq.com/), providing full access to IonQ's quantum computing services. Supports both synchronous and asynchronous usage, with typed models for all request and response objects.
 

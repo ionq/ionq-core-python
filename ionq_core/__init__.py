@@ -24,8 +24,10 @@ from ._polling import (
 from ._session import SessionManager
 from .client import AuthenticatedClient, Client
 from .ionq_client import IonQClient, __version__
+from .types import UNSET, Unset
 
 __all__ = (
+    "UNSET",
     "APIConnectionError",
     "APIError",
     "APITimeoutError",
@@ -45,6 +47,7 @@ __all__ = (
     "RateLimitError",
     "ServerError",
     "SessionManager",
+    "Unset",
     "__version__",
     "aiter_jobs",
     "aiter_session_jobs",
