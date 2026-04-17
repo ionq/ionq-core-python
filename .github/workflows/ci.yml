@@ -48,4 +48,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
-      - run: uv run pytest
+      - run: uv run pytest ${{ matrix.python-version != '3.12' && '--no-cov' || '' }}

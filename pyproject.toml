@@ -93,6 +93,7 @@ markers = [
 addopts = "-m 'not integration' --tb=short --cov=ionq_core --cov-fail-under=100"
 
 [tool.coverage.run]
+branch = true
 omit = [
     "ionq_core/api/*",
     "ionq_core/models/*",
@@ -102,8 +103,13 @@ omit = [
 ]
 
 [tool.coverage.report]
+show_missing = true
+skip_covered = true
 exclude_also = [
     "if TYPE_CHECKING:",
     "class .*\\bProtocol\\):",
     "except PackageNotFoundError:",
+    "@overload",
+    "raise NotImplementedError",
+    'if __name__ == "__main__":',
 ]
