@@ -6,6 +6,7 @@ import logging
 from collections.abc import AsyncIterator, Iterator
 from typing import TYPE_CHECKING
 
+from ._exceptions import IonQError
 from .api.default import get_jobs, get_session_jobs
 from .types import UNSET, Unset
 
@@ -39,7 +40,7 @@ def iter_jobs(
             next_=next_cursor,
         )
         if response is None:
-            return
+            raise IonQError("Failed to fetch jobs")
         yield from response.jobs
         if response.next_ is None:
             return
@@ -69,7 +70,7 @@ async def aiter_jobs(
             next_=next_cursor,
         )
         if response is None:
-            return
+            raise IonQError("Failed to fetch jobs")
         for job in response.jobs:
             yield job
         if response.next_ is None:
@@ -100,7 +101,7 @@ def iter_session_jobs(
             next_=next_cursor,
         )
         if response is None:
-            return
+            raise IonQError("Failed to fetch jobs")
         yield from response.jobs
         if response.next_ is None:
             return
@@ -130,7 +131,7 @@ async def aiter_session_jobs(
             next_=next_cursor,
         )
         if response is None:
-            return
+            raise IonQError("Failed to fetch jobs")
         for job in response.jobs:
             yield job
         if response.next_ is None:

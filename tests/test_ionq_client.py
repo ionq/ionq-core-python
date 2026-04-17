@@ -1,3 +1,5 @@
+import warnings
+
 import httpx
 import pytest
 
@@ -73,3 +75,20 @@ class TestIonQClient:
     def test_version_exposed(self):
         assert isinstance(__version__, str)
         assert __version__ != ""
+
+    def test_token_not_in_repr(self):
+        c = IonQClient(api_key="super-secret-key")
+        assert "super-secret-key" not in repr(c)
+
+    def test_http_base_url_warns(self):
+        with pytest.warns(UserWarning, match="does not use HTTPS"):
+            IonQClient(api_key="key", base_url="http://api.ionq.co/v0.4")
+
+    def test_https_base_url_no_warning(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            IonQClient(api_key="key", base_url="https://api.ionq.co/v0.4")
+
+    def test_verify_ssl_false_warns(self):
+        with pytest.warns(UserWarning, match="verify_ssl=False"):
+            IonQClient(api_key="key", verify_ssl=False)

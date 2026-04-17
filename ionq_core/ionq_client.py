@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import platform
+import warnings
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _pkg_version
 
@@ -74,6 +75,21 @@ def IonQClient(
     key = api_key or os.environ.get("IONQ_API_KEY")
     if not key:
         raise ValueError("api_key or IONQ_API_KEY environment variable required")
+
+    if not base_url.startswith("https://"):
+        warnings.warn(
+            f"base_url {base_url!r} does not use HTTPS. API keys will be sent in cleartext.",
+            UserWarning,
+            stacklevel=2,
+        )
+
+    if kwargs.get("verify_ssl") is False:
+        warnings.warn(
+            "verify_ssl=False disables TLS certificate verification. "
+            "Your API key may be intercepted by a network attacker.",
+            UserWarning,
+            stacklevel=2,
+        )
 
     ext_ua = extension.user_agent_token if extension else None
     user_agent = _build_user_agent(additional_user_agent, ext_ua)

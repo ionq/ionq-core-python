@@ -92,9 +92,47 @@ class SessionManager:
             raise IonQError(f"Failed to fetch session {self._session_id}")
         return session.status
 
+    async def async_open(self) -> None:
+        """Create a new session on the backend (async)."""
+        if self._session_id is not None:
+            raise IonQError("Session already open")
+        settings = self._build_settings()
+        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
+        session = await create_session.asyncio(client=self._client, body=body)
+        if session is None:
+            raise IonQError("Failed to create session")
+        self._session_id = session.id
+        logger.info("Opened session %s", self._session_id)
+
+    async def async_close(self) -> None:
+        """End the session (async). Suppresses exceptions so cleanup is safe."""
+        if self._session_id is None:
+            return
+        try:
+            await end_session.asyncio(session_id=self._session_id, client=self._client)
+            logger.info("Closed session %s", self._session_id)
+        except Exception:
+            logger.warning("Failed to end session %s", self._session_id, exc_info=True)
+
+    async def async_status(self) -> str:
+        """Query current session status (async)."""
+        if self._session_id is None:
+            raise IonQError("No session ID; call open() first")
+        session = await get_session.asyncio(session_id=self._session_id, client=self._client)
+        if session is None:
+            raise IonQError(f"Failed to fetch session {self._session_id}")
+        return session.status
+
     def __enter__(self) -> SessionManager:
         self.open()
         return self
 
     def __exit__(self, *exc: object) -> None:
         self.close()
+
+    async def __aenter__(self) -> SessionManager:
+        await self.async_open()
+        return self
+
+    async def __aexit__(self, *exc: object) -> None:
+        await self.async_close()
