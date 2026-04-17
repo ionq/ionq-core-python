@@ -130,6 +130,90 @@ class TestOpenClose:
         assert httpx_mock.get_requests() == []
 
 
+class TestAsyncContextManager:
+    async def test_creates_and_ends_session(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url=f"{_BASE}/sessions")
+        httpx_mock.add_response(json=_session_json(**_ENDED), method="POST", url=f"{_BASE}/sessions/sess-1/end")
+
+        async with SessionManager(auth_client, "qpu.aria-1") as mgr:
+            assert mgr.session_id == "sess-1"
+
+        reqs = httpx_mock.get_requests()
+        assert reqs[0].method == "POST" and reqs[0].url.path == "/v0.4/sessions"
+        assert "/sessions/sess-1/end" in str(reqs[1].url)
+
+    async def test_end_called_on_exception(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST", url=f"{_BASE}/sessions")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST", url=f"{_BASE}/sessions/sess-1/end")
+
+        with pytest.raises(ValueError, match="boom"):
+            async with SessionManager(auth_client, "qpu.aria-1"):
+                raise ValueError("boom")
+
+        assert "/sessions/sess-1/end" in str(httpx_mock.get_requests()[1].url)
+
+
+class TestAsyncOpenClose:
+    async def test_async_open_close(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST")
+
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        await mgr.async_open()
+        assert mgr.session_id == "sess-1"
+        await mgr.async_close()
+
+    async def test_async_open_when_already_open_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        await mgr.async_open()
+        with pytest.raises(IonQError, match="already open"):
+            await mgr.async_open()
+
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    async def test_async_open_returns_none_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500, method="POST")
+        auth_client.raise_on_unexpected_status = False
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        with pytest.raises(IonQError, match="Failed to create session"):
+            await mgr.async_open()
+
+    async def test_async_close_suppresses_exception(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_exception(httpx.ConnectError("network down"), method="POST", url=f"{_BASE}/sessions/sess-1/end")
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        await mgr.async_open()
+        await mgr.async_close()
+
+    async def test_async_close_without_session_is_noop(self, httpx_mock, auth_client):
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        await mgr.async_close()
+        assert httpx_mock.get_requests() == []
+
+
+class TestAsyncStatus:
+    async def test_async_queries_session(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
+        httpx_mock.add_response(json=_session_json(status="started"), method="GET")
+        httpx_mock.add_response(json=_session_json(active=False), method="POST")
+
+        async with SessionManager(auth_client, "qpu.aria-1") as mgr:
+            assert await mgr.async_status() == "started"
+
+    async def test_async_status_without_session_raises(self, auth_client):
+        mgr = SessionManager(auth_client, "qpu.aria-1")
+        with pytest.raises(IonQError, match="No session ID"):
+            await mgr.async_status()
+
+    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
+    async def test_async_status_returns_none_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(status_code=500, method="GET")
+        auth_client.raise_on_unexpected_status = False
+        mgr = SessionManager.from_id(auth_client, "sess-1")
+        with pytest.raises(IonQError, match="Failed to fetch session"):
+            await mgr.async_status()
+
+
 class TestStatusErrors:
     def test_status_without_session_raises(self, auth_client):
         mgr = SessionManager(auth_client, "qpu.aria-1")

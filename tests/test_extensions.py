@@ -4,7 +4,14 @@ import httpx
 import pytest
 
 from ionq_core import ClientExtension, EventHook, IonQClient
-from ionq_core._extensions import AsyncEventHook, AsyncHookTransport, HookTransport
+from ionq_core._exceptions import APIError, NotFoundError
+from ionq_core._extensions import (
+    AsyncEventHook,
+    AsyncHookTransport,
+    HookTransport,
+    _AsyncErrorMapperTransport,
+    _ErrorMapperTransport,
+)
 from ionq_core._transport import RetryTransport
 
 _BACKENDS_URL = "https://api.ionq.co/v0.4/backends"
@@ -14,6 +21,7 @@ class RecordingHook:
     def __init__(self):
         self.requests: list[httpx.Request] = []
         self.responses: list[tuple[httpx.Request, httpx.Response]] = []
+        self.errors: list[tuple[httpx.Request, Exception]] = []
 
     def on_request(self, request: httpx.Request) -> None:
         self.requests.append(request)
@@ -21,17 +29,24 @@ class RecordingHook:
     def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
         self.responses.append((request, response))
 
+    def on_error(self, request: httpx.Request, error: Exception) -> None:
+        self.errors.append((request, error))
+
 
 class AsyncRecordingHook:
     def __init__(self):
         self.requests: list[httpx.Request] = []
         self.responses: list[tuple[httpx.Request, httpx.Response]] = []
+        self.errors: list[tuple[httpx.Request, Exception]] = []
 
     async def on_request(self, request: httpx.Request) -> None:
         self.requests.append(request)
 
     async def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
         self.responses.append((request, response))
+
+    async def on_error(self, request: httpx.Request, error: Exception) -> None:
+        self.errors.append((request, error))
 
 
 class TestClientExtensionDefaults:
@@ -45,6 +60,8 @@ class TestClientExtensionDefaults:
         assert ext.timeout is None
         assert ext.transport_wrapper is None
         assert ext.async_transport_wrapper is None
+        assert ext.error_mapper is None
+        assert ext.debug_hooks is False
 
     def test_frozen(self):
         with pytest.raises(AttributeError):
@@ -92,29 +109,41 @@ class TestDefaultHeaders:
         assert IonQClient(api_key="key", extension=ext).get_httpx_client().headers["Authorization"] == "apiKey key"
 
 
-class TestTimeoutOverride:
+class TestTimeoutPrecedence:
     def test_extension_timeout_overrides_default(self):
         t = IonQClient(api_key="key", extension=ClientExtension(timeout=httpx.Timeout(120.0, connect=5.0)))
         assert t.get_httpx_client().timeout.read == 120.0
         assert t.get_httpx_client().timeout.connect == 5.0
 
-    def test_extension_timeout_overrides_explicit(self):
+    def test_caller_timeout_beats_extension(self):
         ext = ClientExtension(timeout=httpx.Timeout(120.0))
         t = IonQClient(api_key="key", timeout=httpx.Timeout(30.0), extension=ext)
-        assert t.get_httpx_client().timeout.read == 120.0
+        assert t.get_httpx_client().timeout.read == 30.0
 
     def test_no_extension_timeout_uses_explicit(self):
         assert IonQClient(api_key="key", timeout=httpx.Timeout(30.0)).get_httpx_client().timeout.read == 30.0
 
 
-class TestMaxRetriesOverride:
-    def test_extension_retries_override(self):
+class TestMaxRetriesPrecedence:
+    def test_extension_retries_override_default(self):
         client = IonQClient(api_key="key", extension=ClientExtension(max_retries=5))
         assert _find_retry_transport(client.get_httpx_client()._transport)._max_retries == 5
+
+    def test_caller_retries_beat_extension(self):
+        ext = ClientExtension(max_retries=10)
+        client = IonQClient(api_key="key", max_retries=3, extension=ext)
+        assert _find_retry_transport(client.get_httpx_client()._transport)._max_retries == 3
 
     def test_no_extension_retries_uses_explicit(self):
         transport = IonQClient(api_key="key", max_retries=3).get_httpx_client()._transport
         assert _find_retry_transport(transport)._max_retries == 3
+
+
+class TestRetryableStatusCodesOverride:
+    def test_extension_codes_override_default(self):
+        ext = ClientExtension(retryable_status_codes=frozenset({429}))
+        client = IonQClient(api_key="key", extension=ext)
+        assert _find_retry_transport(client.get_httpx_client()._transport)._retryable == frozenset({429})
 
 
 def _find_retry_transport(transport) -> RetryTransport:
@@ -181,6 +210,28 @@ class FakeAsyncTransport(httpx.AsyncBaseTransport):
         pass
 
 
+class RaisingTransport(httpx.BaseTransport):
+    def __init__(self, exc: Exception):
+        self._exc = exc
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        raise self._exc
+
+    def close(self):
+        pass
+
+
+class AsyncRaisingTransport(httpx.AsyncBaseTransport):
+    def __init__(self, exc: Exception):
+        self._exc = exc
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        raise self._exc
+
+    async def aclose(self):
+        pass
+
+
 class TestHookTransportExecution:
     def test_hooks_called_in_order(self):
         hook1, hook2 = RecordingHook(), RecordingHook()
@@ -202,11 +253,125 @@ class TestHookTransportExecution:
             def on_response(self, request, response):
                 raise RuntimeError("boom")
 
+            def on_error(self, request, error):
+                raise RuntimeError("boom")
+
         response = httpx.Response(200)
         result = HookTransport(FakeTransport(response), (BrokenHook(),)).handle_request(
             httpx.Request("GET", _BACKENDS_URL)
         )
         assert result.status_code == 200
+
+
+class TestOnErrorHook:
+    def test_on_error_fires_on_exception(self):
+        hook = RecordingHook()
+        error = NotFoundError(404)
+        request = httpx.Request("GET", _BACKENDS_URL)
+
+        with pytest.raises(NotFoundError):
+            HookTransport(RaisingTransport(error), (hook,)).handle_request(request)
+
+        assert len(hook.errors) == 1
+        assert hook.errors[0] == (request, error)
+        assert hook.responses == []
+
+    def test_on_error_not_required(self):
+        """Hooks without on_error are silently skipped."""
+
+        class MinimalHook:
+            def on_request(self, request):
+                pass
+
+            def on_response(self, request, response):
+                pass
+
+        with pytest.raises(NotFoundError):
+            HookTransport(RaisingTransport(NotFoundError(404)), (MinimalHook(),)).handle_request(
+                httpx.Request("GET", _BACKENDS_URL)
+            )
+
+    async def test_async_on_error_fires(self):
+        hook = AsyncRecordingHook()
+        error = NotFoundError(404)
+        request = httpx.Request("GET", _BACKENDS_URL)
+
+        with pytest.raises(NotFoundError):
+            await AsyncHookTransport(AsyncRaisingTransport(error), (hook,)).handle_async_request(request)
+
+        assert len(hook.errors) == 1
+        assert hook.errors[0] == (request, error)
+
+    async def test_async_on_error_not_required(self):
+        """Async hooks without on_error are silently skipped."""
+
+        class MinimalAsyncHook:
+            async def on_request(self, request):
+                pass
+
+            async def on_response(self, request, response):
+                pass
+
+        transport = AsyncHookTransport(AsyncRaisingTransport(NotFoundError(404)), (MinimalAsyncHook(),))
+        with pytest.raises(NotFoundError):
+            await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
+
+
+class TestDebugHooks:
+    def test_debug_propagates_hook_exception(self):
+        class BrokenHook:
+            def on_request(self, request):
+                raise RuntimeError("hook failed")
+
+            def on_response(self, request, response):
+                pass
+
+            def on_error(self, request, error):
+                pass
+
+        with pytest.raises(RuntimeError, match="hook failed"):
+            HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=True).handle_request(
+                httpx.Request("GET", _BACKENDS_URL)
+            )
+
+    def test_non_debug_swallows_hook_exception(self):
+        class BrokenHook:
+            def on_request(self, request):
+                raise RuntimeError("hook failed")
+
+            def on_response(self, request, response):
+                pass
+
+            def on_error(self, request, error):
+                pass
+
+        result = HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=False).handle_request(
+            httpx.Request("GET", _BACKENDS_URL)
+        )
+        assert result.status_code == 200
+
+    async def test_async_debug_propagates(self):
+        class BrokenAsyncHook:
+            async def on_request(self, request):
+                raise RuntimeError("async hook failed")
+
+            async def on_response(self, request, response):
+                pass
+
+            async def on_error(self, request, error):
+                pass
+
+        with pytest.raises(RuntimeError, match="async hook failed"):
+            await AsyncHookTransport(
+                FakeAsyncTransport(httpx.Response(200)), (BrokenAsyncHook(),), debug=True
+            ).handle_async_request(httpx.Request("GET", _BACKENDS_URL))
+
+    def test_debug_hooks_wired_from_extension(self):
+        hook = RecordingHook()
+        ext = ClientExtension(event_hooks=(hook,), debug_hooks=True)
+        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
+        assert isinstance(transport, HookTransport)
+        assert transport._debug is True
 
 
 class TestAsyncHookTransportExecution:
@@ -227,11 +392,76 @@ class TestAsyncHookTransportExecution:
             async def on_response(self, request, response):
                 raise RuntimeError("boom")
 
+            async def on_error(self, request, error):
+                raise RuntimeError("boom")
+
         response = httpx.Response(200)
         result = await AsyncHookTransport(FakeAsyncTransport(response), (BrokenAsyncHook(),)).handle_async_request(
             httpx.Request("GET", _BACKENDS_URL)
         )
         assert result.status_code == 200
+
+
+class TestErrorMapper:
+    def test_sync_mapper_translates_exception(self):
+        class DownstreamError(Exception):
+            pass
+
+        def mapper(exc):
+            if isinstance(exc, NotFoundError):
+                return DownstreamError(f"translated: {exc}")
+            return exc
+
+        transport = _ErrorMapperTransport(RaisingTransport(NotFoundError(404)), mapper)
+
+        with pytest.raises(DownstreamError, match="translated"):
+            transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
+
+    def test_sync_mapper_passthrough(self):
+        transport = _ErrorMapperTransport(RaisingTransport(NotFoundError(404)), lambda exc: exc)
+
+        with pytest.raises(NotFoundError):
+            transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
+
+    async def test_async_mapper_translates_exception(self):
+        class DownstreamError(Exception):
+            pass
+
+        def mapper(exc):
+            if isinstance(exc, APIError):
+                return DownstreamError(f"mapped: {exc}")
+            return exc
+
+        transport = _AsyncErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), mapper)
+
+        with pytest.raises(DownstreamError, match="mapped"):
+            await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
+
+    async def test_async_mapper_passthrough(self):
+        transport = _AsyncErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), lambda exc: exc)
+
+        with pytest.raises(NotFoundError):
+            await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
+
+    def test_error_mapper_wired_in_transport_chain(self):
+        ext = ClientExtension(error_mapper=lambda exc: exc)
+        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
+        assert isinstance(transport, _ErrorMapperTransport)
+
+    def test_error_mapper_after_hooks_in_chain(self):
+        hook = RecordingHook()
+        ext = ClientExtension(event_hooks=(hook,), error_mapper=lambda exc: exc)
+        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
+        assert isinstance(transport, _ErrorMapperTransport)
+        assert isinstance(transport._transport, HookTransport)
+
+    def test_close_delegates(self):
+        fake = FakeTransport(httpx.Response(200))
+        _ErrorMapperTransport(fake, lambda e: e).close()
+
+    async def test_aclose_delegates(self):
+        fake = FakeAsyncTransport(httpx.Response(200))
+        await _AsyncErrorMapperTransport(fake, lambda e: e).aclose()
 
 
 class TestTransportWrapper:
@@ -321,3 +551,28 @@ class TestTransportChainOrder:
         assert isinstance(transport, OuterTransport)
         assert isinstance(transport.inner, HookTransport)
         assert isinstance(transport.inner._transport, RetryTransport)
+
+    def test_full_chain_with_error_mapper(self):
+        hook = RecordingHook()
+
+        class OuterTransport(httpx.BaseTransport):
+            def __init__(self, inner):
+                self.inner = inner
+
+            def handle_request(self, request):
+                return self.inner.handle_request(request)
+
+            def close(self):
+                self.inner.close()
+
+        ext = ClientExtension(
+            event_hooks=(hook,),
+            error_mapper=lambda exc: exc,
+            transport_wrapper=lambda t: OuterTransport(t),
+        )
+        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
+
+        assert isinstance(transport, OuterTransport)
+        assert isinstance(transport.inner, _ErrorMapperTransport)
+        assert isinstance(transport.inner._transport, HookTransport)
+        assert isinstance(transport.inner._transport._transport, RetryTransport)

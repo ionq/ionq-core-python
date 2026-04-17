@@ -26,7 +26,7 @@ def _parse_retry_after(response: httpx.Response) -> float | None:
     if header is None:
         return None
     try:
-        return float(header)
+        return max(0.0, float(header))
     except ValueError:
         parsed = email.utils.parsedate(header)
         if parsed is not None:
@@ -43,7 +43,6 @@ def _backoff_delays(max_retries: int) -> Iterator[float]:
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
     try:
-        response.read()
         return response.json()
     except Exception:
         text = response.text
@@ -55,7 +54,8 @@ def _raise_for_response(response: httpx.Response) -> None:
         return
     body = _parse_error_body(response)
     message = body.get("message") or body.get("error") if isinstance(body, dict) else None
-    raise_for_status(response.status_code, body, _parse_retry_after(response), message)
+    request_id = response.headers.get("x-request-id")
+    raise_for_status(response.status_code, body, _parse_retry_after(response), message, request_id=request_id)
 
 
 def _retry_delay(delay: float, last_response: httpx.Response | None) -> float:
@@ -127,7 +127,7 @@ class RetryTransport(httpx.BaseTransport):
                 response = self._transport.handle_request(request)
             except Exception as exc:
                 if not _is_retryable_exc(request, exc):
-                    raise APIConnectionError(str(exc)) from exc
+                    raise APIConnectionError(f"{type(exc).__name__}: {exc}") from exc
                 last_exc, last_response = exc, None
                 continue
 
@@ -171,7 +171,7 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
                 response = await self._transport.handle_async_request(request)
             except Exception as exc:
                 if not _is_retryable_exc(request, exc):
-                    raise APIConnectionError(str(exc)) from exc
+                    raise APIConnectionError(f"{type(exc).__name__}: {exc}") from exc
                 last_exc, last_response = exc, None
                 continue
 

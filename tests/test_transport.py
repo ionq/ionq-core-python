@@ -182,6 +182,10 @@ class TestParseRetryAfter:
         r = httpx.Response(429, headers={"retry-after": "not-a-date-or-number"})
         assert _parse_retry_after(r) is None
 
+    def test_negative_numeric_clamped_to_zero(self):
+        r = httpx.Response(429, headers={"retry-after": "-10"})
+        assert _parse_retry_after(r) == 0.0
+
 
 class TestRaiseExhaustedEdgeCases:
     def test_no_response_no_exception(self):
@@ -213,6 +217,33 @@ class TestAsyncRetryTransportEdgeCases:
     async def test_aclose_delegates(self):
         transport, _ = _async([_resp(200)])
         await transport.aclose()
+
+
+class TestRequestIdOnExceptions:
+    def test_request_id_from_response_header(self):
+        transport, _ = _sync([_resp(404, headers={"x-request-id": "req-abc-123"})])
+        with pytest.raises(NotFoundError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.request_id == "req-abc-123"
+
+    def test_request_id_none_when_header_missing(self):
+        transport, _ = _sync([_resp(404)])
+        with pytest.raises(NotFoundError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.request_id is None
+
+    def test_request_id_on_rate_limit(self):
+        transport, _ = _sync([_resp(429, headers={"x-request-id": "req-xyz", "retry-after": "0"})] * 3, max_retries=2)
+        with pytest.raises(RateLimitError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.request_id == "req-xyz"
+
+
+class TestNonRetryableExcIncludesTypeName:
+    def test_exception_type_in_message(self):
+        transport, _ = _sync([httpx.ReadError("broken pipe")])
+        with pytest.raises(APIConnectionError, match="ReadError: broken pipe"):
+            transport.handle_request(_req("POST"))
 
 
 class TestIdempotencyAwareRetry:

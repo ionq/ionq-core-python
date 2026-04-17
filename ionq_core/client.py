@@ -177,7 +177,7 @@ class AuthenticatedClient:
     _client: httpx.Client | None = field(default=None, init=False)
     _async_client: httpx.AsyncClient | None = field(default=None, init=False)
 
-    token: str
+    token: str = field(repr=False)
     prefix: str = "Bearer"
     auth_header_name: str = "Authorization"
 
