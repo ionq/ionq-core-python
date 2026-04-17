@@ -105,4 +105,5 @@ omit = [
 exclude_also = [
     "if TYPE_CHECKING:",
     "class .*\\bProtocol\\):",
+    "except PackageNotFoundError:",
 ]

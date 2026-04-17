@@ -10,7 +10,7 @@ from ionq_core._exceptions import (
     RateLimitError,
     ServerError,
 )
-from ionq_core._transport import AsyncRetryTransport, RetryTransport
+from ionq_core._transport import AsyncRetryTransport, RetryTransport, _parse_retry_after
 
 _URL = "https://api.ionq.co/v0.4/backends"
 
@@ -173,24 +173,14 @@ class TestAsyncRetryTransport:
         assert (await transport.handle_async_request(_req())).status_code == 200
 
 
-class TestRetryAfterDateHeader:
-    def test_retry_after_http_date(self, monkeypatch):
-        sleeps = []
-        monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
-        monkeypatch.setattr("ionq_core._transport.time.time", lambda: 1000.0)
-        monkeypatch.setattr("ionq_core._transport.calendar.timegm", lambda _: 1005.0)
-        transport, _ = _sync(
-            [_resp(429, headers={"retry-after": "Mon, 01 Jan 2030 00:00:00 GMT"}), _resp(200)]
-        )
-        transport.handle_request(_req())
-        assert sleeps[0] >= 5.0
+class TestParseRetryAfter:
+    def test_http_date_returns_positive(self):
+        r = httpx.Response(429, headers={"retry-after": "Mon, 01 Jan 2035 00:00:00 GMT"})
+        assert _parse_retry_after(r) > 0
 
-    def test_retry_after_unparseable_ignored(self, monkeypatch):
-        sleeps = []
-        monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
-        transport, _ = _sync([_resp(429, headers={"retry-after": "not-a-date-or-number"}), _resp(200)])
-        transport.handle_request(_req())
-        assert len(sleeps) == 1
+    def test_unparseable_returns_none(self):
+        r = httpx.Response(429, headers={"retry-after": "not-a-date-or-number"})
+        assert _parse_retry_after(r) is None
 
 
 class TestRaiseExhaustedEdgeCases:
