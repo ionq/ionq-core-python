@@ -38,6 +38,7 @@ dev = [
     "pytest>=8",
     "pytest-httpx>=0.35",
     "pytest-asyncio>=0.25",
+    "pytest-cov>=6",
     "ruff>=0.9",
     "ty",
     "pdoc>=16",
@@ -89,4 +90,19 @@ filterwarnings = ["error"]
 markers = [
     "integration: marks tests that hit the real IonQ API (deselect with '-m \"not integration\"')",
 ]
-addopts = "-m 'not integration' --tb=short"
+addopts = "-m 'not integration' --tb=short --cov=ionq_core --cov-fail-under=90"
+
+[tool.coverage.run]
+omit = [
+    "ionq_core/api/*",
+    "ionq_core/models/*",
+    "ionq_core/client.py",
+    "ionq_core/errors.py",
+    "ionq_core/types.py",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+]
