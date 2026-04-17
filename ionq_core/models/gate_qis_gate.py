@@ -27,17 +27,17 @@ class GateQisGate:
     """ 
         Attributes:
             gate (QisGate):
+            target (int | Unset):
             targets (list[float] | Unset): The qubits that a quantum gate is applied to
             controls (list[float] | Unset): The qubits that determine whether the operation is applied to targets.
-            target (int | Unset): Single qubit target (alternative to targets array)
-            control (int | Unset): Single control qubit (alternative to controls array)
+            control (int | Unset):
             rotation (float | Unset): Rotation angle for rx/ry/rz gates
      """
 
     gate: QisGate
+    target: int | Unset = UNSET
     targets: list[float] | Unset = UNSET
     controls: list[float] | Unset = UNSET
-    target: int | Unset = UNSET
     control: int | Unset = UNSET
     rotation: float | Unset = UNSET
 
@@ -47,6 +47,8 @@ class GateQisGate:
 
     def to_dict(self) -> dict[str, Any]:
         gate: str = self.gate
+
+        target = self.target
 
         targets: list[float] | Unset = UNSET
         if not isinstance(self.targets, Unset):
@@ -60,8 +62,6 @@ class GateQisGate:
 
 
 
-        target = self.target
-
         control = self.control
 
         rotation = self.rotation
@@ -72,12 +72,12 @@ class GateQisGate:
         field_dict.update({
             "gate": gate,
         })
+        if target is not UNSET:
+            field_dict["target"] = target
         if targets is not UNSET:
             field_dict["targets"] = targets
         if controls is not UNSET:
             field_dict["controls"] = controls
-        if target is not UNSET:
-            field_dict["target"] = target
         if control is not UNSET:
             field_dict["control"] = control
         if rotation is not UNSET:
@@ -95,13 +95,13 @@ class GateQisGate:
 
 
 
+        target = d.pop("target", UNSET)
+
         targets = cast(list[float], d.pop("targets", UNSET))
 
 
         controls = cast(list[float], d.pop("controls", UNSET))
 
-
-        target = d.pop("target", UNSET)
 
         control = d.pop("control", UNSET)
 
@@ -109,9 +109,9 @@ class GateQisGate:
 
         gate_qis_gate = cls(
             gate=gate,
+            target=target,
             targets=targets,
             controls=controls,
-            target=target,
             control=control,
             rotation=rotation,
         )

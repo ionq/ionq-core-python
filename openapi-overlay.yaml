@@ -1,154 +1,112 @@
 overlay: 1.1.0
 info:
   title: Spec fixes for IonQ API client generation
-  version: 2.0.0
+  version: 3.0.0
 extends: ./openapi.json
 actions:
-  # Generator bug: nullable allOf pattern creates duplicate models.
-  - target: $.components.schemas.Optional_CircuitJobResult_
-    update:
-      oneOf:
-        - type: "null"
-        - $ref: "#/components/schemas/CircuitJobResult"
-  - target: $.components.schemas.Optional_CircuitJobResult_.allOf
-    remove: true
-  - target: $.components.schemas.Optional_CircuitJobResult_.nullable
-    remove: true
-
-  # Spec enums too restrictive (missing simulator, qpu.harmony, retired,
-  # forte-enterprise-2/3).
-  - target: $.components.schemas.Backend.properties.backend.enum
-    remove: true
-  - target: $.components.schemas.Backend.properties.status.enum
-    remove: true
-  - target: $.components.schemas.Characterization.properties.backend.enum
-    remove: true
-  - target: $.components.schemas.JobBackends.enum
-    remove: true
-
-  # Job fields: many are required+non-nullable but API returns null or omits them.
-  # Make them optional.
-  - target: $.components.schemas.Job.required
-    remove: true
-  - target: $.components.schemas.Job
-    update:
-      required: [id, status, type, backend, dry_run, submitter_id]
-  - target: $.components.schemas.GetCircuitJobResponse.required
-    remove: true
-  - target: $.components.schemas.GetCircuitJobResponse
-    update:
-      required: [id, status, type, backend, dry_run, submitter_id]
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].required"
-    remove: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__']"
-    update:
-      required: [id, status, type, backend, dry_run, submitter_id]
-
-  # Job/BaseJob object fields: API returns null but spec has non-nullable $ref.
-  - target: $.components.schemas.Job.properties.failure
-    update:
-      $ref: "#/components/schemas/Optional_Failure_"
-  - target: $.components.schemas.Job.properties.metadata
-    update:
-      $ref: "#/components/schemas/Optional_JobMetadata_"
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.failure"
-    update:
-      $ref: "#/components/schemas/Optional_Failure_"
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.metadata"
-    update:
-      $ref: "#/components/schemas/Optional_JobMetadata_"
-
-  # JsonObject (used for output/settings/stats/results): API returns null.
-  # Make the schema itself nullable since all uses can be null.
+  # Nullable schemas: these are always null when the value is absent.
+  # Making the schema itself nullable is simpler than patching every property
+  # that references it, and all current uses are in nullable contexts.
   - target: $.components.schemas.JsonObject
     update:
       nullable: true
+  - target: $.components.schemas.Failure
+    update:
+      nullable: true
+  - target: $.components.schemas.JobMetadata
+    update:
+      nullable: true
 
-  # Gate schemas: spec uses "type" but API expects "gate". Also missing
-  # "target" (singular int), "control" (singular int), "rotation", "phase",
-  # "phases" fields used in API examples.
-  - target: $.components.schemas.Gate_QisGate_.properties
-    update:
-      gate:
-        $ref: "#/components/schemas/QisGate"
-      target:
-        type: integer
-        description: Single qubit target (alternative to targets array)
-      control:
-        type: integer
-        description: Single control qubit (alternative to controls array)
-      rotation:
-        type: number
-        format: double
-        description: Rotation angle for rx/ry/rz gates
-  - target: $.components.schemas.Gate_QisGate_.properties.type
+  # Backend.degraded: not returned by all backends (e.g. qpu.forte-enterprise-1
+  # omits it). Remove from required so the field becomes optional.
+  - target: $.components.schemas.Backend.required
     remove: true
-  - target: $.components.schemas.Gate_QisGate_.required
-    remove: true
-  - target: $.components.schemas.Gate_QisGate_
+  - target: $.components.schemas.Backend
     update:
-      required: [gate]
-  - target: $.components.schemas.Gate_NativeGate_.properties
-    update:
-      gate:
-        $ref: "#/components/schemas/NativeGate"
-      target:
-        type: integer
-        description: Single qubit target (alternative to targets array)
-      phase:
-        type: number
-        format: double
-        description: Phase for gpi/gpi2 gates
-      phases:
-        type: array
-        items:
-          type: number
-          format: double
-        description: Phases for ms gate
-      angle:
-        type: number
-        format: double
-        description: Interaction angle for ms gate (in turns, default 0.25)
-  - target: $.components.schemas.Gate_NativeGate_.properties.type
-    remove: true
-  - target: $.components.schemas.Gate_NativeGate_.required
-    remove: true
-  - target: $.components.schemas.Gate_NativeGate_
-    update:
-      required: [gate]
+      required: [backend, status, qubits, average_queue_time, last_updated]
 
-  # Results endpoints: API v0.4 returns results as URLs that must be
-  # fetched separately.  The spec omits these endpoints entirely.
-  - target: $.paths
+  # CircuitJobSettings/CircuitJobStats cannot be made nullable at the schema
+  # level because the generator creates duplicate model names. Instead we
+  # remove the bare-$ref property and re-add it with allOf+nullable.
+  - target: $.components.schemas.GetCircuitJobResponse.properties.settings
+    remove: true
+  - target: $.components.schemas.GetCircuitJobResponse.properties
     update:
-      /jobs/{UUID}/results/probabilities:
-        get:
-          operationId: getJobProbabilities
-          summary: Fetch the probability distribution for a completed job.
-          tags: [default]
-          parameters:
-            - description: The UUID of the job.
-              in: path
-              name: UUID
-              required: true
-              schema:
-                type: string
-            - description: Whether to apply sharpening to the probability distribution.
-              in: query
-              name: sharpen
-              required: false
-              schema:
-                type: boolean
-          responses:
-            "200":
-              description: Probability distribution keyed by decimal qubit state.
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    additionalProperties:
-                      type: number
-            "404":
-              description: Job not found or not yet completed.
-          security:
-            - apiKeyAuth: []
+      settings:
+        allOf:
+          - $ref: "#/components/schemas/CircuitJobSettings"
+        nullable: true
+  - target: $.components.schemas.GetCircuitJobResponse.properties.stats
+    remove: true
+  - target: $.components.schemas.GetCircuitJobResponse.properties
+    update:
+      stats:
+        allOf:
+          - $ref: "#/components/schemas/CircuitJobStats"
+        nullable: true
+
+  # Job: nullable primitive fields.
+  # The API always returns these keys but sets them to null when not
+  # applicable (e.g. started_at before the job starts).
+  - target: $.components.schemas.Job.properties.project_id
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.parent_job_id
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.session_id
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.name
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.submitted_at
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.started_at
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.completed_at
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.predicted_wait_time_ms
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.predicted_execution_duration_ms
+    update:
+      nullable: true
+  - target: $.components.schemas.Job.properties.execution_duration_ms
+    update:
+      nullable: true
+
+  # BaseJobSummary (Pick_BaseJob...): same nullable primitives as Job.
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.project_id"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.parent_job_id"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.session_id"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.name"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.submitted_at"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.started_at"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.completed_at"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.predicted_wait_time_ms"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.predicted_execution_duration_ms"
+    update:
+      nullable: true
+  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.execution_duration_ms"
+    update:
+      nullable: true

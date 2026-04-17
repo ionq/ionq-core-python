@@ -14,8 +14,8 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.failure import Failure
-  from ..models.job_metadata import JobMetadata
+  from ..models.failure_type_0 import FailureType0
+  from ..models.job_metadata_type_0 import JobMetadataType0
   from ..models.json_object_type_0 import JsonObjectType0
   from ..models.noise import Noise
 
@@ -38,24 +38,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             backend (str):
             dry_run (bool):
             submitter_id (str): The id of the user who submitted the job
-            project_id (str | Unset):
-            parent_job_id (str | Unset):
-            session_id (str | Unset):
-            metadata (JobMetadata | None | Unset):
-            name (str | Unset):
-            submitted_at (str | Unset):
-            started_at (str | Unset):
-            completed_at (str | Unset):
-            predicted_wait_time_ms (int | Unset):
-            predicted_execution_duration_ms (int | Unset):
-            execution_duration_ms (int | Unset):
+            project_id (None | str):
+            parent_job_id (None | str):
+            session_id (None | str):
+            metadata (JobMetadataType0 | None):
+            name (None | str):
+            submitted_at (None | str):
+            started_at (None | str):
+            completed_at (None | str):
+            predicted_wait_time_ms (int | None):
+            predicted_execution_duration_ms (int | None):
+            execution_duration_ms (int | None):
+            failure (FailureType0 | None):
+            output (JsonObjectType0 | None):
+            settings (JsonObjectType0 | None):
+            stats (JsonObjectType0 | None):
+            results (JsonObjectType0 | None):
             shots (int | Unset):
             noise (Noise | Unset):
-            failure (Failure | None | Unset):
-            output (JsonObjectType0 | None | Unset):
-            settings (JsonObjectType0 | None | Unset):
-            stats (JsonObjectType0 | None | Unset):
-            results (JsonObjectType0 | None | Unset):
      """
 
     id: str
@@ -64,24 +64,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     backend: str
     dry_run: bool
     submitter_id: str
-    project_id: str | Unset = UNSET
-    parent_job_id: str | Unset = UNSET
-    session_id: str | Unset = UNSET
-    metadata: JobMetadata | None | Unset = UNSET
-    name: str | Unset = UNSET
-    submitted_at: str | Unset = UNSET
-    started_at: str | Unset = UNSET
-    completed_at: str | Unset = UNSET
-    predicted_wait_time_ms: int | Unset = UNSET
-    predicted_execution_duration_ms: int | Unset = UNSET
-    execution_duration_ms: int | Unset = UNSET
+    project_id: None | str
+    parent_job_id: None | str
+    session_id: None | str
+    metadata: JobMetadataType0 | None
+    name: None | str
+    submitted_at: None | str
+    started_at: None | str
+    completed_at: None | str
+    predicted_wait_time_ms: int | None
+    predicted_execution_duration_ms: int | None
+    execution_duration_ms: int | None
+    failure: FailureType0 | None
+    output: JsonObjectType0 | None
+    settings: JsonObjectType0 | None
+    stats: JsonObjectType0 | None
+    results: JsonObjectType0 | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
-    failure: Failure | None | Unset = UNSET
-    output: JsonObjectType0 | None | Unset = UNSET
-    settings: JsonObjectType0 | None | Unset = UNSET
-    stats: JsonObjectType0 | None | Unset = UNSET
-    results: JsonObjectType0 | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -89,8 +89,8 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.failure import Failure
-        from ..models.job_metadata import JobMetadata
+        from ..models.failure_type_0 import FailureType0
+        from ..models.job_metadata_type_0 import JobMetadataType0
         from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         id = self.id
@@ -105,79 +105,77 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         submitter_id = self.submitter_id
 
+        project_id: None | str
         project_id = self.project_id
 
+        parent_job_id: None | str
         parent_job_id = self.parent_job_id
 
+        session_id: None | str
         session_id = self.session_id
 
-        metadata: dict[str, Any] | None | Unset
-        if isinstance(self.metadata, Unset):
-            metadata = UNSET
-        elif isinstance(self.metadata, JobMetadata):
+        metadata: dict[str, Any] | None
+        if isinstance(self.metadata, JobMetadataType0):
             metadata = self.metadata.to_dict()
         else:
             metadata = self.metadata
 
+        name: None | str
         name = self.name
 
+        submitted_at: None | str
         submitted_at = self.submitted_at
 
+        started_at: None | str
         started_at = self.started_at
 
+        completed_at: None | str
         completed_at = self.completed_at
 
+        predicted_wait_time_ms: int | None
         predicted_wait_time_ms = self.predicted_wait_time_ms
 
+        predicted_execution_duration_ms: int | None
         predicted_execution_duration_ms = self.predicted_execution_duration_ms
 
+        execution_duration_ms: int | None
         execution_duration_ms = self.execution_duration_ms
+
+        failure: dict[str, Any] | None
+        if isinstance(self.failure, FailureType0):
+            failure = self.failure.to_dict()
+        else:
+            failure = self.failure
+
+        output: dict[str, Any] | None
+        if isinstance(self.output, JsonObjectType0):
+            output = self.output.to_dict()
+        else:
+            output = self.output
+
+        settings: dict[str, Any] | None
+        if isinstance(self.settings, JsonObjectType0):
+            settings = self.settings.to_dict()
+        else:
+            settings = self.settings
+
+        stats: dict[str, Any] | None
+        if isinstance(self.stats, JsonObjectType0):
+            stats = self.stats.to_dict()
+        else:
+            stats = self.stats
+
+        results: dict[str, Any] | None
+        if isinstance(self.results, JsonObjectType0):
+            results = self.results.to_dict()
+        else:
+            results = self.results
 
         shots = self.shots
 
         noise: dict[str, Any] | Unset = UNSET
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
-
-        failure: dict[str, Any] | None | Unset
-        if isinstance(self.failure, Unset):
-            failure = UNSET
-        elif isinstance(self.failure, Failure):
-            failure = self.failure.to_dict()
-        else:
-            failure = self.failure
-
-        output: dict[str, Any] | None | Unset
-        if isinstance(self.output, Unset):
-            output = UNSET
-        elif isinstance(self.output, JsonObjectType0):
-            output = self.output.to_dict()
-        else:
-            output = self.output
-
-        settings: dict[str, Any] | None | Unset
-        if isinstance(self.settings, Unset):
-            settings = UNSET
-        elif isinstance(self.settings, JsonObjectType0):
-            settings = self.settings.to_dict()
-        else:
-            settings = self.settings
-
-        stats: dict[str, Any] | None | Unset
-        if isinstance(self.stats, Unset):
-            stats = UNSET
-        elif isinstance(self.stats, JsonObjectType0):
-            stats = self.stats.to_dict()
-        else:
-            stats = self.stats
-
-        results: dict[str, Any] | None | Unset
-        if isinstance(self.results, Unset):
-            results = UNSET
-        elif isinstance(self.results, JsonObjectType0):
-            results = self.results.to_dict()
-        else:
-            results = self.results
 
 
         field_dict: dict[str, Any] = {}
@@ -189,43 +187,27 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "backend": backend,
             "dry_run": dry_run,
             "submitter_id": submitter_id,
+            "project_id": project_id,
+            "parent_job_id": parent_job_id,
+            "session_id": session_id,
+            "metadata": metadata,
+            "name": name,
+            "submitted_at": submitted_at,
+            "started_at": started_at,
+            "completed_at": completed_at,
+            "predicted_wait_time_ms": predicted_wait_time_ms,
+            "predicted_execution_duration_ms": predicted_execution_duration_ms,
+            "execution_duration_ms": execution_duration_ms,
+            "failure": failure,
+            "output": output,
+            "settings": settings,
+            "stats": stats,
+            "results": results,
         })
-        if project_id is not UNSET:
-            field_dict["project_id"] = project_id
-        if parent_job_id is not UNSET:
-            field_dict["parent_job_id"] = parent_job_id
-        if session_id is not UNSET:
-            field_dict["session_id"] = session_id
-        if metadata is not UNSET:
-            field_dict["metadata"] = metadata
-        if name is not UNSET:
-            field_dict["name"] = name
-        if submitted_at is not UNSET:
-            field_dict["submitted_at"] = submitted_at
-        if started_at is not UNSET:
-            field_dict["started_at"] = started_at
-        if completed_at is not UNSET:
-            field_dict["completed_at"] = completed_at
-        if predicted_wait_time_ms is not UNSET:
-            field_dict["predicted_wait_time_ms"] = predicted_wait_time_ms
-        if predicted_execution_duration_ms is not UNSET:
-            field_dict["predicted_execution_duration_ms"] = predicted_execution_duration_ms
-        if execution_duration_ms is not UNSET:
-            field_dict["execution_duration_ms"] = execution_duration_ms
         if shots is not UNSET:
             field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
-        if failure is not UNSET:
-            field_dict["failure"] = failure
-        if output is not UNSET:
-            field_dict["output"] = output
-        if settings is not UNSET:
-            field_dict["settings"] = settings
-        if stats is not UNSET:
-            field_dict["stats"] = stats
-        if results is not UNSET:
-            field_dict["results"] = results
 
         return field_dict
 
@@ -233,8 +215,8 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.failure import Failure
-        from ..models.job_metadata import JobMetadata
+        from ..models.failure_type_0 import FailureType0
+        from ..models.job_metadata_type_0 import JobMetadataType0
         from ..models.json_object_type_0 import JsonObjectType0
         from ..models.noise import Noise
         d = dict(src_dict)
@@ -253,45 +235,193 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
         submitter_id = d.pop("submitter_id")
 
-        project_id = d.pop("project_id", UNSET)
-
-        parent_job_id = d.pop("parent_job_id", UNSET)
-
-        session_id = d.pop("session_id", UNSET)
-
-        def _parse_metadata(data: object) -> JobMetadata | None | Unset:
+        def _parse_project_id(data: object) -> None | str:
             if data is None:
                 return data
-            if isinstance(data, Unset):
+            return cast(None | str, data)
+
+        project_id = _parse_project_id(d.pop("project_id"))
+
+
+        def _parse_parent_job_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        parent_job_id = _parse_parent_job_id(d.pop("parent_job_id"))
+
+
+        def _parse_session_id(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        session_id = _parse_session_id(d.pop("session_id"))
+
+
+        def _parse_metadata(data: object) -> JobMetadataType0 | None:
+            if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_optional_job_metadata_type_1 = JobMetadata.from_dict(data)
+                componentsschemas_job_metadata_type_0 = JobMetadataType0.from_dict(data)
 
 
 
-                return componentsschemas_optional_job_metadata_type_1
+                return componentsschemas_job_metadata_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(JobMetadata | None | Unset, data)
+            return cast(JobMetadataType0 | None, data)
 
-        metadata = _parse_metadata(d.pop("metadata", UNSET))
+        metadata = _parse_metadata(d.pop("metadata"))
 
 
-        name = d.pop("name", UNSET)
+        def _parse_name(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
 
-        submitted_at = d.pop("submitted_at", UNSET)
+        name = _parse_name(d.pop("name"))
 
-        started_at = d.pop("started_at", UNSET)
 
-        completed_at = d.pop("completed_at", UNSET)
+        def _parse_submitted_at(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
 
-        predicted_wait_time_ms = d.pop("predicted_wait_time_ms", UNSET)
+        submitted_at = _parse_submitted_at(d.pop("submitted_at"))
 
-        predicted_execution_duration_ms = d.pop("predicted_execution_duration_ms", UNSET)
 
-        execution_duration_ms = d.pop("execution_duration_ms", UNSET)
+        def _parse_started_at(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        started_at = _parse_started_at(d.pop("started_at"))
+
+
+        def _parse_completed_at(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        completed_at = _parse_completed_at(d.pop("completed_at"))
+
+
+        def _parse_predicted_wait_time_ms(data: object) -> int | None:
+            if data is None:
+                return data
+            return cast(int | None, data)
+
+        predicted_wait_time_ms = _parse_predicted_wait_time_ms(d.pop("predicted_wait_time_ms"))
+
+
+        def _parse_predicted_execution_duration_ms(data: object) -> int | None:
+            if data is None:
+                return data
+            return cast(int | None, data)
+
+        predicted_execution_duration_ms = _parse_predicted_execution_duration_ms(d.pop("predicted_execution_duration_ms"))
+
+
+        def _parse_execution_duration_ms(data: object) -> int | None:
+            if data is None:
+                return data
+            return cast(int | None, data)
+
+        execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
+
+
+        def _parse_failure(data: object) -> FailureType0 | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_failure_type_0 = FailureType0.from_dict(data)
+
+
+
+                return componentsschemas_failure_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(FailureType0 | None, data)
+
+        failure = _parse_failure(d.pop("failure"))
+
+
+        def _parse_output(data: object) -> JsonObjectType0 | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None, data)
+
+        output = _parse_output(d.pop("output"))
+
+
+        def _parse_settings(data: object) -> JsonObjectType0 | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None, data)
+
+        settings = _parse_settings(d.pop("settings"))
+
+
+        def _parse_stats(data: object) -> JsonObjectType0 | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None, data)
+
+        stats = _parse_stats(d.pop("stats"))
+
+
+        def _parse_results(data: object) -> JsonObjectType0 | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
+
+
+
+                return componentsschemas_json_object_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JsonObjectType0 | None, data)
+
+        results = _parse_results(d.pop("results"))
+
 
         shots = d.pop("shots", UNSET)
 
@@ -303,106 +433,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             noise = Noise.from_dict(_noise)
 
 
-
-
-        def _parse_failure(data: object) -> Failure | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_optional_failure_type_1 = Failure.from_dict(data)
-
-
-
-                return componentsschemas_optional_failure_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(Failure | None | Unset, data)
-
-        failure = _parse_failure(d.pop("failure", UNSET))
-
-
-        def _parse_output(data: object) -> JsonObjectType0 | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None | Unset, data)
-
-        output = _parse_output(d.pop("output", UNSET))
-
-
-        def _parse_settings(data: object) -> JsonObjectType0 | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None | Unset, data)
-
-        settings = _parse_settings(d.pop("settings", UNSET))
-
-
-        def _parse_stats(data: object) -> JsonObjectType0 | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None | Unset, data)
-
-        stats = _parse_stats(d.pop("stats", UNSET))
-
-
-        def _parse_results(data: object) -> JsonObjectType0 | None | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                componentsschemas_json_object_type_0 = JsonObjectType0.from_dict(data)
-
-
-
-                return componentsschemas_json_object_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JsonObjectType0 | None | Unset, data)
-
-        results = _parse_results(d.pop("results", UNSET))
 
 
         pick_base_job_exclude_keyof_base_job_child_job_ids = cls(
@@ -423,13 +453,13 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             predicted_wait_time_ms=predicted_wait_time_ms,
             predicted_execution_duration_ms=predicted_execution_duration_ms,
             execution_duration_ms=execution_duration_ms,
-            shots=shots,
-            noise=noise,
             failure=failure,
             output=output,
             settings=settings,
             stats=stats,
             results=results,
+            shots=shots,
+            noise=noise,
         )
 
 

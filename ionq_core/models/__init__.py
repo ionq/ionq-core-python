@@ -26,8 +26,8 @@ from .circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling im
 from .circuit_job_stats import CircuitJobStats
 from .create_session_request import CreateSessionRequest
 from .error import Error
-from .failure import Failure
-from .failure_code import FailureCode
+from .failure_type_0 import FailureType0
+from .failure_type_0_code import FailureType0Code
 from .gate_native_gate import GateNativeGate
 from .gate_qis_gate import GateQisGate
 from .generic_quantum_function_input import GenericQuantumFunctionInput
@@ -44,10 +44,10 @@ from .get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCos
 from .get_job_estimate_query_params import GetJobEstimateQueryParams
 from .get_job_estimate_response import GetJobEstimateResponse
 from .get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
-from .get_job_probabilities_response_200 import GetJobProbabilitiesResponse200
 from .get_job_response import GetJobResponse
 from .get_jobs_query_params import GetJobsQueryParams
 from .get_jobs_response import GetJobsResponse
+from .get_results_response import GetResultsResponse
 from .get_sessions_query_params import GetSessionsQueryParams
 from .get_variant_results_response import GetVariantResultsResponse
 from .group_by import GroupBy
@@ -63,7 +63,7 @@ from .job_canceled_response_status import JobCanceledResponseStatus
 from .job_creation_response import JobCreationResponse
 from .job_deleted_response import JobDeletedResponse
 from .job_deleted_response_status import JobDeletedResponseStatus
-from .job_metadata import JobMetadata
+from .job_metadata_type_0 import JobMetadataType0
 from .job_q_ctrl_status import JobQCtrlStatus
 from .job_status import JobStatus
 from .jobs_bulk_operation_request import JobsBulkOperationRequest
@@ -109,7 +109,6 @@ from .session_settings_request import SessionSettingsRequest
 from .session_status_enum import SessionStatusEnum
 from .sessions_response import SessionsResponse
 from .usage import Usage
-from .usage_query import UsageQuery
 from .usages import Usages
 from .whoami import Whoami
 
@@ -140,8 +139,8 @@ __all__ = (
     "CircuitJobStats",
     "CreateSessionRequest",
     "Error",
-    "Failure",
-    "FailureCode",
+    "FailureType0",
+    "FailureType0Code",
     "GateNativeGate",
     "GateQisGate",
     "GenericQuantumFunctionInput",
@@ -158,10 +157,10 @@ __all__ = (
     "GetJobEstimateQueryParams",
     "GetJobEstimateResponse",
     "GetJobEstimateResponseRateInformation",
-    "GetJobProbabilitiesResponse200",
     "GetJobResponse",
     "GetJobsQueryParams",
     "GetJobsResponse",
+    "GetResultsResponse",
     "GetSessionsQueryParams",
     "GetVariantResultsResponse",
     "GroupBy",
@@ -177,7 +176,7 @@ __all__ = (
     "JobCreationResponse",
     "JobDeletedResponse",
     "JobDeletedResponseStatus",
-    "JobMetadata",
+    "JobMetadataType0",
     "JobQCtrlStatus",
     "JobsBulkOperationRequest",
     "JobsCanceledResponse",
@@ -223,7 +222,6 @@ __all__ = (
     "SessionsResponse",
     "SessionStatusEnum",
     "Usage",
-    "UsageQuery",
     "Usages",
     "Whoami",
 )

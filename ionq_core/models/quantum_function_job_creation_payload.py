@@ -16,7 +16,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
   from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
-  from ..models.job_metadata import JobMetadata
+  from ..models.job_metadata_type_0 import JobMetadataType0
   from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
 
 
@@ -31,11 +31,12 @@ T = TypeVar("T", bound="QuantumFunctionJobCreationPayload")
 class QuantumFunctionJobCreationPayload:
     """ 
         Attributes:
-            backend (str):
+            backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
+                enterprise-1`
             type_ (QuantumFunctionJobCreationPayloadType):
             input_ (GenericQuantumFunctionInput | HamiltonianEnergyInput):
             name (str | Unset):
-            metadata (JobMetadata | Unset):
+            metadata (JobMetadataType0 | None | Unset):
             shots (int | Unset):  Default: 100.
             session_id (str | Unset):
             settings (QuantumFunctionJobCreationPayloadSettings | Unset):
@@ -46,7 +47,7 @@ class QuantumFunctionJobCreationPayload:
     type_: QuantumFunctionJobCreationPayloadType
     input_: GenericQuantumFunctionInput | HamiltonianEnergyInput
     name: str | Unset = UNSET
-    metadata: JobMetadata | Unset = UNSET
+    metadata: JobMetadataType0 | None | Unset = UNSET
     shots: int | Unset = 100
     session_id: str | Unset = UNSET
     settings: QuantumFunctionJobCreationPayloadSettings | Unset = UNSET
@@ -60,7 +61,7 @@ class QuantumFunctionJobCreationPayload:
     def to_dict(self) -> dict[str, Any]:
         from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
         from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
-        from ..models.job_metadata import JobMetadata
+        from ..models.job_metadata_type_0 import JobMetadataType0
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
         backend = self.backend
 
@@ -75,9 +76,13 @@ class QuantumFunctionJobCreationPayload:
 
         name = self.name
 
-        metadata: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.metadata, Unset):
+        metadata: dict[str, Any] | None | Unset
+        if isinstance(self.metadata, Unset):
+            metadata = UNSET
+        elif isinstance(self.metadata, JobMetadataType0):
             metadata = self.metadata.to_dict()
+        else:
+            metadata = self.metadata
 
         shots = self.shots
 
@@ -118,7 +123,7 @@ class QuantumFunctionJobCreationPayload:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
         from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
-        from ..models.job_metadata import JobMetadata
+        from ..models.job_metadata_type_0 import JobMetadataType0
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
         d = dict(src_dict)
         backend = d.pop("backend")
@@ -152,14 +157,24 @@ class QuantumFunctionJobCreationPayload:
 
         name = d.pop("name", UNSET)
 
-        _metadata = d.pop("metadata", UNSET)
-        metadata: JobMetadata | Unset
-        if isinstance(_metadata,  Unset):
-            metadata = UNSET
-        else:
-            metadata = JobMetadata.from_dict(_metadata)
+        def _parse_metadata(data: object) -> JobMetadataType0 | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_job_metadata_type_0 = JobMetadataType0.from_dict(data)
 
 
+
+                return componentsschemas_job_metadata_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JobMetadataType0 | None | Unset, data)
+
+        metadata = _parse_metadata(d.pop("metadata", UNSET))
 
 
         shots = d.pop("shots", UNSET)
