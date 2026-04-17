@@ -49,3 +49,19 @@ jobs:
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
       - run: uv run pytest ${{ matrix.python-version != '3.12' && '--no-cov' || '' }}
+
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.12"
+          enable-cache: ${{ github.event_name == 'push' }}
+      - run: uv sync
+      - uses: pypa/gh-action-pip-audit@1220774d901786e6f652ae159f7b6bc8fea6d266 # v1.1.0
+        with:
+          virtual-environment: .venv/
