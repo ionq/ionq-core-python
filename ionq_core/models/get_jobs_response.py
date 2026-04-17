@@ -11,7 +11,7 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.job import Job
+  from ..models.base_job import BaseJob
 
 
 
@@ -25,11 +25,11 @@ T = TypeVar("T", bound="GetJobsResponse")
 class GetJobsResponse:
     """ 
         Attributes:
-            jobs (list[Job]):
+            jobs (list[BaseJob]):
             next_ (None | str):
      """
 
-    jobs: list[Job]
+    jobs: list[BaseJob]
     next_: None | str
 
 
@@ -37,7 +37,7 @@ class GetJobsResponse:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.job import Job
+        from ..models.base_job import BaseJob
         jobs = []
         for jobs_item_data in self.jobs:
             jobs_item = jobs_item_data.to_dict()
@@ -62,12 +62,12 @@ class GetJobsResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.job import Job
+        from ..models.base_job import BaseJob
         d = dict(src_dict)
         jobs = []
         _jobs = d.pop("jobs")
         for jobs_item_data in (_jobs):
-            jobs_item = Job.from_dict(jobs_item_data)
+            jobs_item = BaseJob.from_dict(jobs_item_data)
 
 
 

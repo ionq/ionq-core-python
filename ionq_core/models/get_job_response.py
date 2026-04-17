@@ -17,7 +17,7 @@ if TYPE_CHECKING:
   from ..models.circuit_job_result import CircuitJobResult
   from ..models.circuit_job_settings import CircuitJobSettings
   from ..models.circuit_job_stats import CircuitJobStats
-  from ..models.failure_type_0 import FailureType0
+  from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
   from ..models.json_object import JsonObject
   from ..models.noise import Noise
@@ -51,12 +51,12 @@ class GetJobResponse:
             predicted_wait_time_ms (float | None):
             predicted_execution_duration_ms (float | None):
             execution_duration_ms (float | None):
-            failure (FailureType0 | None):
+            failure (Failure | None):
             output (JsonObject):
-            child_job_ids (list[str] | None):
             settings (CircuitJobSettings):
             stats (CircuitJobStats):
             results (CircuitJobResult | None):
+            child_job_ids (list[str] | None):
             shots (int | Unset):
             noise (Noise | Unset):
      """
@@ -78,12 +78,12 @@ class GetJobResponse:
     predicted_wait_time_ms: float | None
     predicted_execution_duration_ms: float | None
     execution_duration_ms: float | None
-    failure: FailureType0 | None
+    failure: Failure | None
     output: JsonObject
-    child_job_ids: list[str] | None
     settings: CircuitJobSettings
     stats: CircuitJobStats
     results: CircuitJobResult | None
+    child_job_ids: list[str] | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
 
@@ -95,7 +95,7 @@ class GetJobResponse:
         from ..models.circuit_job_result import CircuitJobResult
         from ..models.circuit_job_settings import CircuitJobSettings
         from ..models.circuit_job_stats import CircuitJobStats
-        from ..models.failure_type_0 import FailureType0
+        from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
@@ -147,20 +147,12 @@ class GetJobResponse:
         execution_duration_ms = self.execution_duration_ms
 
         failure: dict[str, Any] | None
-        if isinstance(self.failure, FailureType0):
+        if isinstance(self.failure, Failure):
             failure = self.failure.to_dict()
         else:
             failure = self.failure
 
         output = self.output.to_dict()
-
-        child_job_ids: list[str] | None
-        if isinstance(self.child_job_ids, list):
-            child_job_ids = self.child_job_ids
-
-
-        else:
-            child_job_ids = self.child_job_ids
 
         settings = self.settings.to_dict()
 
@@ -171,6 +163,14 @@ class GetJobResponse:
             results = self.results.to_dict()
         else:
             results = self.results
+
+        child_job_ids: list[str] | None
+        if isinstance(self.child_job_ids, list):
+            child_job_ids = self.child_job_ids
+
+
+        else:
+            child_job_ids = self.child_job_ids
 
         shots = self.shots
 
@@ -201,10 +201,10 @@ class GetJobResponse:
             "execution_duration_ms": execution_duration_ms,
             "failure": failure,
             "output": output,
-            "child_job_ids": child_job_ids,
             "settings": settings,
             "stats": stats,
             "results": results,
+            "child_job_ids": child_job_ids,
         })
         if shots is not UNSET:
             field_dict["shots"] = shots
@@ -220,7 +220,7 @@ class GetJobResponse:
         from ..models.circuit_job_result import CircuitJobResult
         from ..models.circuit_job_settings import CircuitJobSettings
         from ..models.circuit_job_stats import CircuitJobStats
-        from ..models.failure_type_0 import FailureType0
+        from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
@@ -332,20 +332,20 @@ class GetJobResponse:
         execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
 
 
-        def _parse_failure(data: object) -> FailureType0 | None:
+        def _parse_failure(data: object) -> Failure | None:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_failure_type_0 = FailureType0.from_dict(data)
+                failure_type_1 = Failure.from_dict(data)
 
 
 
-                return componentsschemas_failure_type_0
+                return failure_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(FailureType0 | None, data)
+            return cast(Failure | None, data)
 
         failure = _parse_failure(d.pop("failure"))
 
@@ -353,22 +353,6 @@ class GetJobResponse:
         output = JsonObject.from_dict(d.pop("output"))
 
 
-
-
-        def _parse_child_job_ids(data: object) -> list[str] | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, list):
-                    raise TypeError()
-                child_job_ids_type_0 = cast(list[str], data)
-
-                return child_job_ids_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(list[str] | None, data)
-
-        child_job_ids = _parse_child_job_ids(d.pop("child_job_ids"))
 
 
         settings = CircuitJobSettings.from_dict(d.pop("settings"))
@@ -397,6 +381,22 @@ class GetJobResponse:
             return cast(CircuitJobResult | None, data)
 
         results = _parse_results(d.pop("results"))
+
+
+        def _parse_child_job_ids(data: object) -> list[str] | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                child_job_ids_type_0 = cast(list[str], data)
+
+                return child_job_ids_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[str] | None, data)
+
+        child_job_ids = _parse_child_job_ids(d.pop("child_job_ids"))
 
 
         shots = d.pop("shots", UNSET)
@@ -431,10 +431,10 @@ class GetJobResponse:
             execution_duration_ms=execution_duration_ms,
             failure=failure,
             output=output,
-            child_job_ids=child_job_ids,
             settings=settings,
             stats=stats,
             results=results,
+            child_job_ids=child_job_ids,
             shots=shots,
             noise=noise,
         )

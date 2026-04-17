@@ -12,7 +12,7 @@ from .types import UNSET, Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
-    from .models.job import Job
+    from .models.base_job import BaseJob as Job
     from .models.job_status import JobStatus
 
 logger = logging.getLogger("ionq_core")

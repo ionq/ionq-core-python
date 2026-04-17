@@ -14,7 +14,7 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.failure_type_0 import FailureType0
+  from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
   from ..models.json_object import JsonObject
   from ..models.noise import Noise
@@ -23,14 +23,13 @@ if TYPE_CHECKING:
 
 
 
-T = TypeVar("T", bound="PickBaseJobExcludeKeyofBaseJobChildJobIds")
+T = TypeVar("T", bound="BaseJob")
 
 
 
 @_attrs_define
-class PickBaseJobExcludeKeyofBaseJobChildJobIds:
-    """ From T, pick a set of properties whose keys are in the union K
-
+class BaseJob:
+    """ 
         Attributes:
             id (str):
             status (JobStatus):
@@ -41,18 +40,18 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id (None | str):
             parent_job_id (None | str):
             session_id (None | str):
+            metadata (JobMetadata | None):
             name (None | str):
-            submitted_at (None | str):
+            submitted_at (str):
             started_at (None | str):
             completed_at (None | str):
-            predicted_wait_time_ms (int | None):
-            predicted_execution_duration_ms (int | None):
-            execution_duration_ms (int | None):
-            failure (FailureType0 | None):
+            predicted_wait_time_ms (float | None):
+            predicted_execution_duration_ms (float | None):
+            execution_duration_ms (float | None):
+            failure (Failure | None):
             output (JsonObject):
             settings (JsonObject):
             stats (JsonObject):
-            metadata (JobMetadata | None):
             results (JsonObject | None):
             shots (int | Unset):
             noise (Noise | Unset):
@@ -67,29 +66,28 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
     project_id: None | str
     parent_job_id: None | str
     session_id: None | str
+    metadata: JobMetadata | None
     name: None | str
-    submitted_at: None | str
+    submitted_at: str
     started_at: None | str
     completed_at: None | str
-    predicted_wait_time_ms: int | None
-    predicted_execution_duration_ms: int | None
-    execution_duration_ms: int | None
-    failure: FailureType0 | None
+    predicted_wait_time_ms: float | None
+    predicted_execution_duration_ms: float | None
+    execution_duration_ms: float | None
+    failure: Failure | None
     output: JsonObject
     settings: JsonObject
     stats: JsonObject
-    metadata: JobMetadata | None
     results: JsonObject | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
 
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.failure_type_0 import FailureType0
+        from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
@@ -114,10 +112,15 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         session_id: None | str
         session_id = self.session_id
 
+        metadata: dict[str, Any] | None
+        if isinstance(self.metadata, JobMetadata):
+            metadata = self.metadata.to_dict()
+        else:
+            metadata = self.metadata
+
         name: None | str
         name = self.name
 
-        submitted_at: None | str
         submitted_at = self.submitted_at
 
         started_at: None | str
@@ -126,17 +129,17 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         completed_at: None | str
         completed_at = self.completed_at
 
-        predicted_wait_time_ms: int | None
+        predicted_wait_time_ms: float | None
         predicted_wait_time_ms = self.predicted_wait_time_ms
 
-        predicted_execution_duration_ms: int | None
+        predicted_execution_duration_ms: float | None
         predicted_execution_duration_ms = self.predicted_execution_duration_ms
 
-        execution_duration_ms: int | None
+        execution_duration_ms: float | None
         execution_duration_ms = self.execution_duration_ms
 
         failure: dict[str, Any] | None
-        if isinstance(self.failure, FailureType0):
+        if isinstance(self.failure, Failure):
             failure = self.failure.to_dict()
         else:
             failure = self.failure
@@ -146,12 +149,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         settings = self.settings.to_dict()
 
         stats = self.stats.to_dict()
-
-        metadata: dict[str, Any] | None
-        if isinstance(self.metadata, JobMetadata):
-            metadata = self.metadata.to_dict()
-        else:
-            metadata = self.metadata
 
         results: dict[str, Any] | None
         if isinstance(self.results, JsonObject):
@@ -167,7 +164,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
         field_dict: dict[str, Any] = {}
-        field_dict.update(self.additional_properties)
+
         field_dict.update({
             "id": id,
             "status": status,
@@ -178,6 +175,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "project_id": project_id,
             "parent_job_id": parent_job_id,
             "session_id": session_id,
+            "metadata": metadata,
             "name": name,
             "submitted_at": submitted_at,
             "started_at": started_at,
@@ -189,7 +187,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             "output": output,
             "settings": settings,
             "stats": stats,
-            "metadata": metadata,
             "results": results,
         })
         if shots is not UNSET:
@@ -203,7 +200,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.failure_type_0 import FailureType0
+        from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
         from ..models.noise import Noise
@@ -247,6 +244,24 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         session_id = _parse_session_id(d.pop("session_id"))
 
 
+        def _parse_metadata(data: object) -> JobMetadata | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                metadata_type_1 = JobMetadata.from_dict(data)
+
+
+
+                return metadata_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(JobMetadata | None, data)
+
+        metadata = _parse_metadata(d.pop("metadata"))
+
+
         def _parse_name(data: object) -> None | str:
             if data is None:
                 return data
@@ -255,13 +270,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         name = _parse_name(d.pop("name"))
 
 
-        def _parse_submitted_at(data: object) -> None | str:
-            if data is None:
-                return data
-            return cast(None | str, data)
-
-        submitted_at = _parse_submitted_at(d.pop("submitted_at"))
-
+        submitted_at = d.pop("submitted_at")
 
         def _parse_started_at(data: object) -> None | str:
             if data is None:
@@ -279,44 +288,44 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         completed_at = _parse_completed_at(d.pop("completed_at"))
 
 
-        def _parse_predicted_wait_time_ms(data: object) -> int | None:
+        def _parse_predicted_wait_time_ms(data: object) -> float | None:
             if data is None:
                 return data
-            return cast(int | None, data)
+            return cast(float | None, data)
 
         predicted_wait_time_ms = _parse_predicted_wait_time_ms(d.pop("predicted_wait_time_ms"))
 
 
-        def _parse_predicted_execution_duration_ms(data: object) -> int | None:
+        def _parse_predicted_execution_duration_ms(data: object) -> float | None:
             if data is None:
                 return data
-            return cast(int | None, data)
+            return cast(float | None, data)
 
         predicted_execution_duration_ms = _parse_predicted_execution_duration_ms(d.pop("predicted_execution_duration_ms"))
 
 
-        def _parse_execution_duration_ms(data: object) -> int | None:
+        def _parse_execution_duration_ms(data: object) -> float | None:
             if data is None:
                 return data
-            return cast(int | None, data)
+            return cast(float | None, data)
 
         execution_duration_ms = _parse_execution_duration_ms(d.pop("execution_duration_ms"))
 
 
-        def _parse_failure(data: object) -> FailureType0 | None:
+        def _parse_failure(data: object) -> Failure | None:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_failure_type_0 = FailureType0.from_dict(data)
+                failure_type_1 = Failure.from_dict(data)
 
 
 
-                return componentsschemas_failure_type_0
+                return failure_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(FailureType0 | None, data)
+            return cast(Failure | None, data)
 
         failure = _parse_failure(d.pop("failure"))
 
@@ -334,24 +343,6 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
         stats = JsonObject.from_dict(d.pop("stats"))
 
 
-
-
-        def _parse_metadata(data: object) -> JobMetadata | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, dict):
-                    raise TypeError()
-                metadata_type_1 = JobMetadata.from_dict(data)
-
-
-
-                return metadata_type_1
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(JobMetadata | None, data)
-
-        metadata = _parse_metadata(d.pop("metadata"))
 
 
         def _parse_results(data: object) -> JsonObject | None:
@@ -384,7 +375,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
 
 
 
-        pick_base_job_exclude_keyof_base_job_child_job_ids = cls(
+        base_job = cls(
             id=id,
             status=status,
             type_=type_,
@@ -394,6 +385,7 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             project_id=project_id,
             parent_job_id=parent_job_id,
             session_id=session_id,
+            metadata=metadata,
             name=name,
             submitted_at=submitted_at,
             started_at=started_at,
@@ -405,28 +397,10 @@ class PickBaseJobExcludeKeyofBaseJobChildJobIds:
             output=output,
             settings=settings,
             stats=stats,
-            metadata=metadata,
             results=results,
             shots=shots,
             noise=noise,
         )
 
+        return base_job
 
-        pick_base_job_exclude_keyof_base_job_child_job_ids.additional_properties = d
-        return pick_base_job_exclude_keyof_base_job_child_job_ids
-
-    @property
-    def additional_keys(self) -> list[str]:
-        return list(self.additional_properties.keys())
-
-    def __getitem__(self, key: str) -> Any:
-        return self.additional_properties[key]
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self.additional_properties[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del self.additional_properties[key]
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.additional_properties

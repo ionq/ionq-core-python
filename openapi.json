@@ -552,7 +552,7 @@
         ],
         "parameters": [
           {
-            "description": "The UUID of the job — this UUID is provided in the response on job creation.",
+            "description": "The UUID of the job \u2014 this UUID is provided in the response on job creation.",
             "in": "path",
             "name": "UUID",
             "required": true,
@@ -601,7 +601,7 @@
         ],
         "parameters": [
           {
-            "description": "The UUID of the job — this UUID is provided in the response on job creation.",
+            "description": "The UUID of the job \u2014 this UUID is provided in the response on job creation.",
             "in": "path",
             "name": "UUID",
             "required": true,
@@ -766,7 +766,7 @@
         ],
         "parameters": [
           {
-            "description": "The UUID of the job — this UUID is provided in the response on job creation.",
+            "description": "The UUID of the job \u2014 this UUID is provided in the response on job creation.",
             "in": "path",
             "name": "UUID",
             "required": true,
@@ -1196,7 +1196,7 @@
         ],
         "parameters": [
           {
-            "description": "The id of the session — this id is provided in the response on session creation.",
+            "description": "The id of the session \u2014 this id is provided in the response on session creation.",
             "in": "path",
             "name": "session_id",
             "required": true,
@@ -1229,7 +1229,7 @@
         ],
         "parameters": [
           {
-            "description": "The id of the session — this id is provided in the response on session creation.",
+            "description": "The id of the session \u2014 this id is provided in the response on session creation.",
             "in": "path",
             "name": "session_id",
             "required": true,
@@ -2413,236 +2413,17 @@
         "type": "object",
         "additionalProperties": {}
       },
-      "Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/JobStatus"
-          },
-          "type": {
-            "type": "string"
-          },
-          "backend": {
-            "type": "string"
-          },
-          "dry_run": {
-            "type": "boolean"
-          },
-          "submitter_id": {
-            "type": "string",
-            "description": "The id of the user who submitted the job"
-          },
-          "project_id": {
-            "type": "string"
-          },
-          "parent_job_id": {
-            "type": "string"
-          },
-          "session_id": {
-            "type": "string"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/JobMetadata"
-          },
-          "name": {
-            "type": "string"
-          },
-          "submitted_at": {
-            "type": "string"
-          },
-          "started_at": {
-            "type": "string"
-          },
-          "completed_at": {
-            "type": "string"
-          },
-          "predicted_wait_time_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "predicted_execution_duration_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "execution_duration_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "shots": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "noise": {
-            "$ref": "#/components/schemas/Noise",
-            "description": "Only present in the response when `backend` is simulator."
-          },
-          "failure": {
-            "$ref": "#/components/schemas/Failure"
-          },
-          "output": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "settings": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "stats": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "results": {
-            "$ref": "#/components/schemas/JsonObject"
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "type",
-          "backend",
-          "dry_run",
-          "submitter_id",
-          "project_id",
-          "parent_job_id",
-          "session_id",
-          "metadata",
-          "name",
-          "submitted_at",
-          "started_at",
-          "completed_at",
-          "predicted_wait_time_ms",
-          "predicted_execution_duration_ms",
-          "execution_duration_ms",
-          "failure",
-          "output",
-          "settings",
-          "stats",
-          "results"
-        ],
-        "type": "object",
-        "description": "From T, pick a set of properties whose keys are in the union K"
-      },
-      "Job": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "status": {
-            "$ref": "#/components/schemas/JobStatus"
-          },
-          "type": {
-            "type": "string"
-          },
-          "backend": {
-            "type": "string"
-          },
-          "dry_run": {
-            "type": "boolean"
-          },
-          "submitter_id": {
-            "type": "string",
-            "description": "The id of the user who submitted the job"
-          },
-          "project_id": {
-            "type": "string"
-          },
-          "parent_job_id": {
-            "type": "string"
-          },
-          "session_id": {
-            "type": "string"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/JobMetadata"
-          },
-          "name": {
-            "type": "string"
-          },
-          "submitted_at": {
-            "type": "string"
-          },
-          "started_at": {
-            "type": "string"
-          },
-          "completed_at": {
-            "type": "string"
-          },
-          "predicted_wait_time_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "predicted_execution_duration_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "execution_duration_ms": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "shots": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "noise": {
-            "$ref": "#/components/schemas/Noise",
-            "description": "Only present in the response when `backend` is simulator."
-          },
-          "failure": {
-            "$ref": "#/components/schemas/Failure"
-          },
-          "output": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "settings": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "stats": {
-            "$ref": "#/components/schemas/JsonObject"
-          },
-          "results": {
-            "$ref": "#/components/schemas/JsonObject"
-          }
-        },
-        "required": [
-          "id",
-          "status",
-          "type",
-          "backend",
-          "dry_run",
-          "submitter_id",
-          "project_id",
-          "parent_job_id",
-          "session_id",
-          "metadata",
-          "name",
-          "submitted_at",
-          "started_at",
-          "completed_at",
-          "predicted_wait_time_ms",
-          "predicted_execution_duration_ms",
-          "execution_duration_ms",
-          "failure",
-          "output",
-          "settings",
-          "stats",
-          "results"
-        ],
-        "type": "object",
-        "additionalProperties": false
-      },
-      "Optional_string_": {
-        "type": "string",
-        "nullable": true
-      },
       "GetJobsResponse": {
         "properties": {
           "jobs": {
             "items": {
-              "$ref": "#/components/schemas/Job"
+              "$ref": "#/components/schemas/BaseJob"
             },
             "type": "array"
           },
           "next": {
-            "$ref": "#/components/schemas/Optional_string_"
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -2865,13 +2646,16 @@
             "description": "The id of the user who submitted the job"
           },
           "project_id": {
-            "$ref": "#/components/schemas/Optional_string_"
+            "type": "string",
+            "nullable": true
           },
           "parent_job_id": {
-            "$ref": "#/components/schemas/Optional_string_"
+            "type": "string",
+            "nullable": true
           },
           "session_id": {
-            "$ref": "#/components/schemas/Optional_string_"
+            "type": "string",
+            "nullable": true
           },
           "metadata": {
             "allOf": [
@@ -2882,7 +2666,8 @@
             "nullable": true
           },
           "name": {
-            "$ref": "#/components/schemas/Optional_string_"
+            "type": "string",
+            "nullable": true
           },
           "submitted_at": {
             "$ref": "#/components/schemas/IsoTimestamp"
@@ -2921,13 +2706,6 @@
           "output": {
             "$ref": "#/components/schemas/JsonObject"
           },
-          "child_job_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "nullable": true
-          },
           "settings": {
             "$ref": "#/components/schemas/CircuitJobSettings"
           },
@@ -2940,6 +2718,13 @@
                 "$ref": "#/components/schemas/CircuitJobResult"
               }
             ],
+            "nullable": true
+          },
+          "child_job_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
             "nullable": true
           }
         },
@@ -2963,10 +2748,10 @@
           "execution_duration_ms",
           "failure",
           "output",
-          "child_job_ids",
           "settings",
           "stats",
-          "results"
+          "results",
+          "child_job_ids"
         ],
         "type": "object",
         "additionalProperties": false
@@ -3462,20 +3247,25 @@
         "additionalProperties": false
       },
       "QuantumFunctionInput": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/HamiltonianEnergyInput"
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
           },
-          {
-            "$ref": "#/components/schemas/GenericQuantumFunctionInput"
+          "data": {
+            "type": "object"
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
           }
-        ],
-        "discriminator": {
-          "propertyName": "type",
-          "mapping": {
-            "hamiltonian-energy": "#/components/schemas/HamiltonianEnergyInput"
-          }
-        }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
       },
       "QuantumFunctionJobCreationPayload": {
         "type": "object",
@@ -3869,6 +3659,130 @@
           "type",
           "data"
         ]
+      },
+      "BaseJob": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
+          "type": {
+            "type": "string"
+          },
+          "backend": {
+            "type": "string"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "submitter_id": {
+            "type": "string",
+            "description": "The id of the user who submitted the job"
+          },
+          "project_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "parent_job_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "session_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobMetadata"
+              }
+            ],
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "submitted_at": {
+            "$ref": "#/components/schemas/IsoTimestamp"
+          },
+          "started_at": {
+            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+          },
+          "completed_at": {
+            "$ref": "#/components/schemas/Optional_IsoTimestamp_"
+          },
+          "predicted_wait_time_ms": {
+            "$ref": "#/components/schemas/Optional_number_"
+          },
+          "predicted_execution_duration_ms": {
+            "$ref": "#/components/schemas/Optional_number_"
+          },
+          "execution_duration_ms": {
+            "$ref": "#/components/schemas/Optional_number_"
+          },
+          "shots": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "noise": {
+            "$ref": "#/components/schemas/Noise",
+            "description": "Only present in the response when `backend` is simulator."
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Failure"
+              }
+            ],
+            "nullable": true
+          },
+          "output": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/JsonObject"
+          },
+          "results": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JsonObject"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "type",
+          "backend",
+          "dry_run",
+          "submitter_id",
+          "project_id",
+          "parent_job_id",
+          "session_id",
+          "metadata",
+          "name",
+          "submitted_at",
+          "started_at",
+          "completed_at",
+          "predicted_wait_time_ms",
+          "predicted_execution_duration_ms",
+          "execution_duration_ms",
+          "failure",
+          "output",
+          "settings",
+          "stats",
+          "results"
+        ],
+        "type": "object",
+        "additionalProperties": false
       }
     },
     "responses": {
@@ -4090,7 +4004,7 @@
         }
       },
       "organization_id": {
-        "description": "The UUID of the organization — this UUID is provided in the response on organization creation.",
+        "description": "The UUID of the organization \u2014 this UUID is provided in the response on organization creation.",
         "example": "71d164e-6ebe-4126-8839-f1529bb01a00",
         "in": "path",
         "name": "organization_id",

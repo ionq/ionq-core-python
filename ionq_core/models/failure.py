@@ -8,8 +8,8 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.failure_type_0_code import check_failure_type_0_code
-from ..models.failure_type_0_code import FailureType0Code
+from ..models.failure_code import check_failure_code
+from ..models.failure_code import FailureCode
 from typing import cast
 
 
@@ -17,19 +17,19 @@ from typing import cast
 
 
 
-T = TypeVar("T", bound="FailureType0")
+T = TypeVar("T", bound="Failure")
 
 
 
 @_attrs_define
-class FailureType0:
+class Failure:
     """ 
         Attributes:
-            code (FailureType0Code):
+            code (FailureCode):
             message (str):
      """
 
-    code: FailureType0Code
+    code: FailureCode
     message: str
 
 
@@ -56,17 +56,17 @@ class FailureType0:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        code = check_failure_type_0_code(d.pop("code"))
+        code = check_failure_code(d.pop("code"))
 
 
 
 
         message = d.pop("message")
 
-        failure_type_0 = cls(
+        failure = cls(
             code=code,
             message=message,
         )
 
-        return failure_type_0
+        return failure
 

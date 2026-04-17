@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from ionq_core.models.backend import Backend
-from ionq_core.models.job import Job
+from ionq_core.models.base_job import BaseJob
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.session import Session
 from ionq_core.models.whoami import Whoami
@@ -86,14 +86,14 @@ class TestBackendModel:
 
 class TestJobModel:
     def test_from_dict(self):
-        j = Job.from_dict(JOB_SAMPLE)
+        j = BaseJob.from_dict(JOB_SAMPLE)
         assert j.id == "e1a09d90-b2ba-4ea5-9fd7-4bfc14eac524"
         assert j.status == "failed"
         assert j.backend == "simulator"
         assert j.shots == 1000
 
     def test_round_trip(self):
-        result = Job.from_dict(JOB_SAMPLE).to_dict()
+        result = BaseJob.from_dict(JOB_SAMPLE).to_dict()
         for key in ["id", "status", "type", "backend", "shots"]:
             assert result[key] == JOB_SAMPLE[key]
 

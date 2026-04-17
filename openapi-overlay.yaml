@@ -1,125 +1,14 @@
 overlay: 1.1.0
 info:
   title: Spec fixes for IonQ API client generation
-  version: 3.0.0
+  version: 4.0.0
 extends: ./openapi.json
 actions:
-  # Failure schema: only used in response contexts (Job, BaseJobSummary,
-  # GetCircuitJobResponse) where the API returns null for non-failed jobs.
-  - target: $.components.schemas.Failure
-    update:
-      nullable: true
-
-  # JobMetadata: nullable in responses but NOT in creation payloads (where
-  # null fails validation). Use allOf+nullable on the response properties
-  # instead of making the schema itself nullable.
-  - target: $.components.schemas.Job.properties.metadata
-    remove: true
-  - target: $.components.schemas.Job.properties
-    update:
-      metadata:
-        allOf:
-          - $ref: "#/components/schemas/JobMetadata"
-        nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.metadata"
-    remove: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties"
-    update:
-      metadata:
-        allOf:
-          - $ref: "#/components/schemas/JobMetadata"
-        nullable: true
-
   # Backend.degraded: not returned by all backends (e.g. qpu.forte-enterprise-1
   # omits it). Remove from required so the field becomes optional.
+  # Tracked in ion-queue#1410.
   - target: $.components.schemas.Backend.required
     remove: true
   - target: $.components.schemas.Backend
     update:
       required: [backend, status, qubits, average_queue_time, last_updated]
-
-  # Job.results: the API returns null for non-completed jobs but the spec has
-  # a bare non-nullable $ref to JsonObject. Replace with allOf+nullable.
-  # (output, settings, stats always return {} and are correctly non-nullable.)
-  - target: $.components.schemas.Job.properties.results
-    remove: true
-  - target: $.components.schemas.Job.properties
-    update:
-      results:
-        allOf:
-          - $ref: "#/components/schemas/JsonObject"
-        nullable: true
-
-  # Job: nullable primitive fields.
-  # The API always returns these keys but sets them to null when not
-  # applicable (e.g. started_at before the job starts).
-  - target: $.components.schemas.Job.properties.project_id
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.parent_job_id
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.session_id
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.name
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.submitted_at
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.started_at
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.completed_at
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.predicted_wait_time_ms
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.predicted_execution_duration_ms
-    update:
-      nullable: true
-  - target: $.components.schemas.Job.properties.execution_duration_ms
-    update:
-      nullable: true
-
-  # BaseJobSummary (Pick_BaseJob...): same fixes as Job.
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.results"
-    remove: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties"
-    update:
-      results:
-        allOf:
-          - $ref: "#/components/schemas/JsonObject"
-        nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.project_id"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.parent_job_id"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.session_id"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.name"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.submitted_at"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.started_at"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.completed_at"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.predicted_wait_time_ms"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.predicted_execution_duration_ms"
-    update:
-      nullable: true
-  - target: "$.components.schemas['Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__'].properties.execution_duration_ms"
-    update:
-      nullable: true

@@ -15,12 +15,6 @@ class_overrides:
   Gate_NativeGate:
     class_name: NativeGateInstruction
     module_name: native_gate_instruction
-  Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__:
-    class_name: BaseJobSummary
-    module_name: base_job_summary
-  Optional_string_:
-    class_name: OptionalString
-    module_name: optional_string
   Optional_IsoTimestamp_:
     class_name: OptionalIsoTimestamp
     module_name: optional_iso_timestamp

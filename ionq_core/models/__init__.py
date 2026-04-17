@@ -5,6 +5,7 @@ from .add_job_results_response import AddJobResultsResponse
 from .ansatz import Ansatz
 from .backend import Backend
 from .bad_request_error import BadRequestError
+from .base_job import BaseJob
 from .characterization import Characterization
 from .characterization_fidelity import CharacterizationFidelity
 from .characterization_fidelity_spam import CharacterizationFidelitySpam
@@ -26,8 +27,8 @@ from .circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling im
 from .circuit_job_stats import CircuitJobStats
 from .create_session_request import CreateSessionRequest
 from .error import Error
-from .failure_type_0 import FailureType0
-from .failure_type_0_code import FailureType0Code
+from .failure import Failure
+from .failure_code import FailureCode
 from .gate_native_gate import GateNativeGate
 from .gate_qis_gate import GateQisGate
 from .generic_quantum_function_input import GenericQuantumFunctionInput
@@ -57,7 +58,6 @@ from .hamiltonian_energy_input import HamiltonianEnergyInput
 from .hamiltonian_energy_input_data import HamiltonianEnergyInputData
 from .hamiltonian_energy_input_data_type import HamiltonianEnergyInputDataType
 from .hamiltonian_pauli_term import HamiltonianPauliTerm
-from .job import Job
 from .job_canceled_response import JobCanceledResponse
 from .job_canceled_response_status import JobCanceledResponseStatus
 from .job_creation_response import JobCreationResponse
@@ -89,13 +89,14 @@ from .native_gate import NativeGate
 from .noise import Noise
 from .noise_model import NoiseModel
 from .number_map import NumberMap
-from .pick_base_job_exclude_keyof_base_job_child_job_ids import PickBaseJobExcludeKeyofBaseJobChildJobIds
 from .qis_circuit import QISCircuit
 from .qis_circuit_gateset import QISCircuitGateset
 from .qis_circuit_input import QisCircuitInput
 from .qis_circuit_input_gateset import QisCircuitInputGateset
 from .qis_gate import QisGate
 from .quadratic_constraint import QuadraticConstraint
+from .quantum_function_input import QuantumFunctionInput
+from .quantum_function_input_data import QuantumFunctionInputData
 from .quantum_function_job_creation_payload import QuantumFunctionJobCreationPayload
 from .quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
 from .quantum_function_job_creation_payload_settings_error_mitigation import QuantumFunctionJobCreationPayloadSettingsErrorMitigation
@@ -118,6 +119,7 @@ __all__ = (
     "Ansatz",
     "Backend",
     "BadRequestError",
+    "BaseJob",
     "Characterization",
     "CharacterizationFidelity",
     "CharacterizationFidelitySpam",
@@ -139,8 +141,8 @@ __all__ = (
     "CircuitJobStats",
     "CreateSessionRequest",
     "Error",
-    "FailureType0",
-    "FailureType0Code",
+    "Failure",
+    "FailureCode",
     "GateNativeGate",
     "GateQisGate",
     "GenericQuantumFunctionInput",
@@ -170,7 +172,6 @@ __all__ = (
     "HamiltonianEnergyInputData",
     "HamiltonianEnergyInputDataType",
     "HamiltonianPauliTerm",
-    "Job",
     "JobCanceledResponse",
     "JobCanceledResponseStatus",
     "JobCreationResponse",
@@ -202,13 +203,14 @@ __all__ = (
     "Noise",
     "NoiseModel",
     "NumberMap",
-    "PickBaseJobExcludeKeyofBaseJobChildJobIds",
     "QISCircuit",
     "QISCircuitGateset",
     "QisCircuitInput",
     "QisCircuitInputGateset",
     "QisGate",
     "QuadraticConstraint",
+    "QuantumFunctionInput",
+    "QuantumFunctionInputData",
     "QuantumFunctionJobCreationPayload",
     "QuantumFunctionJobCreationPayloadSettings",
     "QuantumFunctionJobCreationPayloadSettingsErrorMitigation",
