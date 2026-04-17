@@ -90,7 +90,7 @@ filterwarnings = ["error"]
 markers = [
     "integration: marks tests that hit the real IonQ API (deselect with '-m \"not integration\"')",
 ]
-addopts = "-m 'not integration' --tb=short --cov=ionq_core --cov-fail-under=90"
+addopts = "-m 'not integration' --tb=short --cov=ionq_core --cov-fail-under=100"
 
 [tool.coverage.run]
 omit = [

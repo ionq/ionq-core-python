@@ -289,6 +289,18 @@ class TestAccessUnderlyingHttpxClient:
         custom.close()
 
 
+class TestHookTransportClose:
+    def test_close_delegates(self):
+        fake = FakeTransport(httpx.Response(200))
+        transport = HookTransport(fake, ())
+        transport.close()
+
+    async def test_aclose_delegates(self):
+        fake = FakeAsyncTransport(httpx.Response(200))
+        transport = AsyncHookTransport(fake, ())
+        await transport.aclose()
+
+
 class TestTransportChainOrder:
     def test_full_chain_sync(self):
         hook = RecordingHook()

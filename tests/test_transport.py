@@ -173,6 +173,58 @@ class TestAsyncRetryTransport:
         assert (await transport.handle_async_request(_req())).status_code == 200
 
 
+class TestRetryAfterDateHeader:
+    def test_retry_after_http_date(self, monkeypatch):
+        sleeps = []
+        monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
+        monkeypatch.setattr("ionq_core._transport.time.time", lambda: 1000.0)
+        monkeypatch.setattr("ionq_core._transport.calendar.timegm", lambda _: 1005.0)
+        transport, _ = _sync(
+            [_resp(429, headers={"retry-after": "Mon, 01 Jan 2030 00:00:00 GMT"}), _resp(200)]
+        )
+        transport.handle_request(_req())
+        assert sleeps[0] >= 5.0
+
+    def test_retry_after_unparseable_ignored(self, monkeypatch):
+        sleeps = []
+        monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
+        transport, _ = _sync([_resp(429, headers={"retry-after": "not-a-date-or-number"}), _resp(200)])
+        transport.handle_request(_req())
+        assert len(sleeps) == 1
+
+
+class TestRaiseExhaustedEdgeCases:
+    def test_no_response_no_exception(self):
+        from ionq_core._transport import _raise_exhausted
+
+        with pytest.raises(APIConnectionError, match="no response"):
+            _raise_exhausted(None, None)
+
+
+class TestRetryableExcEdgeCases:
+    def test_post_timeout_not_retried(self):
+        transport, fake = _sync([httpx.ReadTimeout("timed out")])
+        with pytest.raises(APIConnectionError):
+            transport.handle_request(_req("POST"))
+        assert fake.call_count == 1
+
+
+class TestAsyncRetryTransportEdgeCases:
+    async def test_connection_error_retried(self):
+        transport, fake = _async([httpx.ConnectError("refused"), _resp(200)])
+        assert (await transport.handle_async_request(_req())).status_code == 200
+        assert fake.call_count == 2
+
+    async def test_non_retryable_exc_raises(self):
+        transport, _ = _async([RuntimeError("unexpected")])
+        with pytest.raises(APIConnectionError):
+            await transport.handle_async_request(_req())
+
+    async def test_aclose_delegates(self):
+        transport, _ = _async([_resp(200)])
+        await transport.aclose()
+
+
 class TestIdempotencyAwareRetry:
     def test_post_503_not_retried(self):
         transport, fake = _sync([_resp(503)])

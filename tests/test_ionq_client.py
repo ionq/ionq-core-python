@@ -73,3 +73,15 @@ class TestIonQClient:
     def test_version_exposed(self):
         assert isinstance(__version__, str)
         assert __version__ != ""
+
+    def test_version_fallback_when_not_installed(self):
+        import importlib
+        from importlib.metadata import PackageNotFoundError
+        from unittest.mock import patch
+
+        import ionq_core.ionq_client as mod
+
+        with patch("importlib.metadata.version", side_effect=PackageNotFoundError("ionq-core")):
+            importlib.reload(mod)
+            assert mod.__version__ == "0.0.0"
+        importlib.reload(mod)
