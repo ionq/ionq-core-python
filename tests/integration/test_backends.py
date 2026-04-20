@@ -12,6 +12,7 @@ BASE_URL = "https://api.ionq.co/v0.4"
 
 @pytest.fixture(scope="module")
 def backends():
+    # Backends listing is unauthenticated - no API key needed.
     return get_backends.sync(client=Client(base_url=BASE_URL))
 
 

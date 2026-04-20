@@ -27,5 +27,3 @@ def test_session_lifecycle(client):
             assert jobs is not None
     except NotFoundError:
         pytest.skip("Sessions not available for this account")
-
-
