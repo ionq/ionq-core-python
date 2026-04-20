@@ -35,7 +35,9 @@ BELL_CIRCUIT = {
 
 def _submit(client):
     body = CircuitJobCreationPayload.from_dict(BELL_CIRCUIT)
-    return create_job.sync(client=client, body=body)
+    result = create_job.sync(client=client, body=body)
+    assert result is not None, "create_job returned None"
+    return result
 
 
 class TestCreateJob:
@@ -92,16 +94,15 @@ class TestListJobs:
         assert len({j.id for j in jobs}) == 3
 
 
-class TestSubmitAndPoll:
-    def test_submit_and_poll(self, client, track_job):
-        created = _submit(client)
-        track_job(created.id)
+def test_submit_and_poll(client, track_job):
+    created = _submit(client)
+    track_job(created.id)
 
-        completed = wait_for_job(client, created.id, timeout=120)
-        assert completed.status == "completed"
-        assert completed.execution_duration_ms is not None
-        assert completed.started_at is not None
-        assert completed.completed_at is not None
+    completed = wait_for_job(client, created.id, timeout=120)
+    assert completed.status == "completed"
+    assert completed.execution_duration_ms is not None
+    assert completed.started_at is not None
+    assert completed.completed_at is not None
 
 
 class TestCompletedJobEndpoints:
@@ -136,29 +137,26 @@ class TestCompletedJobEndpoints:
         assert job.completed_at is not None
 
 
-class TestCancelJob:
-    def test_cancel(self, client, track_job):
-        created = _submit(client)
-        track_job(created.id)
-        result = cancel_job.sync(uuid=created.id, client=client)
-        assert result is not None
+def test_cancel_job(client, track_job):
+    created = _submit(client)
+    track_job(created.id)
+    result = cancel_job.sync(uuid=created.id, client=client)
+    assert result is not None
 
 
-class TestDeleteJob:
-    def test_delete(self, client):
-        created = _submit(client)
-        result = delete_job.sync(uuid=created.id, client=client)
-        assert result is not None
+def test_delete_job(client):
+    created = _submit(client)
+    result = delete_job.sync(uuid=created.id, client=client)
+    assert result is not None
 
 
-class TestEstimateJobCost:
-    def test_estimate_qpu(self, client):
-        result = estimate_job_cost.sync(
-            client=client,
-            backend="qpu.forte-1",
-            qubits=2,
-            shots=1000,
-            field_1q_gates=1,
-            field_2q_gates=1,
-        )
-        assert result is not None
+def test_estimate_job_cost(client):
+    result = estimate_job_cost.sync(
+        client=client,
+        backend="qpu.forte-1",
+        qubits=2,
+        shots=1000,
+        field_1q_gates=1,
+        field_2q_gates=1,
+    )
+    assert result is not None
