@@ -113,7 +113,8 @@ def sync_detailed(
 ) -> Response[Any | GetJobEstimateResponse]:
     """ 
     Args:
-        backend (str):
+        backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`,
+            `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -161,7 +162,8 @@ def sync(
 ) -> Any | GetJobEstimateResponse | None:
     """ 
     Args:
-        backend (str):
+        backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`,
+            `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -204,7 +206,8 @@ async def asyncio_detailed(
 ) -> Response[Any | GetJobEstimateResponse]:
     """ 
     Args:
-        backend (str):
+        backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`,
+            `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.
@@ -252,7 +255,8 @@ async def asyncio(
 ) -> Any | GetJobEstimateResponse | None:
     """ 
     Args:
-        backend (str):
+        backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`,
+            `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
         qubits (int | Unset):  Default: 25.
         shots (int | Unset):  Default: 1000.

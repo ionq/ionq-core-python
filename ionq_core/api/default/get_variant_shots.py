@@ -8,34 +8,25 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.get_results_response import GetResultsResponse
-from ...types import UNSET, Unset
+from ...models.get_variant_results_response import GetVariantResultsResponse
 from typing import cast
 
 
 
 def _get_kwargs(
     uuid: str,
-    *,
-    sharpen: bool | Unset = UNSET,
+    variant_id: str,
 
 ) -> dict[str, Any]:
     
 
     
 
-    params: dict[str, Any] = {}
-
-    params["sharpen"] = sharpen
-
-
-    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
-
+    
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/jobs/{uuid}/results/probabilities".format(uuid=quote(str(uuid), safe=""),),
-        "params": params,
+        "url": "/jobs/{uuid}/variants/{variant_id}/results/shots".format(uuid=quote(str(uuid), safe=""),variant_id=quote(str(variant_id), safe=""),),
     }
 
 
@@ -43,9 +34,9 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | GetResultsResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | GetVariantResultsResponse | None:
     if response.status_code == 200:
-        response_200 = GetResultsResponse.from_dict(response.json())
+        response_200 = GetVariantResultsResponse.from_dict(response.json())
 
 
 
@@ -61,7 +52,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | GetResultsResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | GetVariantResultsResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -72,29 +63,28 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     uuid: str,
+    variant_id: str,
     *,
     client: AuthenticatedClient,
-    sharpen: bool | Unset = UNSET,
 
-) -> Response[Any | GetResultsResponse]:
-    """ Fetch the probability distribution for a completed job.
-
+) -> Response[Any | GetVariantResultsResponse]:
+    """ 
     Args:
         uuid (str):
-        sharpen (bool | Unset):
+        variant_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetResultsResponse]
+        Response[Any | GetVariantResultsResponse]
      """
 
 
     kwargs = _get_kwargs(
         uuid=uuid,
-sharpen=sharpen,
+variant_id=variant_id,
 
     )
 
@@ -106,58 +96,56 @@ sharpen=sharpen,
 
 def sync(
     uuid: str,
+    variant_id: str,
     *,
     client: AuthenticatedClient,
-    sharpen: bool | Unset = UNSET,
 
-) -> Any | GetResultsResponse | None:
-    """ Fetch the probability distribution for a completed job.
-
+) -> Any | GetVariantResultsResponse | None:
+    """ 
     Args:
         uuid (str):
-        sharpen (bool | Unset):
+        variant_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetResultsResponse
+        Any | GetVariantResultsResponse
      """
 
 
     return sync_detailed(
         uuid=uuid,
+variant_id=variant_id,
 client=client,
-sharpen=sharpen,
 
     ).parsed
 
 async def asyncio_detailed(
     uuid: str,
+    variant_id: str,
     *,
     client: AuthenticatedClient,
-    sharpen: bool | Unset = UNSET,
 
-) -> Response[Any | GetResultsResponse]:
-    """ Fetch the probability distribution for a completed job.
-
+) -> Response[Any | GetVariantResultsResponse]:
+    """ 
     Args:
         uuid (str):
-        sharpen (bool | Unset):
+        variant_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetResultsResponse]
+        Response[Any | GetVariantResultsResponse]
      """
 
 
     kwargs = _get_kwargs(
         uuid=uuid,
-sharpen=sharpen,
+variant_id=variant_id,
 
     )
 
@@ -169,29 +157,28 @@ sharpen=sharpen,
 
 async def asyncio(
     uuid: str,
+    variant_id: str,
     *,
     client: AuthenticatedClient,
-    sharpen: bool | Unset = UNSET,
 
-) -> Any | GetResultsResponse | None:
-    """ Fetch the probability distribution for a completed job.
-
+) -> Any | GetVariantResultsResponse | None:
+    """ 
     Args:
         uuid (str):
-        sharpen (bool | Unset):
+        variant_id (str):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetResultsResponse
+        Any | GetVariantResultsResponse
      """
 
 
     return (await asyncio_detailed(
         uuid=uuid,
+variant_id=variant_id,
 client=client,
-sharpen=sharpen,
 
     )).parsed

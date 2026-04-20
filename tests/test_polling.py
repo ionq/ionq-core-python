@@ -9,17 +9,31 @@ _real_sleep = asyncio.sleep
 
 
 def _job_json(job_id, status, failure=None):
-    resp = {
+    return {
         "id": job_id,
         "status": status,
         "type": "ionq.circuit.v1",
         "backend": "simulator",
         "dry_run": False,
         "submitter_id": "user-1",
+        "project_id": None,
+        "parent_job_id": None,
+        "session_id": None,
+        "metadata": None,
+        "name": None,
+        "submitted_at": None,
+        "started_at": None,
+        "completed_at": None,
+        "predicted_wait_time_ms": None,
+        "predicted_execution_duration_ms": None,
+        "execution_duration_ms": None,
+        "failure": failure,
+        "output": {},
+        "child_job_ids": None,
+        "settings": {},
+        "stats": {},
+        "results": None,
     }
-    if failure:
-        resp["failure"] = failure
-    return resp
 
 
 _FAILURE = {"code": "SimulationError", "message": "boom"}

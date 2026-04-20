@@ -14,9 +14,6 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.circuit_job_result import CircuitJobResult
-  from ..models.circuit_job_settings import CircuitJobSettings
-  from ..models.circuit_job_stats import CircuitJobStats
   from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
   from ..models.json_object import JsonObject
@@ -26,12 +23,12 @@ if TYPE_CHECKING:
 
 
 
-T = TypeVar("T", bound="GetCircuitJobResponse")
+T = TypeVar("T", bound="BaseJob")
 
 
 
 @_attrs_define
-class GetCircuitJobResponse:
+class BaseJob:
     """ 
         Attributes:
             id (str):
@@ -54,10 +51,9 @@ class GetCircuitJobResponse:
                 yet.
             failure (Failure | None):
             output (JsonObject):
-            settings (CircuitJobSettings):
-            stats (CircuitJobStats):
-            results (CircuitJobResult | None):
-            child_job_ids (list[str] | None):
+            settings (JsonObject):
+            stats (JsonObject):
+            results (JsonObject | None):
             shots (int | Unset):
             noise (Noise | Unset):
      """
@@ -81,10 +77,9 @@ class GetCircuitJobResponse:
     execution_duration_ms: int | None
     failure: Failure | None
     output: JsonObject
-    settings: CircuitJobSettings
-    stats: CircuitJobStats
-    results: CircuitJobResult | None
-    child_job_ids: list[str] | None
+    settings: JsonObject
+    stats: JsonObject
+    results: JsonObject | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
 
@@ -93,9 +88,6 @@ class GetCircuitJobResponse:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.circuit_job_result import CircuitJobResult
-        from ..models.circuit_job_settings import CircuitJobSettings
-        from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
@@ -160,18 +152,10 @@ class GetCircuitJobResponse:
         stats = self.stats.to_dict()
 
         results: dict[str, Any] | None
-        if isinstance(self.results, CircuitJobResult):
+        if isinstance(self.results, JsonObject):
             results = self.results.to_dict()
         else:
             results = self.results
-
-        child_job_ids: list[str] | None
-        if isinstance(self.child_job_ids, list):
-            child_job_ids = self.child_job_ids
-
-
-        else:
-            child_job_ids = self.child_job_ids
 
         shots = self.shots
 
@@ -205,7 +189,6 @@ class GetCircuitJobResponse:
             "settings": settings,
             "stats": stats,
             "results": results,
-            "child_job_ids": child_job_ids,
         })
         if shots is not UNSET:
             field_dict["shots"] = shots
@@ -218,9 +201,6 @@ class GetCircuitJobResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.circuit_job_result import CircuitJobResult
-        from ..models.circuit_job_settings import CircuitJobSettings
-        from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
         from ..models.json_object import JsonObject
@@ -356,48 +336,32 @@ class GetCircuitJobResponse:
 
 
 
-        settings = CircuitJobSettings.from_dict(d.pop("settings"))
+        settings = JsonObject.from_dict(d.pop("settings"))
 
 
 
 
-        stats = CircuitJobStats.from_dict(d.pop("stats"))
+        stats = JsonObject.from_dict(d.pop("stats"))
 
 
 
 
-        def _parse_results(data: object) -> CircuitJobResult | None:
+        def _parse_results(data: object) -> JsonObject | None:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                results_type_1 = CircuitJobResult.from_dict(data)
+                results_type_1 = JsonObject.from_dict(data)
 
 
 
                 return results_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(CircuitJobResult | None, data)
+            return cast(JsonObject | None, data)
 
         results = _parse_results(d.pop("results"))
-
-
-        def _parse_child_job_ids(data: object) -> list[str] | None:
-            if data is None:
-                return data
-            try:
-                if not isinstance(data, list):
-                    raise TypeError()
-                child_job_ids_type_0 = cast(list[str], data)
-
-                return child_job_ids_type_0
-            except (TypeError, ValueError, AttributeError, KeyError):
-                pass
-            return cast(list[str] | None, data)
-
-        child_job_ids = _parse_child_job_ids(d.pop("child_job_ids"))
 
 
         shots = d.pop("shots", UNSET)
@@ -412,7 +376,7 @@ class GetCircuitJobResponse:
 
 
 
-        get_circuit_job_response = cls(
+        base_job = cls(
             id=id,
             status=status,
             type_=type_,
@@ -435,10 +399,9 @@ class GetCircuitJobResponse:
             settings=settings,
             stats=stats,
             results=results,
-            child_job_ids=child_job_ids,
             shots=shots,
             noise=noise,
         )
 
-        return get_circuit_job_response
+        return base_job
 

@@ -32,7 +32,8 @@ T = TypeVar("T", bound="CircuitJobCreationPayload")
 class CircuitJobCreationPayload:
     """ 
         Attributes:
-            backend (str):
+            backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
+                enterprise-1`
             type_ (CircuitJobCreationPayloadType):
             input_ (NativeCircuitInput | QisCircuitInput):
             name (str | Unset):

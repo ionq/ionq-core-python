@@ -8,25 +8,53 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.group_by import check_group_by
+from ...models.group_by import GroupBy
+from ...models.modality import check_modality
+from ...models.modality import Modality
 from ...models.usages import Usages
+from dateutil.parser import isoparse
 from typing import cast
 from uuid import UUID
+import datetime
 
 
 
 def _get_kwargs(
     organization_id: UUID,
+    *,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    group_by: GroupBy,
+    modality: Modality,
 
 ) -> dict[str, Any]:
     
 
     
 
-    
+    params: dict[str, Any] = {}
+
+    json_start_date = start_date.isoformat()
+    params["start_date"] = json_start_date
+
+    json_end_date = end_date.isoformat()
+    params["end_date"] = json_end_date
+
+    json_group_by: str = group_by
+    params["group_by"] = json_group_by
+
+    json_modality: str = modality
+    params["modality"] = json_modality
+
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
 
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/organizations/{organization_id}/usage".format(organization_id=quote(str(organization_id), safe=""),),
+        "params": params,
     }
 
 
@@ -61,6 +89,10 @@ def sync_detailed(
     organization_id: UUID,
     *,
     client: AuthenticatedClient | Client,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    group_by: GroupBy,
+    modality: Modality,
 
 ) -> Response[Usages]:
     """ Get usage costs
@@ -69,6 +101,10 @@ def sync_detailed(
 
     Args:
         organization_id (UUID):
+        start_date (datetime.date):
+        end_date (datetime.date):
+        group_by (GroupBy): QPU Usage grouping Example: project.
+        modality (Modality): Report modality Example: daily.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -81,6 +117,10 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         organization_id=organization_id,
+start_date=start_date,
+end_date=end_date,
+group_by=group_by,
+modality=modality,
 
     )
 
@@ -94,6 +134,10 @@ def sync(
     organization_id: UUID,
     *,
     client: AuthenticatedClient | Client,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    group_by: GroupBy,
+    modality: Modality,
 
 ) -> Usages | None:
     """ Get usage costs
@@ -102,6 +146,10 @@ def sync(
 
     Args:
         organization_id (UUID):
+        start_date (datetime.date):
+        end_date (datetime.date):
+        group_by (GroupBy): QPU Usage grouping Example: project.
+        modality (Modality): Report modality Example: daily.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -115,6 +163,10 @@ def sync(
     return sync_detailed(
         organization_id=organization_id,
 client=client,
+start_date=start_date,
+end_date=end_date,
+group_by=group_by,
+modality=modality,
 
     ).parsed
 
@@ -122,6 +174,10 @@ async def asyncio_detailed(
     organization_id: UUID,
     *,
     client: AuthenticatedClient | Client,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    group_by: GroupBy,
+    modality: Modality,
 
 ) -> Response[Usages]:
     """ Get usage costs
@@ -130,6 +186,10 @@ async def asyncio_detailed(
 
     Args:
         organization_id (UUID):
+        start_date (datetime.date):
+        end_date (datetime.date):
+        group_by (GroupBy): QPU Usage grouping Example: project.
+        modality (Modality): Report modality Example: daily.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -142,6 +202,10 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         organization_id=organization_id,
+start_date=start_date,
+end_date=end_date,
+group_by=group_by,
+modality=modality,
 
     )
 
@@ -155,6 +219,10 @@ async def asyncio(
     organization_id: UUID,
     *,
     client: AuthenticatedClient | Client,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    group_by: GroupBy,
+    modality: Modality,
 
 ) -> Usages | None:
     """ Get usage costs
@@ -163,6 +231,10 @@ async def asyncio(
 
     Args:
         organization_id (UUID):
+        start_date (datetime.date):
+        end_date (datetime.date):
+        group_by (GroupBy): QPU Usage grouping Example: project.
+        modality (Modality): Report modality Example: daily.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -176,5 +248,9 @@ async def asyncio(
     return (await asyncio_detailed(
         organization_id=organization_id,
 client=client,
+start_date=start_date,
+end_date=end_date,
+group_by=group_by,
+modality=modality,
 
     )).parsed

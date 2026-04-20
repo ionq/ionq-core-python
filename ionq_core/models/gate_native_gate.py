@@ -27,21 +27,23 @@ class GateNativeGate:
     """ 
         Attributes:
             gate (NativeGate):
+            target (int | Unset):
             targets (list[float] | Unset): The qubits that a quantum gate is applied to
             controls (list[float] | Unset): The qubits that determine whether the operation is applied to targets.
-            target (int | Unset): Single qubit target (alternative to targets array)
             phase (float | Unset): Phase for gpi/gpi2 gates
             phases (list[float] | Unset): Phases for ms gate
             angle (float | Unset): Interaction angle for ms gate (in turns, default 0.25)
+            rotation (float | Unset): Rotation angle for rx/ry/rz gates
      """
 
     gate: NativeGate
+    target: int | Unset = UNSET
     targets: list[float] | Unset = UNSET
     controls: list[float] | Unset = UNSET
-    target: int | Unset = UNSET
     phase: float | Unset = UNSET
     phases: list[float] | Unset = UNSET
     angle: float | Unset = UNSET
+    rotation: float | Unset = UNSET
 
 
 
@@ -49,6 +51,8 @@ class GateNativeGate:
 
     def to_dict(self) -> dict[str, Any]:
         gate: str = self.gate
+
+        target = self.target
 
         targets: list[float] | Unset = UNSET
         if not isinstance(self.targets, Unset):
@@ -62,8 +66,6 @@ class GateNativeGate:
 
 
 
-        target = self.target
-
         phase = self.phase
 
         phases: list[float] | Unset = UNSET
@@ -74,24 +76,28 @@ class GateNativeGate:
 
         angle = self.angle
 
+        rotation = self.rotation
+
 
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
             "gate": gate,
         })
+        if target is not UNSET:
+            field_dict["target"] = target
         if targets is not UNSET:
             field_dict["targets"] = targets
         if controls is not UNSET:
             field_dict["controls"] = controls
-        if target is not UNSET:
-            field_dict["target"] = target
         if phase is not UNSET:
             field_dict["phase"] = phase
         if phases is not UNSET:
             field_dict["phases"] = phases
         if angle is not UNSET:
             field_dict["angle"] = angle
+        if rotation is not UNSET:
+            field_dict["rotation"] = rotation
 
         return field_dict
 
@@ -105,13 +111,13 @@ class GateNativeGate:
 
 
 
+        target = d.pop("target", UNSET)
+
         targets = cast(list[float], d.pop("targets", UNSET))
 
 
         controls = cast(list[float], d.pop("controls", UNSET))
 
-
-        target = d.pop("target", UNSET)
 
         phase = d.pop("phase", UNSET)
 
@@ -120,14 +126,17 @@ class GateNativeGate:
 
         angle = d.pop("angle", UNSET)
 
+        rotation = d.pop("rotation", UNSET)
+
         gate_native_gate = cls(
             gate=gate,
+            target=target,
             targets=targets,
             controls=controls,
-            target=target,
             phase=phase,
             phases=phases,
             angle=angle,
+            rotation=rotation,
         )
 
         return gate_native_gate

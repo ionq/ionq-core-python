@@ -29,7 +29,8 @@ class Characterization:
     """ Quantum hardware characterization data.
 
         Attributes:
-            backend (str | Unset): The backend calibrated hardware.
+            backend (str | Unset): The backend calibrated hardware: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`,
+                `qpu.forte-enterprise-1`, `qpu.forte-enterprise-2`, `qpu.forte-enterprise-3`
             connectivity (list[list[int]] | Unset): An array of valid, unordered tuples of possible qubits for executing
                 two-qubit gates (e.g., `[[0, 1], [0, 2], [1, 2]]`) Example: [[0, 1], [0, 2], [10, 9]].
             date (str | Unset): Date time of the measurement, in ISO format. Example: 2025-06-16T00:00:00Z.

@@ -14,12 +14,12 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="GetJobProbabilitiesResponse200")
+T = TypeVar("T", bound="GetResultsResponse")
 
 
 
 @_attrs_define
-class GetJobProbabilitiesResponse200:
+class GetResultsResponse:
     """ 
      """
 
@@ -41,12 +41,12 @@ class GetJobProbabilitiesResponse200:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        get_job_probabilities_response_200 = cls(
+        get_results_response = cls(
         )
 
 
-        get_job_probabilities_response_200.additional_properties = d
-        return get_job_probabilities_response_200
+        get_results_response.additional_properties = d
+        return get_results_response
 
     @property
     def additional_keys(self) -> list[str]:

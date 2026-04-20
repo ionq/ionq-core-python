@@ -9,42 +9,9 @@ post_hooks:
   - "ruff format ."
 
 class_overrides:
-  Record_string.string_:
-    class_name: StringRecord
-    module_name: string_record
-  Record_string.unknown_:
-    class_name: AnyRecord
-    module_name: any_record
-  Record_string.number_:
-    class_name: NumberRecord
-    module_name: number_record
-  Gate_QisGate_:
+  Gate_QisGate:
     class_name: QisGateInstruction
     module_name: qis_gate_instruction
-  Gate_NativeGate_:
+  Gate_NativeGate:
     class_name: NativeGateInstruction
     module_name: native_gate_instruction
-  Pick_BaseJob.Exclude_keyofBaseJob.child_job_ids__:
-    class_name: BaseJobSummary
-    module_name: base_job_summary
-  BaseJob_CircuitJobSettings.CircuitJobStats.CircuitJobResult_:
-    class_name: CircuitJob
-    module_name: circuit_job
-  Optional_string_:
-    class_name: OptionalString
-    module_name: optional_string
-  Optional_JobMetadata_:
-    class_name: OptionalJobMetadata
-    module_name: optional_job_metadata
-  Optional_IsoTimestamp_:
-    class_name: OptionalIsoTimestamp
-    module_name: optional_iso_timestamp
-  Optional_number_:
-    class_name: OptionalNumber
-    module_name: optional_number
-  Optional_Failure_:
-    class_name: OptionalFailure
-    module_name: optional_failure
-  "Optional_string-Array_":
-    class_name: OptionalStringArray
-    module_name: optional_string_array
