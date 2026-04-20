@@ -33,8 +33,8 @@ BELL_CIRCUIT = {
 }
 
 
-def _submit(client):
-    body = CircuitJobCreationPayload.from_dict(BELL_CIRCUIT)
+def _submit(client, **overrides):
+    body = CircuitJobCreationPayload.from_dict({**BELL_CIRCUIT, **overrides})
     result = create_job.sync(client=client, body=body)
     assert result is not None, "create_job returned None"
     return result
@@ -50,9 +50,7 @@ class TestCreateJob:
         assert resp.parsed.status == "submitted"
 
     def test_create_dry_run(self, client, track_job):
-        body = CircuitJobCreationPayload.from_dict({**BELL_CIRCUIT, "dry_run": True})
-        result = create_job.sync(client=client, body=body)
-        assert result is not None
+        result = _submit(client, dry_run=True)
         track_job(result.id)
 
 
@@ -108,7 +106,7 @@ def test_submit_and_poll(client, track_job):
 class TestCompletedJobEndpoints:
     """Use an already-completed job to avoid simulator timeout."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def completed_job_id(self, client):
         resp = get_jobs.sync(client=client, status="completed", limit=1)
         assert resp is not None and resp.jobs, "No completed jobs found"

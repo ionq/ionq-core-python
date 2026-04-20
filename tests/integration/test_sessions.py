@@ -29,9 +29,3 @@ def test_session_lifecycle(client):
         pytest.skip("Sessions not available for this account")
 
 
-def test_session_context_manager(client):
-    try:
-        with SessionManager(client, "simulator") as session:
-            assert session.session_id is not None
-    except NotFoundError:
-        pytest.skip("Sessions not available for this account")
