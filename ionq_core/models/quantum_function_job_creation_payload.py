@@ -14,8 +14,9 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
+  from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+  from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
   from ..models.job_metadata import JobMetadata
-  from ..models.quantum_function_input import QuantumFunctionInput
   from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
 
 
@@ -33,7 +34,7 @@ class QuantumFunctionJobCreationPayload:
             backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
                 enterprise-1`
             type_ (QuantumFunctionJobCreationPayloadType):
-            input_ (QuantumFunctionInput):
+            input_ (GenericQuantumFunctionInput | HamiltonianEnergyInput):
             name (str | Unset):
             metadata (JobMetadata | Unset):
             shots (int | Unset):  Default: 100.
@@ -44,7 +45,7 @@ class QuantumFunctionJobCreationPayload:
 
     backend: str
     type_: QuantumFunctionJobCreationPayloadType
-    input_: QuantumFunctionInput
+    input_: GenericQuantumFunctionInput | HamiltonianEnergyInput
     name: str | Unset = UNSET
     metadata: JobMetadata | Unset = UNSET
     shots: int | Unset = 100
@@ -58,14 +59,20 @@ class QuantumFunctionJobCreationPayload:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+        from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
         from ..models.job_metadata import JobMetadata
-        from ..models.quantum_function_input import QuantumFunctionInput
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
         backend = self.backend
 
         type_: str = self.type_
 
-        input_ = self.input_.to_dict()
+        input_: dict[str, Any]
+        if isinstance(self.input_, HamiltonianEnergyInput):
+            input_ = self.input_.to_dict()
+        else:
+            input_ = self.input_.to_dict()
+
 
         name = self.name
 
@@ -110,8 +117,9 @@ class QuantumFunctionJobCreationPayload:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.generic_quantum_function_input import GenericQuantumFunctionInput
+        from ..models.hamiltonian_energy_input import HamiltonianEnergyInput
         from ..models.job_metadata import JobMetadata
-        from ..models.quantum_function_input import QuantumFunctionInput
         from ..models.quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
         d = dict(src_dict)
         backend = d.pop("backend")
@@ -121,9 +129,26 @@ class QuantumFunctionJobCreationPayload:
 
 
 
-        input_ = QuantumFunctionInput.from_dict(d.pop("input"))
+        def _parse_input_(data: object) -> GenericQuantumFunctionInput | HamiltonianEnergyInput:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_quantum_function_input_type_0 = HamiltonianEnergyInput.from_dict(data)
 
 
+
+                return componentsschemas_quantum_function_input_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            componentsschemas_quantum_function_input_type_1 = GenericQuantumFunctionInput.from_dict(data)
+
+
+
+            return componentsschemas_quantum_function_input_type_1
+
+        input_ = _parse_input_(d.pop("input"))
 
 
         name = d.pop("name", UNSET)

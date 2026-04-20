@@ -95,8 +95,6 @@ from .qis_circuit_input import QisCircuitInput
 from .qis_circuit_input_gateset import QisCircuitInputGateset
 from .qis_gate import QisGate
 from .quadratic_constraint import QuadraticConstraint
-from .quantum_function_input import QuantumFunctionInput
-from .quantum_function_input_data import QuantumFunctionInputData
 from .quantum_function_job_creation_payload import QuantumFunctionJobCreationPayload
 from .quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
 from .quantum_function_job_creation_payload_settings_error_mitigation import QuantumFunctionJobCreationPayloadSettingsErrorMitigation
@@ -209,8 +207,6 @@ __all__ = (
     "QisCircuitInputGateset",
     "QisGate",
     "QuadraticConstraint",
-    "QuantumFunctionInput",
-    "QuantumFunctionInputData",
     "QuantumFunctionJobCreationPayload",
     "QuantumFunctionJobCreationPayloadSettings",
     "QuantumFunctionJobCreationPayloadSettingsErrorMitigation",
