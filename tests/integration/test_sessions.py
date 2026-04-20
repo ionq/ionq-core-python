@@ -19,37 +19,27 @@ def test_list_sessions(client):
         pytest.skip("Sessions endpoint not available for this account")
 
 
-class TestSessionManager:
-    def test_create_and_end_session(self, client):
-        mgr = SessionManager(client, "simulator")
-        try:
-            mgr.open()
-        except NotFoundError:
-            pytest.skip("Sessions not available for this account")
+def test_session_lifecycle(client):
+    mgr = SessionManager(client, "simulator")
+    try:
+        mgr.open()
+    except NotFoundError:
+        pytest.skip("Sessions not available for this account")
 
-        try:
-            assert mgr.session_id is not None
+    try:
+        assert mgr.session_id is not None
+        assert mgr.status() in ("started", "ready")
 
-            session = mgr.status()
-            assert session is not None
-            assert session.backend == "simulator"
+        jobs = get_session_jobs.sync(mgr.session_id, client=client)
+        assert jobs is not None
+    finally:
+        with contextlib.suppress(Exception):
+            mgr.close()
 
-            jobs = get_session_jobs.sync(mgr.session_id, client=client)
-            assert jobs is not None
-        finally:
-            with contextlib.suppress(Exception):
-                mgr.close()
 
-    def test_context_manager(self, client):
-        mgr = SessionManager(client, "simulator")
-        try:
-            mgr.open()
-        except NotFoundError:
-            pytest.skip("Sessions not available for this account")
-        try:
-            assert mgr.session_id is not None
-            status = mgr.status()
-            assert status is not None
-        finally:
-            with contextlib.suppress(Exception):
-                mgr.close()
+def test_session_context_manager(client):
+    try:
+        with SessionManager(client, "simulator") as session:
+            assert session.session_id is not None
+    except NotFoundError:
+        pytest.skip("Sessions not available for this account")

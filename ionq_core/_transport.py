@@ -42,7 +42,7 @@ def _backoff_delays(max_retries: int) -> Iterator[float]:
 
 
 def _parse_error_body(response: httpx.Response) -> dict | str | None:
-    response.read()
+    # Caller must ensure the body is already loaded (.read() / .aread()).
     try:
         return response.json()
     except Exception:
@@ -132,6 +132,7 @@ class RetryTransport(httpx.BaseTransport):
                 last_exc, last_response = exc, None
                 continue
 
+            response.read()
             if _should_retry(request, response, self._retryable):
                 last_response, last_exc = response, None
                 continue
@@ -176,6 +177,7 @@ class AsyncRetryTransport(httpx.AsyncBaseTransport):
                 last_exc, last_response = exc, None
                 continue
 
+            await response.aread()
             if _should_retry(request, response, self._retryable):
                 last_response, last_exc = response, None
                 continue

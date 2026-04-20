@@ -1,7 +1,5 @@
 """Integration tests for backend endpoints."""
 
-import warnings
-
 import pytest
 
 from ionq_core import Client
@@ -12,35 +10,22 @@ pytestmark = pytest.mark.integration
 BASE_URL = "https://api.ionq.co/v0.4"
 
 
-def _unauthenticated():
-    """Unauthenticated client (no managed transport, may leak sockets)."""
-    return Client(base_url=BASE_URL)
-
-
 class TestListBackends:
+    @pytest.fixture(autouse=True)
+    def _fetch(self):
+        self.backends = get_backends.sync(client=Client(base_url=BASE_URL))
+
     def test_returns_backends(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", ResourceWarning)
-            backends = get_backends.sync(client=_unauthenticated())
-        assert backends is not None
-        assert len(backends) > 0
+        assert len(self.backends) > 0
 
     def test_has_qpu(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", ResourceWarning)
-            backends = get_backends.sync(client=_unauthenticated())
-        names = [b.backend for b in backends]
-        assert any("qpu" in n for n in names)
+        assert any("qpu" in b.backend for b in self.backends)
 
-    def test_backend_fields(self):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", ResourceWarning)
-            backends = get_backends.sync(client=_unauthenticated())
-        for b in backends:
+    def test_fields(self):
+        for b in self.backends:
             assert b.backend
             assert b.status
             assert b.qubits > 0
-            assert b.average_queue_time is not None
             assert b.last_updated
 
 

@@ -11,6 +11,7 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture
 def async_client(api_key):
+    """Separate client instance - the session-scoped client may not have an async transport."""
     return IonQClient(api_key=api_key)
 
 

@@ -6,27 +6,24 @@ from ionq_core.api.characterizations import get_characterization, get_characteri
 
 pytestmark = pytest.mark.integration
 
-
-class TestListCharacterizations:
-    def test_returns_characterizations(self, client):
-        resp = get_characterizations_for_backend.sync("qpu.forte-1", client=client, limit=1)
-        assert resp is not None
-        assert len(resp.characterizations) > 0
-
-    def test_characterization_fields(self, client):
-        resp = get_characterizations_for_backend.sync("qpu.forte-1", client=client, limit=1)
-        char = resp.characterizations[0]
-        assert char.id
-        assert char.backend == "qpu.forte-1"
-        assert char.date
+BACKEND = "qpu.forte-1"
 
 
-class TestGetCharacterization:
-    def test_get_by_id(self, client):
-        resp = get_characterizations_for_backend.sync("qpu.forte-1", client=client, limit=1)
-        char_id = resp.characterizations[0].id
+@pytest.fixture
+def latest_characterization(client):
+    resp = get_characterizations_for_backend.sync(BACKEND, client=client, limit=1)
+    assert resp is not None and resp.characterizations
+    return resp.characterizations[0]
 
-        char = get_characterization.sync("qpu.forte-1", char_id, client=client)
-        assert char is not None
-        assert char.id == char_id
-        assert char.qubits > 0
+
+def test_list_characterizations(latest_characterization):
+    assert latest_characterization.id
+    assert latest_characterization.backend == BACKEND
+    assert latest_characterization.date
+
+
+def test_get_characterization_by_id(client, latest_characterization):
+    char = get_characterization.sync(BACKEND, latest_characterization.id, client=client)
+    assert char is not None
+    assert char.id == latest_characterization.id
+    assert char.qubits > 0
