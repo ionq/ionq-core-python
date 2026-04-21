@@ -9,10 +9,12 @@ import pytest
 from ionq_core import AuthenticatedClient, IonQClient
 from ionq_core.api.default import delete_job
 
-# Integration tests make real HTTPS connections that may leak sockets during
-# process teardown. This is harmless but triggers pytest's filterwarnings=error.
-warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed.*SSL")
-warnings.filterwarnings("ignore", category=pytest.PytestUnraisableExceptionWarning, message=".*SSL.*")
+
+@pytest.fixture(scope="session", autouse=True)
+def _suppress_ssl_teardown_warnings():
+    """Suppress harmless SSL socket warnings during process teardown."""
+    warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed.*SSL")
+    warnings.filterwarnings("ignore", category=pytest.PytestUnraisableExceptionWarning, message=".*SSL.*")
 
 _job_ids: list[str] = []
 

@@ -142,8 +142,9 @@ def test_cancel_job(client, track_job):
     assert result is not None
 
 
-def test_delete_job(client):
+def test_delete_job(client, track_job):
     created = _submit(client)
+    track_job(created.id)
     result = delete_job.sync(uuid=created.id, client=client)
     assert result is not None
 
