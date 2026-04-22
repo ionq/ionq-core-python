@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterator, Iterator
-from typing import TYPE_CHECKING
+from collections.abc import AsyncIterator, Callable, Iterator
+from typing import TYPE_CHECKING, Any
 
 from ._exceptions import IonQError
 from .api.default import get_jobs, get_session_jobs
@@ -18,6 +18,35 @@ if TYPE_CHECKING:
 logger = logging.getLogger("ionq_core")
 
 
+def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> Iterator[Job]:
+    """Generic sync paginator - follows cursors until exhausted."""
+    kwargs["next_"] = UNSET
+    while True:
+        response = fetch(*args, **kwargs)
+        if response is None:
+            raise IonQError(f"Failed to fetch {label}")
+        yield from response.jobs
+        if response.next_ is None:
+            return
+        kwargs["next_"] = response.next_
+        logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
+
+
+async def _apaginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> AsyncIterator[Job]:
+    """Generic async paginator - follows cursors until exhausted."""
+    kwargs["next_"] = UNSET
+    while True:
+        response = await fetch(*args, **kwargs)
+        if response is None:
+            raise IonQError(f"Failed to fetch {label}")
+        for job in response.jobs:
+            yield job
+        if response.next_ is None:
+            return
+        kwargs["next_"] = response.next_
+        logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
+
+
 def iter_jobs(
     client: AuthenticatedClient,
     *,
@@ -28,24 +57,16 @@ def iter_jobs(
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
     """Iterate over all jobs, automatically following pagination cursors."""
-    next_cursor: str | Unset = UNSET
-    while True:
-        response = get_jobs.sync(
-            client=client,
-            status=status,
-            target=target,
-            session_id=session_id,
-            submitter_id=submitter_id,
-            limit=limit,
-            next_=next_cursor,
-        )
-        if response is None:
-            raise IonQError("Failed to fetch jobs")
-        yield from response.jobs
-        if response.next_ is None:
-            return
-        next_cursor = response.next_
-        logger.debug("Fetching next page of jobs (cursor=%s)", next_cursor)
+    yield from _paginate(
+        get_jobs.sync,
+        "jobs",
+        client=client,
+        status=status,
+        target=target,
+        session_id=session_id,
+        submitter_id=submitter_id,
+        limit=limit,
+    )
 
 
 async def aiter_jobs(
@@ -58,25 +79,17 @@ async def aiter_jobs(
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
     """Async iterate over all jobs, automatically following pagination cursors."""
-    next_cursor: str | Unset = UNSET
-    while True:
-        response = await get_jobs.asyncio(
-            client=client,
-            status=status,
-            target=target,
-            session_id=session_id,
-            submitter_id=submitter_id,
-            limit=limit,
-            next_=next_cursor,
-        )
-        if response is None:
-            raise IonQError("Failed to fetch jobs")
-        for job in response.jobs:
-            yield job
-        if response.next_ is None:
-            return
-        next_cursor = response.next_
-        logger.debug("Fetching next page of jobs (cursor=%s)", next_cursor)
+    async for job in _apaginate(
+        get_jobs.asyncio,
+        "jobs",
+        client=client,
+        status=status,
+        target=target,
+        session_id=session_id,
+        submitter_id=submitter_id,
+        limit=limit,
+    ):
+        yield job
 
 
 def iter_session_jobs(
@@ -89,24 +102,16 @@ def iter_session_jobs(
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
     """Iterate over all jobs in a session, automatically following pagination cursors."""
-    next_cursor: str | Unset = UNSET
-    while True:
-        response = get_session_jobs.sync(
-            session_id,
-            client=client,
-            status=status,
-            target=target,
-            submitter_id=submitter_id,
-            limit=limit,
-            next_=next_cursor,
-        )
-        if response is None:
-            raise IonQError("Failed to fetch jobs")
-        yield from response.jobs
-        if response.next_ is None:
-            return
-        next_cursor = response.next_
-        logger.debug("Fetching next page of session jobs (cursor=%s)", next_cursor)
+    yield from _paginate(
+        get_session_jobs.sync,
+        "session jobs",
+        session_id,
+        client=client,
+        status=status,
+        target=target,
+        submitter_id=submitter_id,
+        limit=limit,
+    )
 
 
 async def aiter_session_jobs(
@@ -119,22 +124,14 @@ async def aiter_session_jobs(
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
     """Async iterate over all jobs in a session, automatically following pagination cursors."""
-    next_cursor: str | Unset = UNSET
-    while True:
-        response = await get_session_jobs.asyncio(
-            session_id,
-            client=client,
-            status=status,
-            target=target,
-            submitter_id=submitter_id,
-            limit=limit,
-            next_=next_cursor,
-        )
-        if response is None:
-            raise IonQError("Failed to fetch jobs")
-        for job in response.jobs:
-            yield job
-        if response.next_ is None:
-            return
-        next_cursor = response.next_
-        logger.debug("Fetching next page of session jobs (cursor=%s)", next_cursor)
+    async for job in _apaginate(
+        get_session_jobs.asyncio,
+        "session jobs",
+        session_id,
+        client=client,
+        status=status,
+        target=target,
+        submitter_id=submitter_id,
+        limit=limit,
+    ):
+        yield job

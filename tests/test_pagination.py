@@ -56,14 +56,14 @@ class TestIterJobsNoneResponse:
     def test_sync_session_none_response(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500)
         auth_client.raise_on_unexpected_status = False
-        with pytest.raises(IonQError, match="Failed to fetch jobs"):
+        with pytest.raises(IonQError, match="Failed to fetch"):
             list(iter_session_jobs(auth_client, "sess-1"))
 
     @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
     async def test_async_session_none_response(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500)
         auth_client.raise_on_unexpected_status = False
-        with pytest.raises(IonQError, match="Failed to fetch jobs"):
+        with pytest.raises(IonQError, match="Failed to fetch"):
             async for _ in aiter_session_jobs(auth_client, "sess-1"):
                 pass
 

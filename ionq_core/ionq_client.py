@@ -93,51 +93,38 @@ def IonQClient(
             stacklevel=2,
         )
 
-    ext_ua = extension.user_agent_token if extension else None
-    user_agent = _build_user_agent(additional_user_agent, ext_ua)
+    def _ext(attr: str, default=None):
+        """Resolve: explicit arg > extension field > default."""
+        return getattr(extension, attr, None) if default is None else default
 
-    if timeout is not None:
-        effective_timeout = timeout
-    elif extension is not None and extension.timeout is not None:
-        effective_timeout = extension.timeout
-    else:
-        effective_timeout = _DEFAULT_TIMEOUT
-
-    if max_retries is not None:
-        effective_retries = max_retries
-    elif extension is not None and extension.max_retries is not None:
-        effective_retries = extension.max_retries
-    else:
-        effective_retries = DEFAULT_MAX_RETRIES
-
-    if extension is not None and extension.retryable_status_codes is not None:
-        effective_retry_codes = extension.retryable_status_codes
-    else:
-        effective_retry_codes = RETRYABLE_STATUS_CODES
+    user_agent = _build_user_agent(additional_user_agent, _ext("user_agent_token"))
+    effective_timeout = timeout or _ext("timeout") or _DEFAULT_TIMEOUT
+    effective_retries = max_retries if max_retries is not None else (_ext("max_retries") or DEFAULT_MAX_RETRIES)
+    effective_retry_codes = _ext("retryable_status_codes") or RETRYABLE_STATUS_CODES
 
     headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    debug_hooks = extension.debug_hooks if extension else False
+    debug_hooks = _ext("debug_hooks") or False
     retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
 
     sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
-    if extension and extension.event_hooks:
-        sync_transport = HookTransport(sync_transport, extension.event_hooks, debug=debug_hooks)
-    if extension and extension.error_mapper:
-        sync_transport = _ErrorMapperTransport(sync_transport, extension.error_mapper)
-    if extension and extension.transport_wrapper:
-        sync_transport = extension.transport_wrapper(sync_transport)
-
     async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), **retry_kwargs)
-    if extension and extension.async_event_hooks:
-        async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
-    if extension and extension.error_mapper:
-        async_transport = _AsyncErrorMapperTransport(async_transport, extension.error_mapper)
-    if extension and extension.async_transport_wrapper:
-        async_transport = extension.async_transport_wrapper(async_transport)
+
+    if extension:
+        if extension.event_hooks:
+            sync_transport = HookTransport(sync_transport, extension.event_hooks, debug=debug_hooks)
+        if extension.async_event_hooks:
+            async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
+        if extension.error_mapper:
+            sync_transport = _ErrorMapperTransport(sync_transport, extension.error_mapper)
+            async_transport = _AsyncErrorMapperTransport(async_transport, extension.error_mapper)
+        if extension.transport_wrapper:
+            sync_transport = extension.transport_wrapper(sync_transport)
+        if extension.async_transport_wrapper:
+            async_transport = extension.async_transport_wrapper(async_transport)
 
     client = AuthenticatedClient(
         base_url=base_url,
