@@ -71,7 +71,8 @@ def IonQClient(
     ]
     user_agent = " ".join(ua_parts)
     effective_timeout = timeout or ext.timeout or _DEFAULT_TIMEOUT
-    effective_retries = max_retries if max_retries is not None else (ext.max_retries or DEFAULT_MAX_RETRIES)
+    ext_retries = ext.max_retries if ext.max_retries is not None else DEFAULT_MAX_RETRIES
+    effective_retries = max_retries if max_retries is not None else ext_retries
 
     headers = {**ext.default_headers, "User-Agent": user_agent}
 

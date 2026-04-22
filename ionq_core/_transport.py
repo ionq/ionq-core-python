@@ -63,10 +63,14 @@ def build_transport(
     max_retries: int = DEFAULT_MAX_RETRIES,
     retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
 ) -> ErrorRaisingTransport:
-    return ErrorRaisingTransport(RetryTransport(retry=Retry(
-        total=max_retries,
-        backoff_factor=0.5,
-        backoff_jitter=0.5,
-        max_backoff_wait=60.0,
-        status_forcelist=retryable_status_codes,
-    )))
+    return ErrorRaisingTransport(
+        RetryTransport(
+            retry=Retry(
+                total=max_retries,
+                backoff_factor=0.5,
+                backoff_jitter=0.5,
+                max_backoff_wait=60.0,
+                status_forcelist=retryable_status_codes,
+            )
+        )
+    )

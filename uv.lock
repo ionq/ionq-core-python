@@ -204,17 +204,6 @@ dependencies = [
     { name = "python-dateutil" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pdoc" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "pytest-httpx" },
-    { name = "ruff" },
-    { name = "ty" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "pdoc" },
@@ -231,16 +220,8 @@ requires-dist = [
     { name = "attrs", specifier = ">=24.2" },
     { name = "httpx", specifier = ">=0.27,<0.29" },
     { name = "httpx-retries", specifier = ">=0.5" },
-    { name = "pdoc", marker = "extra == 'dev'", specifier = ">=16" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1" },
-    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=7" },
-    { name = "pytest-httpx", marker = "extra == 'dev'", specifier = ">=0.36" },
     { name = "python-dateutil", specifier = ">=2.9" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.15" },
-    { name = "ty", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

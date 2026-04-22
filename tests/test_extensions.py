@@ -130,6 +130,11 @@ class TestMaxRetriesPrecedence:
         client = IonQClient(api_key="key", max_retries=3)
         assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
 
+    def test_extension_max_retries_zero_respected(self):
+        client = IonQClient(api_key="key", extension=ClientExtension(max_retries=0))
+        transport = client.get_httpx_client()._transport
+        assert transport._transport.retry.total == 0
+
 
 class TestRetryableStatusCodesOverride:
     def test_transport_created_with_custom_codes(self):

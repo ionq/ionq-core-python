@@ -34,17 +34,6 @@ Repository = "https://github.com/ionq/ionq-core-python"
 Changelog = "https://github.com/ionq/ionq-core-python/blob/main/CHANGELOG.md"
 Issues = "https://github.com/ionq/ionq-core-python/issues"
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=9",
-    "pytest-httpx>=0.36",
-    "pytest-asyncio>=1",
-    "pytest-cov>=7",
-    "ruff>=0.15",
-    "ty",
-    "pdoc>=16",
-]
-
 [dependency-groups]
 dev = [
     "pytest>=9",
@@ -97,6 +86,7 @@ invalid-argument-type = "ignore"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 xfail_strict = true
 filterwarnings = ["error"]
 markers = [
