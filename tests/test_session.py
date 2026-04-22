@@ -109,7 +109,6 @@ class TestOpenClose:
         with pytest.raises(IonQError, match="already open"):
             mgr.open()
 
-    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
     def test_open_returns_none_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500, method="POST")
         auth_client.raise_on_unexpected_status = False
@@ -170,7 +169,6 @@ class TestAsyncOpenClose:
         with pytest.raises(IonQError, match="already open"):
             await mgr.async_open()
 
-    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
     async def test_async_open_returns_none_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500, method="POST")
         auth_client.raise_on_unexpected_status = False
@@ -205,7 +203,6 @@ class TestAsyncStatus:
         with pytest.raises(IonQError, match="No session ID"):
             await mgr.async_status()
 
-    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
     async def test_async_status_returns_none_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500, method="GET")
         auth_client.raise_on_unexpected_status = False
@@ -220,7 +217,6 @@ class TestStatusErrors:
         with pytest.raises(IonQError, match="No session ID"):
             mgr.status()
 
-    @pytest.mark.httpx_mock(assert_all_responses_were_requested=False)
     def test_status_returns_none_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500, method="GET")
         auth_client.raise_on_unexpected_status = False

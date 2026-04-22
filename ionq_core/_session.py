@@ -10,6 +10,7 @@ from .api.default import create_session, end_session, get_session
 from .models.create_session_request import CreateSessionRequest
 from .models.session_cost_limit import SessionCostLimit
 from .models.session_settings_request import SessionSettingsRequest
+from .types import UNSET, Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
@@ -50,22 +51,20 @@ class SessionManager:
     def session_id(self) -> str | None:
         return self._session_id
 
-    def _build_settings(self) -> SessionSettingsRequest | None:
-        kwargs: dict = {}
+    def _build_settings(self) -> SessionSettingsRequest | Unset:
+        kw: dict = {}
         if self._max_jobs is not None:
-            kwargs["job_count_limit"] = self._max_jobs
+            kw["job_count_limit"] = self._max_jobs
         if self._max_time is not None:
-            kwargs["duration_limit_min"] = self._max_time
+            kw["duration_limit_min"] = self._max_time
         if self._max_cost is not None:
-            kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
-        return SessionSettingsRequest(**kwargs) if kwargs else None
+            kw["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
+        return SessionSettingsRequest(**kw) if kw else UNSET
 
     def open(self) -> None:
-        """Create a new session on the backend."""
         if self._session_id is not None:
             raise IonQError("Session already open")
-        settings = self._build_settings()
-        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
+        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
         session = create_session.sync(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")
@@ -83,7 +82,6 @@ class SessionManager:
             logger.warning("Failed to end session %s", self._session_id, exc_info=True)
 
     def status(self) -> str:
-        """Query current session status."""
         if self._session_id is None:
             raise IonQError("No session ID; call open() first")
         session = get_session.sync(session_id=self._session_id, client=self._client)
@@ -92,11 +90,9 @@ class SessionManager:
         return session.status
 
     async def async_open(self) -> None:
-        """Create a new session on the backend (async)."""
         if self._session_id is not None:
             raise IonQError("Session already open")
-        settings = self._build_settings()
-        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
+        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
         session = await create_session.asyncio(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")
@@ -114,7 +110,6 @@ class SessionManager:
             logger.warning("Failed to end session %s", self._session_id, exc_info=True)
 
     async def async_status(self) -> str:
-        """Query current session status (async)."""
         if self._session_id is None:
             raise IonQError("No session ID; call open() first")
         session = await get_session.asyncio(session_id=self._session_id, client=self._client)

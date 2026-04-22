@@ -1,7 +1,5 @@
 """Structured exceptions for the IonQ API client."""
 
-from __future__ import annotations
-
 
 class IonQError(Exception):
     """Base exception for all IonQ API errors."""
@@ -86,7 +84,6 @@ def raise_for_status(
     *,
     request_id: str | None = None,
 ) -> None:
-    """Raise the appropriate exception for an error status code."""
     if status_code < 400:
         return
     exc_cls = _STATUS_TO_EXCEPTION.get(status_code, ServerError if status_code >= 500 else APIError)

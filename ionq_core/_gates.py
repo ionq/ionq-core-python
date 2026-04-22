@@ -5,8 +5,6 @@ Interaction parameters (angle) are in units of pi (0.25 = pi/4 radians).
 Matrices are returned as nested tuples of complex numbers.
 """
 
-from __future__ import annotations
-
 import cmath
 import math
 

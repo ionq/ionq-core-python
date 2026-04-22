@@ -43,7 +43,6 @@ class JobFailedError(IonQError):
 
 
 def _check_terminal(job: GetJobResponse, job_id: str, raise_on_failure: bool) -> bool:
-    """Return True if the job reached a terminal state, raising on failure if configured."""
     if job.status not in _TERMINAL:
         return False
     if raise_on_failure and job.status == "failed":
@@ -70,7 +69,6 @@ def wait_for_job(
     """
     deadline = time.monotonic() + timeout
     interval = poll_interval
-
     while True:
         job = get_job.sync(uuid=job_id, client=client)
         if job is None:
@@ -95,7 +93,6 @@ async def async_wait_for_job(
     """Async version of wait_for_job."""
     deadline = time.monotonic() + timeout
     interval = poll_interval
-
     while True:
         job = await get_job.asyncio(uuid=job_id, client=client)
         if job is None:
