@@ -1,7 +1,5 @@
 """IonQ-specific client convenience wrapper."""
 
-from __future__ import annotations
-
 import os
 import platform
 import warnings
@@ -10,14 +8,8 @@ from importlib.metadata import version as _pkg_version
 
 import httpx
 
-from ._extensions import (
-    AsyncHookTransport,
-    ClientExtension,
-    HookTransport,
-    _AsyncErrorMapperTransport,
-    _ErrorMapperTransport,
-)
-from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, build_async_transport, build_sync_transport
+from ._extensions import ClientExtension, HookTransport, _ErrorMapperTransport
+from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, build_transport
 from .client import AuthenticatedClient
 
 try:
@@ -53,25 +45,13 @@ def IonQClient(
 ) -> AuthenticatedClient:
     """Create an authenticated IonQ API client.
 
-    This is a factory function (not a class) that returns a configured
-    ``AuthenticatedClient`` with retry transport, proper auth headers,
-    and User-Agent identification.
-
-    Precedence for configurable values: explicit caller arguments take
-    priority over extension values, which take priority over defaults.
-
     Args:
         api_key: IonQ API key. Falls back to ``IONQ_API_KEY`` env var.
         base_url: API base URL.
         max_retries: Max retry attempts for transient errors (429, 5xx).
-            Falls back to ``extension.max_retries``, then default (2).
         timeout: Request timeout.
-            Falls back to ``extension.timeout``, then default (60s read, 10s connect).
         additional_user_agent: Extra token appended to User-Agent.
-            Prefer ``extension.user_agent_token`` for downstream SDKs;
-            both can be used simultaneously.
-        extension: A :class:`ClientExtension` bundle provided by a
-            downstream SDK.  See :mod:`ionq_core._extensions` for details.
+        extension: A :class:`ClientExtension` bundle provided by a downstream SDK.
         **kwargs: Passed through to :class:`AuthenticatedClient`.
     """
     key = api_key or os.environ.get("IONQ_API_KEY")
@@ -109,17 +89,17 @@ def IonQClient(
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    sync_transport: httpx.BaseTransport = build_sync_transport(effective_retries, effective_retry_codes)
-    async_transport: httpx.AsyncBaseTransport = build_async_transport(effective_retries, effective_retry_codes)
+    sync_transport = build_transport(effective_retries, effective_retry_codes)
+    async_transport = build_transport(effective_retries, effective_retry_codes, async_=True)
 
     if extension:
         if extension.event_hooks:
             sync_transport = HookTransport(sync_transport, extension.event_hooks, debug=debug_hooks)
         if extension.async_event_hooks:
-            async_transport = AsyncHookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
+            async_transport = HookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
         if extension.error_mapper:
             sync_transport = _ErrorMapperTransport(sync_transport, extension.error_mapper)
-            async_transport = _AsyncErrorMapperTransport(async_transport, extension.error_mapper)
+            async_transport = _ErrorMapperTransport(async_transport, extension.error_mapper)
         if extension.transport_wrapper:
             sync_transport = extension.transport_wrapper(sync_transport)
         if extension.async_transport_wrapper:

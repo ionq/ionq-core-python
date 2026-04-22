@@ -14,8 +14,6 @@ Typical usage::
     client = IonQClient(api_key="...", extension=ext)
 """
 
-from __future__ import annotations
-
 import logging
 from collections.abc import Callable
 from typing import Protocol, runtime_checkable
@@ -28,16 +26,7 @@ logger = logging.getLogger("ionq_core")
 
 @runtime_checkable
 class EventHook(Protocol):
-    """Protocol for observing requests and responses (sync).
-
-    Hooks are for observation only (logging, metrics, telemetry) - they
-    must not mutate the request or response.  For mutation, use a custom
-    httpx transport instead.
-
-    ``on_error`` is called when the underlying transport raises an
-    exception (after retries are exhausted).  Hooks that do not implement
-    ``on_error`` are silently skipped.
-    """
+    """Protocol for observing requests and responses (sync)."""
 
     def on_request(self, request: httpx.Request) -> None: ...
     def on_response(self, request: httpx.Request, response: httpx.Response) -> None: ...
@@ -53,14 +42,7 @@ class AsyncEventHook(Protocol):
 
 @attrs.define(frozen=True)
 class ClientExtension:
-    """Declarative configuration bundle for downstream SDK integration.
-
-    All fields are optional and additive - they layer on top of the
-    defaults that IonQClient already provides.
-
-    Explicit caller arguments to ``IonQClient()`` take precedence over
-    extension values, which in turn take precedence over factory defaults.
-    """
+    """Declarative configuration bundle for downstream SDK integration."""
 
     user_agent_token: str | None = None
     default_headers: dict[str, str] = attrs.Factory(dict)
@@ -101,15 +83,10 @@ async def _afire_hooks(hooks: tuple, method: str, *args, debug: bool = False) ->
             logger.exception("%s raised; ignoring", method)
 
 
-class HookTransport(httpx.BaseTransport):
-    """Transport decorator that invokes EventHook instances.
+class HookTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
+    """Transport decorator that invokes EventHook instances."""
 
-    Sits between the retry transport (inner) and the user wrapper (outer).
-    Hooks observe the final request/response after retries resolve.
-    ``on_error`` fires when the inner transport raises.
-    """
-
-    def __init__(self, transport: httpx.BaseTransport, hooks: tuple[EventHook, ...], *, debug: bool = False) -> None:
+    def __init__(self, transport, hooks: tuple, *, debug: bool = False) -> None:
         self._transport = transport
         self._hooks = hooks
         self._debug = debug
@@ -124,20 +101,6 @@ class HookTransport(httpx.BaseTransport):
         _fire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
 
-    def close(self) -> None:
-        self._transport.close()
-
-
-class AsyncHookTransport(httpx.AsyncBaseTransport):
-    """Async counterpart of HookTransport."""
-
-    def __init__(
-        self, transport: httpx.AsyncBaseTransport, hooks: tuple[AsyncEventHook, ...], *, debug: bool = False
-    ) -> None:
-        self._transport = transport
-        self._hooks = hooks
-        self._debug = debug
-
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         await _afire_hooks(self._hooks, "on_request", request, debug=self._debug)
         try:
@@ -148,14 +111,17 @@ class AsyncHookTransport(httpx.AsyncBaseTransport):
         await _afire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
 
+    def close(self) -> None:
+        self._transport.close()
+
     async def aclose(self) -> None:
         await self._transport.aclose()
 
 
-class _ErrorMapperTransport(httpx.BaseTransport):
+class _ErrorMapperTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
     """Translates exceptions via an error_mapper callback for downstream SDKs."""
 
-    def __init__(self, transport: httpx.BaseTransport, mapper: Callable[[Exception], Exception]) -> None:
+    def __init__(self, transport, mapper: Callable[[Exception], Exception]) -> None:
         self._transport = transport
         self._mapper = mapper
 
@@ -168,17 +134,6 @@ class _ErrorMapperTransport(httpx.BaseTransport):
                 raise mapped from exc
             raise
 
-    def close(self) -> None:
-        self._transport.close()
-
-
-class _AsyncErrorMapperTransport(httpx.AsyncBaseTransport):
-    """Async counterpart of _ErrorMapperTransport."""
-
-    def __init__(self, transport: httpx.AsyncBaseTransport, mapper: Callable[[Exception], Exception]) -> None:
-        self._transport = transport
-        self._mapper = mapper
-
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
         try:
             return await self._transport.handle_async_request(request)
@@ -187,6 +142,9 @@ class _AsyncErrorMapperTransport(httpx.AsyncBaseTransport):
             if mapped is not exc:
                 raise mapped from exc
             raise
+
+    def close(self) -> None:
+        self._transport.close()
 
     async def aclose(self) -> None:
         await self._transport.aclose()

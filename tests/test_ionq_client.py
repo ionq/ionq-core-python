@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from ionq_core import IonQClient, __version__
-from ionq_core._transport import AsyncErrorRaisingTransport, ErrorRaisingTransport
+from ionq_core._transport import ErrorRaisingTransport
 
 
 class TestIonQClient:
@@ -65,7 +65,7 @@ class TestIonQClient:
 
     def test_async_client_wired(self):
         ac = IonQClient(api_key="key").get_async_httpx_client()
-        assert isinstance(ac._transport, AsyncErrorRaisingTransport)
+        assert isinstance(ac._transport, ErrorRaisingTransport)
         assert "apiKey key" in ac.headers["Authorization"]
         assert ac.headers["User-Agent"].startswith("ionq-core/")
 

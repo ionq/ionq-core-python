@@ -7,9 +7,7 @@ from ionq_core import ClientExtension, EventHook, IonQClient
 from ionq_core._exceptions import APIError, NotFoundError
 from ionq_core._extensions import (
     AsyncEventHook,
-    AsyncHookTransport,
     HookTransport,
-    _AsyncErrorMapperTransport,
     _ErrorMapperTransport,
 )
 from ionq_core._transport import ErrorRaisingTransport
@@ -163,7 +161,7 @@ class TestEventHooks:
             .get_async_httpx_client()
             ._transport
         )
-        assert isinstance(transport, AsyncHookTransport)
+        assert isinstance(transport, HookTransport)
         assert transport._hooks == (hook,)
 
     def test_no_hooks_skips_hook_transport(self):
@@ -280,7 +278,7 @@ class TestOnErrorHook:
         request = httpx.Request("GET", _BACKENDS_URL)
 
         with pytest.raises(NotFoundError):
-            await AsyncHookTransport(AsyncRaisingTransport(error), (hook,)).handle_async_request(request)
+            await HookTransport(AsyncRaisingTransport(error), (hook,)).handle_async_request(request)
 
         assert len(hook.errors) == 1
         assert hook.errors[0] == (request, error)
@@ -295,7 +293,7 @@ class TestOnErrorHook:
             async def on_response(self, request, response):
                 pass
 
-        transport = AsyncHookTransport(AsyncRaisingTransport(NotFoundError(404)), (MinimalAsyncHook(),))
+        transport = HookTransport(AsyncRaisingTransport(NotFoundError(404)), (MinimalAsyncHook(),))
         with pytest.raises(NotFoundError):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
@@ -345,7 +343,7 @@ class TestDebugHooks:
                 pass
 
         with pytest.raises(RuntimeError, match="async hook failed"):
-            await AsyncHookTransport(
+            await HookTransport(
                 FakeAsyncTransport(httpx.Response(200)), (BrokenAsyncHook(),), debug=True
             ).handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
@@ -357,11 +355,11 @@ class TestDebugHooks:
         assert transport._debug is True
 
 
-class TestAsyncHookTransportExecution:
+class TestAsyncHookExecution:
     async def test_async_hooks_called(self):
         hook = AsyncRecordingHook()
         response = httpx.Response(200)
-        result = await AsyncHookTransport(FakeAsyncTransport(response), (hook,)).handle_async_request(
+        result = await HookTransport(FakeAsyncTransport(response), (hook,)).handle_async_request(
             httpx.Request("GET", _BACKENDS_URL)
         )
         assert result is response
@@ -379,7 +377,7 @@ class TestAsyncHookTransportExecution:
                 raise RuntimeError("boom")
 
         response = httpx.Response(200)
-        result = await AsyncHookTransport(FakeAsyncTransport(response), (BrokenAsyncHook(),)).handle_async_request(
+        result = await HookTransport(FakeAsyncTransport(response), (BrokenAsyncHook(),)).handle_async_request(
             httpx.Request("GET", _BACKENDS_URL)
         )
         assert result.status_code == 200
@@ -415,13 +413,13 @@ class TestErrorMapper:
                 return DownstreamError(f"mapped: {exc}")
             return exc
 
-        transport = _AsyncErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), mapper)
+        transport = _ErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), mapper)
 
         with pytest.raises(DownstreamError, match="mapped"):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
     async def test_async_mapper_passthrough(self):
-        transport = _AsyncErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), lambda exc: exc)
+        transport = _ErrorMapperTransport(AsyncRaisingTransport(NotFoundError(404)), lambda exc: exc)
 
         with pytest.raises(NotFoundError):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
@@ -444,7 +442,7 @@ class TestErrorMapper:
 
     async def test_aclose_delegates(self):
         fake = FakeAsyncTransport(httpx.Response(200))
-        await _AsyncErrorMapperTransport(fake, lambda e: e).aclose()
+        await _ErrorMapperTransport(fake, lambda e: e).aclose()
 
 
 class TestTransportWrapper:
@@ -510,7 +508,7 @@ class TestHookTransportClose:
 
     async def test_aclose_delegates(self):
         fake = FakeAsyncTransport(httpx.Response(200))
-        transport = AsyncHookTransport(fake, ())
+        transport = HookTransport(fake, ())
         await transport.aclose()
 
 
