@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import httpx
 from httpx_retries import Retry, RetryTransport
 
@@ -65,7 +67,7 @@ def _raise_for_response(response: httpx.Response) -> None:
 class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
     """Wraps a transport to raise structured IonQ exceptions on error responses."""
 
-    def __init__(self, transport: httpx.BaseTransport | httpx.AsyncBaseTransport) -> None:
+    def __init__(self, transport: Any) -> None:
         self._transport = transport
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
