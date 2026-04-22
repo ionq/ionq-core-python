@@ -88,7 +88,10 @@ testpaths = ["tests"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 xfail_strict = true
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    "ignore:Exception ignored in.*SSL.*:pytest.PytestUnraisableExceptionWarning",
+]
 markers = [
     "integration: marks tests that hit the real IonQ API (deselect with '-m \"not integration\"')",
 ]

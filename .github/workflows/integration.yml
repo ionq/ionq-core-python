@@ -32,4 +32,4 @@ jobs:
       - name: Run integration tests
         env:
           IONQ_API_KEY: ${{ secrets.IONQ_API_KEY }}
-        run: uv run pytest -m integration --tb=short -v
+        run: uv run pytest -m integration --tb=short -v --no-cov
