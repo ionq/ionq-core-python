@@ -1,18 +1,4 @@
-"""Extension API for downstream SDKs building on ionq-core.
-
-Provides hooks that downstream libraries (qiskit-ionq, cirq-ionq, etc.)
-use to customize client behavior without forking or monkey-patching.
-
-Typical usage::
-
-    from ionq_core import IonQClient, ClientExtension
-
-    ext = ClientExtension(
-        user_agent_token="qiskit-ionq/1.1.0",
-        default_headers={"X-Qiskit-Version": "1.3.0"},
-    )
-    client = IonQClient(api_key="...", extension=ext)
-"""
+"""Extension API for downstream SDKs building on ionq-core."""
 
 import logging
 from collections.abc import Callable
@@ -40,7 +26,7 @@ class AsyncEventHook(Protocol):
     async def on_response(self, request: httpx.Request, response: httpx.Response) -> None: ...
 
 
-@attrs.define(frozen=True)
+@attrs.frozen
 class ClientExtension:
     """Declarative configuration bundle for downstream SDK integration."""
 
@@ -84,12 +70,26 @@ async def _afire_hooks(hooks: tuple, method: str, *args, debug: bool = False) ->
 
 
 class HookTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    """Transport decorator that invokes EventHook instances."""
+    """Transport decorator that invokes EventHook instances and optionally maps exceptions."""
 
-    def __init__(self, transport, hooks: tuple, *, debug: bool = False) -> None:
+    def __init__(
+        self,
+        transport,
+        hooks: tuple = (),
+        *,
+        debug: bool = False,
+        error_mapper: Callable[[Exception], Exception] | None = None,
+    ) -> None:
         self._transport = transport
         self._hooks = hooks
         self._debug = debug
+        self._error_mapper = error_mapper
+
+    def _map_error(self, exc: Exception) -> None:
+        if self._error_mapper is not None:
+            mapped = self._error_mapper(exc)
+            if mapped is not exc:
+                raise mapped from exc
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
         _fire_hooks(self._hooks, "on_request", request, debug=self._debug)
@@ -97,6 +97,7 @@ class HookTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
             response = self._transport.handle_request(request)
         except Exception as exc:
             _fire_hooks(self._hooks, "on_error", request, exc, debug=self._debug)
+            self._map_error(exc)
             raise
         _fire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
@@ -107,41 +108,10 @@ class HookTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
             response = await self._transport.handle_async_request(request)
         except Exception as exc:
             await _afire_hooks(self._hooks, "on_error", request, exc, debug=self._debug)
+            self._map_error(exc)
             raise
         await _afire_hooks(self._hooks, "on_response", request, response, debug=self._debug)
         return response
-
-    def close(self) -> None:
-        self._transport.close()
-
-    async def aclose(self) -> None:
-        await self._transport.aclose()
-
-
-class _ErrorMapperTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    """Translates exceptions via an error_mapper callback for downstream SDKs."""
-
-    def __init__(self, transport, mapper: Callable[[Exception], Exception]) -> None:
-        self._transport = transport
-        self._mapper = mapper
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        try:
-            return self._transport.handle_request(request)
-        except Exception as exc:
-            mapped = self._mapper(exc)
-            if mapped is not exc:
-                raise mapped from exc
-            raise
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        try:
-            return await self._transport.handle_async_request(request)
-        except Exception as exc:
-            mapped = self._mapper(exc)
-            if mapped is not exc:
-                raise mapped from exc
-            raise
 
     def close(self) -> None:
         self._transport.close()

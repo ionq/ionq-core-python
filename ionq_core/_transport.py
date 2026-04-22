@@ -1,7 +1,5 @@
 """Transport layer: retry via httpx-retries, error raising for IonQ API responses."""
 
-from typing import Protocol, runtime_checkable
-
 import httpx
 from httpx_retries import Retry, RetryTransport
 
@@ -11,43 +9,23 @@ RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, *range(520, 530)})
 DEFAULT_MAX_RETRIES = 2
 
 
-@runtime_checkable
-class DualTransport(Protocol):
-    """A transport that supports both sync and async request handling."""
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response: ...
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response: ...
-    def close(self) -> None: ...
-    async def aclose(self) -> None: ...
-
-
 def _raise_for_response(response: httpx.Response) -> None:
-    if response.status_code < 400:
-        return
     try:
         body: dict | str | None = response.json()
     except Exception:
-        text = response.text
-        body = text[:500] if text else None
+        body = (response.text or "")[:500] or None
     message = body.get("message") or body.get("error") if isinstance(body, dict) else None
-    header = response.headers.get("retry-after")
     try:
-        retry_after = max(0.0, float(header)) if header is not None else None
-    except ValueError:
+        retry_after = max(0.0, float(response.headers["retry-after"]))
+    except (KeyError, ValueError):
         retry_after = None
-    raise_for_status(
-        response.status_code,
-        body,
-        retry_after,
-        message,
-        request_id=response.headers.get("x-request-id"),
-    )
+    raise_for_status(response.status_code, body, retry_after, message, request_id=response.headers.get("x-request-id"))
 
 
 class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
     """Wraps a transport to raise structured IonQ exceptions on error responses."""
 
-    def __init__(self, transport: DualTransport) -> None:
+    def __init__(self, transport) -> None:
         self._transport = transport
 
     def handle_request(self, request: httpx.Request) -> httpx.Response:
@@ -57,7 +35,9 @@ class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
             raise APITimeoutError(str(exc)) from exc
         except httpx.HTTPError as exc:
             raise APIConnectionError(f"{type(exc).__name__}: {exc}") from exc
-        _raise_for_response(response)
+        if response.status_code >= 400:
+            response.read()
+            _raise_for_response(response)
         return response
 
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
@@ -67,7 +47,9 @@ class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
             raise APITimeoutError(str(exc)) from exc
         except httpx.HTTPError as exc:
             raise APIConnectionError(f"{type(exc).__name__}: {exc}") from exc
-        _raise_for_response(response)
+        if response.status_code >= 400:
+            await response.aread()
+            _raise_for_response(response)
         return response
 
     def close(self) -> None:
@@ -77,25 +59,14 @@ class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
         await self._transport.aclose()
 
 
-def build_retry(
+def build_transport(
     max_retries: int = DEFAULT_MAX_RETRIES,
     retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
-) -> Retry:
-    """Build a Retry policy matching IonQ conventions."""
-    return Retry(
+) -> ErrorRaisingTransport:
+    return ErrorRaisingTransport(RetryTransport(retry=Retry(
         total=max_retries,
         backoff_factor=0.5,
         backoff_jitter=0.5,
         max_backoff_wait=60.0,
         status_forcelist=retryable_status_codes,
-        allowed_methods={"GET", "HEAD", "PUT", "DELETE", "OPTIONS"},
-        respect_retry_after_header=True,
-    )
-
-
-def build_transport(
-    max_retries: int = DEFAULT_MAX_RETRIES,
-    retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
-) -> ErrorRaisingTransport:
-    """Build a transport with retry and error raising (handles both sync and async)."""
-    return ErrorRaisingTransport(RetryTransport(retry=build_retry(max_retries, retryable_status_codes)))
+    )))

@@ -52,17 +52,16 @@ class SessionManager:
         return self._session_id
 
     def _build_settings(self) -> SessionSettingsRequest | Unset:
-        kwargs: dict = {}
+        kw: dict = {}
         if self._max_jobs is not None:
-            kwargs["job_count_limit"] = self._max_jobs
+            kw["job_count_limit"] = self._max_jobs
         if self._max_time is not None:
-            kwargs["duration_limit_min"] = self._max_time
+            kw["duration_limit_min"] = self._max_time
         if self._max_cost is not None:
-            kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
-        return SessionSettingsRequest(**kwargs) if kwargs else UNSET
+            kw["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
+        return SessionSettingsRequest(**kw) if kw else UNSET
 
     def open(self) -> None:
-        """Create a new session on the backend."""
         if self._session_id is not None:
             raise IonQError("Session already open")
         body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
@@ -83,7 +82,6 @@ class SessionManager:
             logger.warning("Failed to end session %s", self._session_id, exc_info=True)
 
     def status(self) -> str:
-        """Query current session status."""
         if self._session_id is None:
             raise IonQError("No session ID; call open() first")
         session = get_session.sync(session_id=self._session_id, client=self._client)
@@ -92,7 +90,6 @@ class SessionManager:
         return session.status
 
     async def async_open(self) -> None:
-        """Create a new session on the backend (async)."""
         if self._session_id is not None:
             raise IonQError("Session already open")
         body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
@@ -113,7 +110,6 @@ class SessionManager:
             logger.warning("Failed to end session %s", self._session_id, exc_info=True)
 
     async def async_status(self) -> str:
-        """Query current session status (async)."""
         if self._session_id is None:
             raise IonQError("No session ID; call open() first")
         session = await get_session.asyncio(session_id=self._session_id, client=self._client)

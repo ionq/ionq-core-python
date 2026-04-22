@@ -10,7 +10,7 @@ from ionq_core._exceptions import (
     RateLimitError,
     ServerError,
 )
-from ionq_core._transport import ErrorRaisingTransport, build_retry, build_transport
+from ionq_core._transport import ErrorRaisingTransport, build_transport
 
 _URL = "https://api.ionq.co/v0.4/backends"
 
@@ -33,12 +33,6 @@ class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
     async def handle_async_request(self, request):
         return self._next()
 
-    def close(self):
-        pass
-
-    async def aclose(self):
-        pass
-
 
 def _resp(status_code, headers=None, json_body=None):
     return httpx.Response(status_code, headers=headers or {}, json=json_body)
@@ -51,14 +45,6 @@ def _req(method="GET"):
 def _wrap(responses):
     fake = FakeTransport(responses)
     return ErrorRaisingTransport(fake), fake
-
-
-class TestBuildRetry:
-    def test_returns_retry_with_defaults(self):
-        assert build_retry().total == 2
-
-    def test_custom_max_retries(self):
-        assert build_retry(max_retries=5).total == 5
 
 
 class TestBuildTransport:

@@ -89,3 +89,11 @@ class TestIonQClient:
     def test_verify_ssl_false_warns(self):
         with pytest.warns(UserWarning, match="verify_ssl=False"):
             IonQClient(api_key="key", verify_ssl=False)
+
+    def test_async_client_inherits_follow_redirects(self):
+        ac = IonQClient(api_key="key", follow_redirects=True).get_async_httpx_client()
+        assert ac.follow_redirects is True
+
+    def test_async_client_default_no_follow_redirects(self):
+        ac = IonQClient(api_key="key").get_async_httpx_client()
+        assert ac.follow_redirects is False

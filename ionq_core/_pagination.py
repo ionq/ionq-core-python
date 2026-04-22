@@ -19,7 +19,6 @@ logger = logging.getLogger("ionq_core")
 
 
 def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> Iterator[Job]:
-    """Generic sync paginator - follows cursors until exhausted."""
     kwargs["next_"] = UNSET
     while True:
         response = fetch(*args, **kwargs)
@@ -33,7 +32,6 @@ def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) 
 
 
 async def _apaginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> AsyncIterator[Job]:
-    """Generic async paginator - follows cursors until exhausted."""
     kwargs["next_"] = UNSET
     while True:
         response = await fetch(*args, **kwargs)
@@ -56,8 +54,7 @@ def iter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs, automatically following pagination cursors."""
-    yield from _paginate(
+    return _paginate(
         get_jobs.sync,
         "jobs",
         client=client,
@@ -69,7 +66,7 @@ def iter_jobs(
     )
 
 
-async def aiter_jobs(
+def aiter_jobs(
     client: AuthenticatedClient,
     *,
     status: JobStatus | Unset = UNSET,
@@ -78,8 +75,7 @@ async def aiter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async iterate over all jobs, automatically following pagination cursors."""
-    async for job in _apaginate(
+    return _apaginate(
         get_jobs.asyncio,
         "jobs",
         client=client,
@@ -88,8 +84,7 @@ async def aiter_jobs(
         session_id=session_id,
         submitter_id=submitter_id,
         limit=limit,
-    ):
-        yield job
+    )
 
 
 def iter_session_jobs(
@@ -101,8 +96,7 @@ def iter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs in a session, automatically following pagination cursors."""
-    yield from _paginate(
+    return _paginate(
         get_session_jobs.sync,
         "session jobs",
         session_id,
@@ -114,7 +108,7 @@ def iter_session_jobs(
     )
 
 
-async def aiter_session_jobs(
+def aiter_session_jobs(
     client: AuthenticatedClient,
     session_id: str,
     *,
@@ -123,8 +117,7 @@ async def aiter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async iterate over all jobs in a session, automatically following pagination cursors."""
-    async for job in _apaginate(
+    return _apaginate(
         get_session_jobs.asyncio,
         "session jobs",
         session_id,
@@ -133,5 +126,4 @@ async def aiter_session_jobs(
         target=target,
         submitter_id=submitter_id,
         limit=limit,
-    ):
-        yield job
+    )

@@ -8,7 +8,7 @@ from importlib.metadata import version as _pkg_version
 
 import httpx
 
-from ._extensions import ClientExtension, HookTransport, _ErrorMapperTransport
+from ._extensions import ClientExtension, HookTransport
 from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, build_transport
 from .client import AuthenticatedClient
 
@@ -20,17 +20,6 @@ except PackageNotFoundError:
 _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 _AUTH_PREFIX = "apiKey"
 _AUTH_HEADER = "Authorization"
-
-
-def _build_user_agent(*tokens: str | None) -> str:
-    parts = [
-        f"ionq-core/{__version__}",
-        f"python/{platform.python_version()}",
-        f"httpx/{httpx.__version__}",
-        f"os/{platform.system().lower()}",
-        *filter(None, tokens),
-    ]
-    return " ".join(parts)
 
 
 def IonQClient(
@@ -64,7 +53,6 @@ def IonQClient(
             UserWarning,
             stacklevel=2,
         )
-
     if kwargs.get("verify_ssl") is False:
         warnings.warn(
             "verify_ssl=False disables TLS certificate verification. "
@@ -73,38 +61,43 @@ def IonQClient(
             stacklevel=2,
         )
 
-    ext_ua = extension.user_agent_token if extension else None
-    ext_timeout = extension.timeout if extension else None
-    ext_retries = extension.max_retries if extension else None
-    ext_retry_codes = extension.retryable_status_codes if extension else None
-    debug_hooks = extension.debug_hooks if extension else False
+    ext = extension or ClientExtension()
+    ua_parts = [
+        f"ionq-core/{__version__}",
+        f"python/{platform.python_version()}",
+        f"httpx/{httpx.__version__}",
+        f"os/{platform.system().lower()}",
+        *filter(None, (additional_user_agent, ext.user_agent_token)),
+    ]
+    user_agent = " ".join(ua_parts)
+    effective_timeout = timeout or ext.timeout or _DEFAULT_TIMEOUT
+    effective_retries = max_retries if max_retries is not None else (ext.max_retries or DEFAULT_MAX_RETRIES)
 
-    user_agent = _build_user_agent(additional_user_agent, ext_ua)
-    effective_timeout = timeout or ext_timeout or _DEFAULT_TIMEOUT
-    effective_retries = max_retries if max_retries is not None else (ext_retries or DEFAULT_MAX_RETRIES)
-    effective_retry_codes = ext_retry_codes or RETRYABLE_STATUS_CODES
+    headers = {**ext.default_headers, "User-Agent": user_agent}
 
-    headers: dict[str, str] = {}
-    if extension and extension.default_headers:
-        headers.update(extension.default_headers)
-    headers["User-Agent"] = user_agent
+    sync_transport = async_transport = build_transport(
+        effective_retries,
+        ext.retryable_status_codes or RETRYABLE_STATUS_CODES,
+    )
 
-    base_transport = build_transport(effective_retries, effective_retry_codes)
-    sync_transport = base_transport
-    async_transport = base_transport
-
-    if extension:
-        if extension.event_hooks:
-            sync_transport = HookTransport(sync_transport, extension.event_hooks, debug=debug_hooks)
-        if extension.async_event_hooks:
-            async_transport = HookTransport(async_transport, extension.async_event_hooks, debug=debug_hooks)
-        if extension.error_mapper:
-            sync_transport = _ErrorMapperTransport(sync_transport, extension.error_mapper)
-            async_transport = _ErrorMapperTransport(async_transport, extension.error_mapper)
-        if extension.transport_wrapper:
-            sync_transport = extension.transport_wrapper(sync_transport)
-        if extension.async_transport_wrapper:
-            async_transport = extension.async_transport_wrapper(async_transport)
+    if ext.event_hooks or ext.error_mapper:
+        sync_transport = HookTransport(
+            sync_transport,
+            ext.event_hooks,
+            debug=ext.debug_hooks,
+            error_mapper=ext.error_mapper,
+        )
+    if ext.async_event_hooks or ext.error_mapper:
+        async_transport = HookTransport(
+            async_transport,
+            ext.async_event_hooks,
+            debug=ext.debug_hooks,
+            error_mapper=ext.error_mapper,
+        )
+    if ext.transport_wrapper:
+        sync_transport = ext.transport_wrapper(sync_transport)
+    if ext.async_transport_wrapper:
+        async_transport = ext.async_transport_wrapper(async_transport)
 
     client = AuthenticatedClient(
         base_url=base_url,
@@ -122,6 +115,8 @@ def IonQClient(
             headers={**headers, _AUTH_HEADER: f"{_AUTH_PREFIX} {key}"},
             timeout=effective_timeout,
             transport=async_transport,
+            verify=client._verify_ssl,
+            follow_redirects=client._follow_redirects,
         )
     )
     return client

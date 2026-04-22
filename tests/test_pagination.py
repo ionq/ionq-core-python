@@ -1,37 +1,12 @@
 import pytest
 
 from ionq_core import IonQError, aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
+from tests.conftest import make_job_json
 
 
 def _jobs_page(job_ids, next_cursor=None):
     return {
-        "jobs": [
-            {
-                "id": jid,
-                "status": "completed",
-                "type": "ionq.circuit.v1",
-                "backend": "simulator",
-                "dry_run": False,
-                "submitter_id": "user-1",
-                "project_id": None,
-                "parent_job_id": None,
-                "session_id": None,
-                "metadata": None,
-                "name": None,
-                "submitted_at": None,
-                "started_at": None,
-                "completed_at": None,
-                "predicted_wait_time_ms": None,
-                "predicted_execution_duration_ms": None,
-                "execution_duration_ms": None,
-                "failure": None,
-                "output": {},
-                "settings": {},
-                "stats": {},
-                "results": None,
-            }
-            for jid in job_ids
-        ],
+        "jobs": [make_job_json(jid) for jid in job_ids],
         "next": next_cursor,
     }
 
