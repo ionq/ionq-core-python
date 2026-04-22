@@ -16,6 +16,7 @@ def _suppress_ssl_teardown_warnings():
     warnings.filterwarnings("ignore", category=ResourceWarning, message="unclosed.*SSL")
     warnings.filterwarnings("ignore", category=pytest.PytestUnraisableExceptionWarning, message=".*SSL.*")
 
+
 _job_ids: list[str] = []
 
 
