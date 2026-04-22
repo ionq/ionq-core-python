@@ -41,7 +41,7 @@ Most of the code in `ionq_core/` is **auto-generated** from the IonQ OpenAPI spe
 ## Regenerating the client
 
 ```sh
-curl -s https://api-staging.ionq.co/v0.4/api-docs -o openapi.json
+curl -s https://api.ionq.co/v0.4/api-docs -o openapi.json
 
 if [ -f openapi-overlay.yaml ]; then
     uvx oas-patch==0.6.0 overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json

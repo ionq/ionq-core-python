@@ -360,7 +360,7 @@ The client is generated from the vendored OpenAPI spec. To regenerate after API 
 
 ```sh
 # Fetch the latest spec
-curl -s https://api-staging.ionq.co/v0.4/api-docs -o openapi.json
+curl -s https://api.ionq.co/v0.4/api-docs -o openapi.json
 
 # Apply overlay if present (patches spec issues that the generator can't handle)
 if [ -f openapi-overlay.yaml ]; then

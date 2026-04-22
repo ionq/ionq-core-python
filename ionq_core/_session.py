@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Session lifecycle manager for IonQ QPU sessions."""
 
 from __future__ import annotations
