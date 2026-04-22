@@ -62,11 +62,8 @@ class TestBuildRetry:
 
 
 class TestBuildTransport:
-    def test_sync_returns_error_raising(self):
+    def test_returns_error_raising(self):
         assert isinstance(build_transport(), ErrorRaisingTransport)
-
-    def test_async_returns_error_raising(self):
-        assert isinstance(build_transport(async_=True), ErrorRaisingTransport)
 
 
 class TestErrorRaisingTransportSync:

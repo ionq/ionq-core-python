@@ -89,8 +89,9 @@ def IonQClient(
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    sync_transport = build_transport(effective_retries, effective_retry_codes)
-    async_transport = build_transport(effective_retries, effective_retry_codes, async_=True)
+    base_transport = build_transport(effective_retries, effective_retry_codes)
+    sync_transport = base_transport
+    async_transport = base_transport
 
     if extension:
         if extension.event_hooks:

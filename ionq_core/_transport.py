@@ -32,13 +32,9 @@ def build_retry(
 def build_transport(
     max_retries: int = DEFAULT_MAX_RETRIES,
     retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
-    *,
-    async_: bool = False,
 ) -> ErrorRaisingTransport:
-    """Build a transport with retry and error raising (works for both sync and async)."""
-    retry = build_retry(max_retries, retryable_status_codes)
-    inner_transport = httpx.AsyncHTTPTransport() if async_ else httpx.HTTPTransport()
-    return ErrorRaisingTransport(RetryTransport(transport=inner_transport, retry=retry))
+    """Build a transport with retry and error raising (handles both sync and async)."""
+    return ErrorRaisingTransport(RetryTransport(retry=build_retry(max_retries, retryable_status_codes)))
 
 
 def _raise_for_response(response: httpx.Response) -> None:
