@@ -36,22 +36,22 @@ Issues = "https://github.com/ionq/ionq-core-python/issues"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8",
-    "pytest-httpx>=0.35",
-    "pytest-asyncio>=0.25",
-    "pytest-cov>=6",
-    "ruff>=0.9",
+    "pytest>=9",
+    "pytest-httpx>=0.36",
+    "pytest-asyncio>=1",
+    "pytest-cov>=7",
+    "ruff>=0.15",
     "ty",
     "pdoc>=16",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8",
-    "pytest-httpx>=0.35",
-    "pytest-asyncio>=0.25",
-    "pytest-cov>=6",
-    "ruff>=0.9",
+    "pytest>=9",
+    "pytest-httpx>=0.36",
+    "pytest-asyncio>=1",
+    "pytest-cov>=7",
+    "ruff>=0.15",
     "ty",
     "pdoc>=16",
 ]
