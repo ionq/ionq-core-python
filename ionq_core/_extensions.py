@@ -18,9 +18,9 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
+import attrs
 import httpx
 
 logger = logging.getLogger("ionq_core")
@@ -51,7 +51,7 @@ class AsyncEventHook(Protocol):
     async def on_response(self, request: httpx.Request, response: httpx.Response) -> None: ...
 
 
-@dataclass(frozen=True, slots=True)
+@attrs.define(frozen=True)
 class ClientExtension:
     """Declarative configuration bundle for downstream SDK integration.
 
@@ -63,7 +63,7 @@ class ClientExtension:
     """
 
     user_agent_token: str | None = None
-    default_headers: dict[str, str] = field(default_factory=dict)
+    default_headers: dict[str, str] = attrs.Factory(dict)
     event_hooks: tuple[EventHook, ...] = ()
     async_event_hooks: tuple[AsyncEventHook, ...] = ()
     retryable_status_codes: frozenset[int] | None = None
@@ -71,7 +71,7 @@ class ClientExtension:
     timeout: httpx.Timeout | None = None
     transport_wrapper: Callable[[httpx.BaseTransport], httpx.BaseTransport] | None = None
     async_transport_wrapper: Callable[[httpx.AsyncBaseTransport], httpx.AsyncBaseTransport] | None = None
-    error_mapper: Callable[[Exception], Exception] | None = None  # return same object to skip mapping
+    error_mapper: Callable[[Exception], Exception] | None = None
     debug_hooks: bool = False
 
 

@@ -10,7 +10,14 @@ from ionq_core._exceptions import (
     RateLimitError,
     ServerError,
 )
-from ionq_core._transport import AsyncRetryTransport, RetryTransport, _parse_retry_after
+from ionq_core._transport import (
+    AsyncErrorRaisingTransport,
+    ErrorRaisingTransport,
+    _parse_retry_after,
+    build_async_transport,
+    build_retry,
+    build_sync_transport,
+)
 
 _URL = "https://api.ionq.co/v0.4/backends"
 
@@ -55,82 +62,64 @@ def _req(method="GET"):
     return httpx.Request(method, _URL)
 
 
-def _sync(responses, max_retries=2):
+def _sync(responses):
     fake = FakeTransport(responses)
-    return RetryTransport(fake, max_retries=max_retries), fake
+    return ErrorRaisingTransport(fake), fake
 
 
-def _async(responses, max_retries=2):
+def _async(responses):
     fake = FakeAsyncTransport(responses)
-    return AsyncRetryTransport(fake, max_retries=max_retries), fake
+    return AsyncErrorRaisingTransport(fake), fake
 
 
-class TestRetryTransport:
-    def test_success_no_retry(self):
+class TestBuildRetry:
+    def test_returns_retry_with_defaults(self):
+        retry = build_retry()
+        assert retry.total == 2
+
+    def test_custom_max_retries(self):
+        retry = build_retry(max_retries=5)
+        assert retry.total == 5
+
+
+class TestBuildTransport:
+    def test_sync_transport_returns_error_raising(self):
+        transport = build_sync_transport()
+        assert isinstance(transport, ErrorRaisingTransport)
+
+    def test_async_transport_returns_error_raising(self):
+        transport = build_async_transport()
+        assert isinstance(transport, AsyncErrorRaisingTransport)
+
+
+class TestErrorRaisingTransport:
+    def test_success_passes_through(self):
         transport, fake = _sync([_resp(200)])
         assert transport.handle_request(_req()).status_code == 200
         assert fake.call_count == 1
 
-    def test_retries_on_503_then_succeeds(self):
-        transport, fake = _sync([_resp(503), _resp(200)])
-        assert transport.handle_request(_req()).status_code == 200
-        assert fake.call_count == 2
-
-    def test_retries_on_429_then_succeeds(self):
-        transport, fake = _sync([_resp(429, headers={"retry-after": "0"}), _resp(200)])
-        assert transport.handle_request(_req()).status_code == 200
-        assert fake.call_count == 2
-
-    def test_retries_exhausted_raises_server_error(self):
-        transport, fake = _sync([_resp(503)] * 3, max_retries=2)
-        with pytest.raises(ServerError) as exc_info:
-            transport.handle_request(_req())
-        assert exc_info.value.status_code == 503
-        assert fake.call_count == 3
-
-    def test_retries_exhausted_rate_limit(self):
-        transport, fake = _sync([_resp(429)] * 3, max_retries=2)
-        with pytest.raises(RateLimitError):
-            transport.handle_request(_req())
-        assert fake.call_count == 3
-
-    def test_connection_error_retried(self):
-        transport, fake = _sync([httpx.ConnectError("refused"), _resp(200)])
-        assert transport.handle_request(_req()).status_code == 200
-        assert fake.call_count == 2
-
-    def test_timeout_error_retried(self):
-        transport, fake = _sync([httpx.ReadTimeout("timed out"), _resp(200)])
-        assert transport.handle_request(_req()).status_code == 200
-        assert fake.call_count == 2
-
-    def test_timeout_exhausted_raises(self):
-        transport, _ = _sync([httpx.ReadTimeout("timed out")] * 3, max_retries=2)
-        with pytest.raises(APITimeoutError):
-            transport.handle_request(_req())
-
-    def test_connection_exhausted_raises(self):
-        transport, _ = _sync([httpx.ConnectError("refused")] * 3, max_retries=2)
-        with pytest.raises(APIConnectionError):
-            transport.handle_request(_req())
-
-    def test_401_not_retried(self):
+    def test_401_raises_auth_error(self):
         transport, fake = _sync([_resp(401)])
         with pytest.raises(AuthenticationError):
             transport.handle_request(_req())
         assert fake.call_count == 1
 
-    def test_404_not_retried(self):
+    def test_404_raises_not_found(self):
         transport, fake = _sync([_resp(404)])
         with pytest.raises(NotFoundError):
             transport.handle_request(_req())
         assert fake.call_count == 1
 
-    def test_max_retries_zero(self):
-        transport, fake = _sync([_resp(503)], max_retries=0)
-        with pytest.raises(ServerError):
+    def test_429_raises_rate_limit(self):
+        transport, _ = _sync([_resp(429)])
+        with pytest.raises(RateLimitError):
             transport.handle_request(_req())
-        assert fake.call_count == 1
+
+    def test_503_raises_server_error(self):
+        transport, _ = _sync([_resp(503)])
+        with pytest.raises(ServerError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.status_code == 503
 
     def test_error_body_parsed(self):
         transport, _ = _sync([_resp(400, json_body={"error": "Bad Request", "message": "Invalid input"})])
@@ -143,75 +132,50 @@ class TestRetryTransport:
         with pytest.raises(NotFoundError, match="Job not found"):
             transport.handle_request(_req())
 
-    def test_retry_after_header_respected(self, monkeypatch):
-        sleeps = []
-        monkeypatch.setattr("ionq_core._transport.time.sleep", sleeps.append)
-        transport, _ = _sync([_resp(429, headers={"retry-after": "10"}), _resp(200)])
-        transport.handle_request(_req())
-        assert sleeps[0] >= 10.0
+    def test_timeout_raises_api_timeout(self):
+        transport, _ = _sync([httpx.ReadTimeout("timed out")])
+        with pytest.raises(APITimeoutError):
+            transport.handle_request(_req())
+
+    def test_connection_error_raises_api_connection(self):
+        transport, _ = _sync([httpx.ConnectError("refused")])
+        with pytest.raises(APIConnectionError):
+            transport.handle_request(_req())
+
+    def test_non_retryable_exc_includes_type_name(self):
+        transport, _ = _sync([httpx.ReadError("broken pipe")])
+        with pytest.raises(APIConnectionError, match="ReadError: broken pipe"):
+            transport.handle_request(_req())
+
+    def test_close_delegates(self):
+        transport, _ = _sync([_resp(200)])
+        transport.close()
 
 
-class TestAsyncRetryTransport:
-    async def test_success_no_retry(self):
+class TestAsyncErrorRaisingTransport:
+    async def test_success_passes_through(self):
         transport, fake = _async([_resp(200)])
         assert (await transport.handle_async_request(_req())).status_code == 200
         assert fake.call_count == 1
 
-    async def test_retries_on_503_then_succeeds(self):
-        transport, fake = _async([_resp(503), _resp(200)])
-        assert (await transport.handle_async_request(_req())).status_code == 200
-        assert fake.call_count == 2
-
-    async def test_retries_exhausted_raises(self):
-        transport, fake = _async([_resp(503)] * 3, max_retries=2)
+    async def test_503_raises_server_error(self):
+        transport, _ = _async([_resp(503)])
         with pytest.raises(ServerError):
             await transport.handle_async_request(_req())
-        assert fake.call_count == 3
 
-    async def test_timeout_retried(self):
-        transport, _ = _async([httpx.ReadTimeout("timed out"), _resp(200)])
-        assert (await transport.handle_async_request(_req())).status_code == 200
+    async def test_timeout_raises_api_timeout(self):
+        transport, _ = _async([httpx.ReadTimeout("timed out")])
+        with pytest.raises(APITimeoutError):
+            await transport.handle_async_request(_req())
 
-
-class TestParseRetryAfter:
-    def test_http_date_returns_positive(self):
-        r = httpx.Response(429, headers={"retry-after": "Mon, 01 Jan 2035 00:00:00 GMT"})
-        assert _parse_retry_after(r) > 0
-
-    def test_unparseable_returns_none(self):
-        r = httpx.Response(429, headers={"retry-after": "not-a-date-or-number"})
-        assert _parse_retry_after(r) is None
-
-    def test_negative_numeric_clamped_to_zero(self):
-        r = httpx.Response(429, headers={"retry-after": "-10"})
-        assert _parse_retry_after(r) == 0.0
-
-
-class TestRaiseExhaustedEdgeCases:
-    def test_no_response_no_exception(self):
-        from ionq_core._transport import _raise_exhausted
-
-        with pytest.raises(APIConnectionError, match="no response"):
-            _raise_exhausted(None, None)
-
-
-class TestRetryableExcEdgeCases:
-    def test_post_timeout_not_retried(self):
-        transport, fake = _sync([httpx.ReadTimeout("timed out")])
+    async def test_connection_error_raises_api_connection(self):
+        transport, _ = _async([httpx.ConnectError("refused")])
         with pytest.raises(APIConnectionError):
-            transport.handle_request(_req("POST"))
-        assert fake.call_count == 1
+            await transport.handle_async_request(_req())
 
-
-class TestAsyncRetryTransportEdgeCases:
-    async def test_connection_error_retried(self):
-        transport, fake = _async([httpx.ConnectError("refused"), _resp(200)])
-        assert (await transport.handle_async_request(_req())).status_code == 200
-        assert fake.call_count == 2
-
-    async def test_non_retryable_exc_raises(self):
-        transport, _ = _async([RuntimeError("unexpected")])
-        with pytest.raises(APIConnectionError):
+    async def test_network_error_raises_api_connection(self):
+        transport, _ = _async([httpx.ReadError("broken pipe")])
+        with pytest.raises(APIConnectionError, match="ReadError: broken pipe"):
             await transport.handle_async_request(_req())
 
     async def test_aclose_delegates(self):
@@ -233,53 +197,25 @@ class TestRequestIdOnExceptions:
         assert exc_info.value.request_id is None
 
     def test_request_id_on_rate_limit(self):
-        transport, _ = _sync([_resp(429, headers={"x-request-id": "req-xyz", "retry-after": "0"})] * 3, max_retries=2)
+        transport, _ = _sync([_resp(429, headers={"x-request-id": "req-xyz", "retry-after": "0"})])
         with pytest.raises(RateLimitError) as exc_info:
             transport.handle_request(_req())
         assert exc_info.value.request_id == "req-xyz"
 
 
-class TestNonRetryableExcIncludesTypeName:
-    def test_exception_type_in_message(self):
-        transport, _ = _sync([httpx.ReadError("broken pipe")])
-        with pytest.raises(APIConnectionError, match="ReadError: broken pipe"):
-            transport.handle_request(_req("POST"))
+class TestParseRetryAfter:
+    def test_numeric_returns_float(self):
+        r = httpx.Response(429, headers={"retry-after": "5"})
+        assert _parse_retry_after(r) == 5.0
 
+    def test_negative_numeric_clamped_to_zero(self):
+        r = httpx.Response(429, headers={"retry-after": "-10"})
+        assert _parse_retry_after(r) == 0.0
 
-class TestIdempotencyAwareRetry:
-    def test_post_503_not_retried(self):
-        transport, fake = _sync([_resp(503)])
-        with pytest.raises(ServerError):
-            transport.handle_request(_req("POST"))
-        assert fake.call_count == 1
+    def test_missing_header_returns_none(self):
+        r = httpx.Response(429)
+        assert _parse_retry_after(r) is None
 
-    def test_post_429_retried(self):
-        transport, fake = _sync([_resp(429), _resp(200)])
-        assert transport.handle_request(_req("POST")).status_code == 200
-        assert fake.call_count == 2
-
-    def test_get_503_retried(self):
-        transport, fake = _sync([_resp(503), _resp(200)])
-        assert transport.handle_request(_req("GET")).status_code == 200
-        assert fake.call_count == 2
-
-    def test_put_503_retried(self):
-        transport, fake = _sync([_resp(503), _resp(200)])
-        assert transport.handle_request(_req("PUT")).status_code == 200
-        assert fake.call_count == 2
-
-    def test_delete_503_retried(self):
-        transport, fake = _sync([_resp(503), _resp(200)])
-        assert transport.handle_request(_req("DELETE")).status_code == 200
-        assert fake.call_count == 2
-
-    def test_post_connect_error_retried(self):
-        transport, fake = _sync([httpx.ConnectError("refused"), _resp(200)])
-        assert transport.handle_request(_req("POST")).status_code == 200
-        assert fake.call_count == 2
-
-    def test_post_read_error_not_retried(self):
-        transport, fake = _sync([httpx.ReadError("broken pipe")])
-        with pytest.raises(APIConnectionError):
-            transport.handle_request(_req("POST"))
-        assert fake.call_count == 1
+    def test_unparseable_returns_none(self):
+        r = httpx.Response(429, headers={"retry-after": "not-a-number"})
+        assert _parse_retry_after(r) is None

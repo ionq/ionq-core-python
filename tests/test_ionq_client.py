@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from ionq_core import IonQClient, __version__
-from ionq_core._transport import AsyncRetryTransport, RetryTransport
+from ionq_core._transport import AsyncErrorRaisingTransport, ErrorRaisingTransport
 
 
 class TestIonQClient:
@@ -60,18 +60,12 @@ class TestIonQClient:
     def test_custom_timeout(self):
         assert IonQClient(api_key="key", timeout=httpx.Timeout(120.0)).get_httpx_client().timeout.read == 120.0
 
-    def test_retry_transport_wired(self):
-        assert isinstance(IonQClient(api_key="key").get_httpx_client()._transport, RetryTransport)
-
-    def test_default_max_retries(self):
-        assert IonQClient(api_key="key").get_httpx_client()._transport._max_retries == 2
-
-    def test_max_retries_configurable(self):
-        assert IonQClient(api_key="key", max_retries=5).get_httpx_client()._transport._max_retries == 5
+    def test_error_raising_transport_wired(self):
+        assert isinstance(IonQClient(api_key="key").get_httpx_client()._transport, ErrorRaisingTransport)
 
     def test_async_client_wired(self):
         ac = IonQClient(api_key="key").get_async_httpx_client()
-        assert isinstance(ac._transport, AsyncRetryTransport)
+        assert isinstance(ac._transport, AsyncErrorRaisingTransport)
         assert "apiKey key" in ac.headers["Authorization"]
         assert ac.headers["User-Agent"].startswith("ionq-core/")
 

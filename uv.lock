@@ -164,6 +164,18 @@ wheels = [
 ]
 
 [[package]]
+name = "httpx-retries"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fb/f5/046cac13877ce9b55aebdbb3999e0e45b19b989a95c5fd1040fa04bd1f92/httpx_retries-0.5.0.tar.gz", hash = "sha256:d8c8e1e0852d84be3837aba0bcf78aeb89a4b77db95e8cc988c8c058830b3044", size = 15647, upload-time = "2026-04-20T01:21:47.154Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c5/a8/aadeaa9a28510727d538636ee8688f0782a98523147852b29404ce696f1b/httpx_retries-0.5.0-py3-none-any.whl", hash = "sha256:d3124592979a9dc6197e666d1f02e9ab996a0c58fce59fad8db6201a6a87304e", size = 8908, upload-time = "2026-04-20T01:21:46.157Z" },
+]
+
+[[package]]
 name = "idna"
 version = "3.11"
 source = { registry = "https://pypi.org/simple" }
@@ -188,6 +200,7 @@ source = { editable = "." }
 dependencies = [
     { name = "attrs" },
     { name = "httpx" },
+    { name = "httpx-retries" },
     { name = "python-dateutil" },
 ]
 
@@ -217,6 +230,7 @@ dev = [
 requires-dist = [
     { name = "attrs", specifier = ">=24.2" },
     { name = "httpx", specifier = ">=0.27,<0.29" },
+    { name = "httpx-retries", specifier = ">=0.5" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=16" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.25" },

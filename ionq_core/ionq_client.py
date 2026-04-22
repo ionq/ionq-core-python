@@ -17,7 +17,7 @@ from ._extensions import (
     _AsyncErrorMapperTransport,
     _ErrorMapperTransport,
 )
-from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, AsyncRetryTransport, RetryTransport
+from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, build_async_transport, build_sync_transport
 from .client import AuthenticatedClient
 
 try:
@@ -109,10 +109,8 @@ def IonQClient(
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
-
-    sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
-    async_transport: httpx.AsyncBaseTransport = AsyncRetryTransport(httpx.AsyncHTTPTransport(), **retry_kwargs)
+    sync_transport: httpx.BaseTransport = build_sync_transport(effective_retries, effective_retry_codes)
+    async_transport: httpx.AsyncBaseTransport = build_async_transport(effective_retries, effective_retry_codes)
 
     if extension:
         if extension.event_hooks:

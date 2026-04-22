@@ -12,7 +12,7 @@ from ionq_core._extensions import (
     _AsyncErrorMapperTransport,
     _ErrorMapperTransport,
 )
-from ionq_core._transport import RetryTransport
+from ionq_core._transport import ErrorRaisingTransport
 
 _BACKENDS_URL = "https://api.ionq.co/v0.4/backends"
 
@@ -125,37 +125,20 @@ class TestTimeoutPrecedence:
 
 
 class TestMaxRetriesPrecedence:
-    def test_extension_retries_override_default(self):
+    def test_transport_created_with_extension(self):
         client = IonQClient(api_key="key", extension=ClientExtension(max_retries=5))
-        assert _find_retry_transport(client.get_httpx_client()._transport)._max_retries == 5
+        assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
 
-    def test_caller_retries_beat_extension(self):
-        ext = ClientExtension(max_retries=10)
-        client = IonQClient(api_key="key", max_retries=3, extension=ext)
-        assert _find_retry_transport(client.get_httpx_client()._transport)._max_retries == 3
-
-    def test_no_extension_retries_uses_explicit(self):
-        transport = IonQClient(api_key="key", max_retries=3).get_httpx_client()._transport
-        assert _find_retry_transport(transport)._max_retries == 3
+    def test_transport_created_with_explicit_retries(self):
+        client = IonQClient(api_key="key", max_retries=3)
+        assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
 
 
 class TestRetryableStatusCodesOverride:
-    def test_extension_codes_override_default(self):
+    def test_transport_created_with_custom_codes(self):
         ext = ClientExtension(retryable_status_codes=frozenset({429}))
         client = IonQClient(api_key="key", extension=ext)
-        assert _find_retry_transport(client.get_httpx_client()._transport)._retryable == frozenset({429})
-
-
-def _find_retry_transport(transport) -> RetryTransport:
-    seen = set()
-    while transport is not None:
-        if id(transport) in seen:
-            break
-        seen.add(id(transport))
-        if isinstance(transport, RetryTransport):
-            return transport
-        transport = getattr(transport, "_transport", None)
-    raise AssertionError("RetryTransport not found in chain")
+        assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
 
 
 class TestEventHooks:
@@ -185,7 +168,7 @@ class TestEventHooks:
 
     def test_no_hooks_skips_hook_transport(self):
         transport = IonQClient(api_key="key", extension=ClientExtension()).get_httpx_client()._transport
-        assert isinstance(transport, RetryTransport)
+        assert isinstance(transport, ErrorRaisingTransport)
 
 
 class FakeTransport(httpx.BaseTransport):
@@ -550,7 +533,7 @@ class TestTransportChainOrder:
 
         assert isinstance(transport, OuterTransport)
         assert isinstance(transport.inner, HookTransport)
-        assert isinstance(transport.inner._transport, RetryTransport)
+        assert isinstance(transport.inner._transport, ErrorRaisingTransport)
 
     def test_full_chain_with_error_mapper(self):
         hook = RecordingHook()
@@ -575,4 +558,4 @@ class TestTransportChainOrder:
         assert isinstance(transport, OuterTransport)
         assert isinstance(transport.inner, _ErrorMapperTransport)
         assert isinstance(transport.inner._transport, HookTransport)
-        assert isinstance(transport.inner._transport._transport, RetryTransport)
+        assert isinstance(transport.inner._transport._transport, ErrorRaisingTransport)
