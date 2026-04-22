@@ -10,6 +10,7 @@ build/
 htmlcov/
 .coverage
 docs/
+.claude/
 .DS_Store
 .env
 .idea/

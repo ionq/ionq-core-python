@@ -31,8 +31,8 @@ class TestIonQClient:
         assert IonQClient(api_key="key")._base_url == "https://api.ionq.co/v0.4"
 
     def test_custom_base_url(self):
-        assert IonQClient(api_key="key", base_url="https://staging.ionq.co/v0.4")._base_url == (
-            "https://staging.ionq.co/v0.4"
+        assert IonQClient(api_key="key", base_url="https://staging.example.com/v0.4")._base_url == (
+            "https://staging.example.com/v0.4"
         )
 
     def test_auth_header_set_correctly(self):

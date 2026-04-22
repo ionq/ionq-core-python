@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Pagination helpers for cursor-based IonQ API endpoints."""
 
 from __future__ import annotations
@@ -54,6 +57,7 @@ def iter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
+    """Iterate over all jobs, automatically following pagination cursors."""
     return _paginate(
         get_jobs.sync,
         "jobs",
@@ -75,6 +79,7 @@ def aiter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
+    """Async iterate over all jobs, automatically following pagination cursors."""
     return _apaginate(
         get_jobs.asyncio,
         "jobs",
@@ -96,6 +101,7 @@ def iter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
+    """Iterate over all jobs in a session, automatically following pagination cursors."""
     return _paginate(
         get_session_jobs.sync,
         "session jobs",
@@ -117,6 +123,7 @@ def aiter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
+    """Async iterate over all jobs in a session, automatically following pagination cursors."""
     return _apaginate(
         get_session_jobs.asyncio,
         "session jobs",

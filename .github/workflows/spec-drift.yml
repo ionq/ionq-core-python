@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Fetch latest spec
-        run: curl -sf https://api-staging.ionq.co/v0.4/api-docs -o /tmp/latest-spec.json
+        run: curl -sf https://api.ionq.co/v0.4/api-docs -o /tmp/latest-spec.json
       - name: Check for drift
         id: drift
         run: |
@@ -34,6 +34,6 @@ jobs:
           if [[ "$existing" == "0" ]]; then
             gh issue create \
               --title "OpenAPI spec has changed upstream" \
-              --body "The spec at api-staging.ionq.co/v0.4/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client." \
+              --body "The spec at api.ionq.co/v0.4/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client." \
               --label spec-drift
           fi
