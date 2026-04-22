@@ -10,6 +10,7 @@ from .api.default import create_session, end_session, get_session
 from .models.create_session_request import CreateSessionRequest
 from .models.session_cost_limit import SessionCostLimit
 from .models.session_settings_request import SessionSettingsRequest
+from .types import UNSET, Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
@@ -50,7 +51,7 @@ class SessionManager:
     def session_id(self) -> str | None:
         return self._session_id
 
-    def _build_settings(self) -> SessionSettingsRequest | None:
+    def _build_settings(self) -> SessionSettingsRequest | Unset:
         kwargs: dict = {}
         if self._max_jobs is not None:
             kwargs["job_count_limit"] = self._max_jobs
@@ -58,14 +59,13 @@ class SessionManager:
             kwargs["duration_limit_min"] = self._max_time
         if self._max_cost is not None:
             kwargs["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
-        return SessionSettingsRequest(**kwargs) if kwargs else None
+        return SessionSettingsRequest(**kwargs) if kwargs else UNSET
 
     def open(self) -> None:
         """Create a new session on the backend."""
         if self._session_id is not None:
             raise IonQError("Session already open")
-        settings = self._build_settings()
-        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
+        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
         session = create_session.sync(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")
@@ -95,8 +95,7 @@ class SessionManager:
         """Create a new session on the backend (async)."""
         if self._session_id is not None:
             raise IonQError("Session already open")
-        settings = self._build_settings()
-        body = CreateSessionRequest(backend=self._backend, **({"settings": settings} if settings else {}))
+        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
         session = await create_session.asyncio(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")

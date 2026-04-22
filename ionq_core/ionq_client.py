@@ -93,21 +93,22 @@ def IonQClient(
             stacklevel=2,
         )
 
-    def _ext(attr: str, default=None):
-        """Resolve: explicit arg > extension field > default."""
-        return getattr(extension, attr, None) if default is None else default
+    ext_ua = extension.user_agent_token if extension else None
+    ext_timeout = extension.timeout if extension else None
+    ext_retries = extension.max_retries if extension else None
+    ext_retry_codes = extension.retryable_status_codes if extension else None
+    debug_hooks = extension.debug_hooks if extension else False
 
-    user_agent = _build_user_agent(additional_user_agent, _ext("user_agent_token"))
-    effective_timeout = timeout or _ext("timeout") or _DEFAULT_TIMEOUT
-    effective_retries = max_retries if max_retries is not None else (_ext("max_retries") or DEFAULT_MAX_RETRIES)
-    effective_retry_codes = _ext("retryable_status_codes") or RETRYABLE_STATUS_CODES
+    user_agent = _build_user_agent(additional_user_agent, ext_ua)
+    effective_timeout = timeout or ext_timeout or _DEFAULT_TIMEOUT
+    effective_retries = max_retries if max_retries is not None else (ext_retries or DEFAULT_MAX_RETRIES)
+    effective_retry_codes = ext_retry_codes or RETRYABLE_STATUS_CODES
 
     headers: dict[str, str] = {}
     if extension and extension.default_headers:
         headers.update(extension.default_headers)
     headers["User-Agent"] = user_agent
 
-    debug_hooks = _ext("debug_hooks") or False
     retry_kwargs = {"max_retries": effective_retries, "retryable_status_codes": effective_retry_codes}
 
     sync_transport: httpx.BaseTransport = RetryTransport(httpx.HTTPTransport(), **retry_kwargs)
