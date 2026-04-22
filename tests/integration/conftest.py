@@ -8,7 +8,6 @@ import pytest
 from ionq_core import AuthenticatedClient, IonQClient
 from ionq_core.api.default import delete_job
 
-
 _job_ids: list[str] = []
 
 
