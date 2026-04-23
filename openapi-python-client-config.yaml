@@ -1,6 +1,5 @@
 project_name_override: ionq-core
 package_name_override: ionq_core
-package_version_override: "0.1.0"
 literal_enums: true
 
 post_hooks:
