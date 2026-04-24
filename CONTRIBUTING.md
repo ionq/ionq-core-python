@@ -61,6 +61,12 @@ uvx openapi-python-client==0.28.3 generate \
 ## Pull requests
 
 - Keep PRs focused on a single change.
-- Add tests for new hand-written code.
+- Add tests for new hand-written code. CI enforces 100% branch coverage on all hand-written code.
 - CI must pass before merging (lint, tests, type check, generated code staleness check).
 - The generated code staleness check on PRs verifies that `ionq_core/` matches what the generator produces. If it fails, regenerate and commit the result.
+
+## License
+
+By submitting a pull request, you represent that you have the right to license your
+contribution to IonQ and the community, and agree that your contribution is licensed
+under the [Apache License, Version 2.0](LICENSE).
