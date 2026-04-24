@@ -4,7 +4,7 @@ literal_enums: true
 
 post_hooks:
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
-  - "perl -pi -e 'print \"# Copyright 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n\\n\" if !$s{$ARGV}++' $(find . -name '*.py')"
+  - "perl -pi -e 'print \"# Copyright 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n\\n\" if !$s{$ARGV}++ && !/^# Copyright/' $(find . -name '*.py')"
   - "ruff check . --fix-only"
   - "ruff format ."
 
