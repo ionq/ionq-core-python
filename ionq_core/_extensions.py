@@ -1,7 +1,35 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Extension API for downstream SDKs building on ionq-core."""
+"""Extension API for downstream SDKs building on ionq-core.
+
+This module provides the `ClientExtension` configuration bundle and the
+`EventHook` / `AsyncEventHook` protocols that allow downstream SDKs to
+customize client behavior without modifying this library. Extensions are
+passed to `IonQClient` via the ``extension`` parameter.
+
+Example:
+    ```python
+    from ionq_core import IonQClient, ClientExtension, EventHook
+    import httpx
+
+
+    class LoggingHook(EventHook):
+        def on_request(self, request: httpx.Request) -> None:
+            print(f"--> {request.method} {request.url}")
+
+        def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
+            print(f"<-- {response.status_code}")
+
+
+    ext = ClientExtension(
+        user_agent_token="my-sdk/1.0",
+        event_hooks=(LoggingHook(),),
+        max_retries=5,
+    )
+    client = IonQClient(extension=ext)
+    ```
+"""
 
 import logging
 from collections.abc import Callable
@@ -15,23 +43,86 @@ logger = logging.getLogger("ionq_core")
 
 @runtime_checkable
 class EventHook(Protocol):
-    """Protocol for observing requests and responses (sync)."""
+    """Protocol for observing HTTP requests and responses (sync).
 
-    def on_request(self, request: httpx.Request) -> None: ...
-    def on_response(self, request: httpx.Request, response: httpx.Response) -> None: ...
+    Implement this protocol and pass instances via
+    `ClientExtension.event_hooks` to receive callbacks on every request.
+
+    Hook exceptions are logged and suppressed by default. Set
+    ``debug_hooks=True`` on `ClientExtension` to re-raise them instead.
+    """
+
+    def on_request(self, request: httpx.Request) -> None:
+        """Called after the request is built but before it is sent.
+
+        Args:
+            request: The outgoing HTTP request.
+        """
+        ...
+
+    def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
+        """Called after a response is received.
+
+        Args:
+            request: The original HTTP request.
+            response: The HTTP response. The body has already been read.
+        """
+        ...
 
 
 @runtime_checkable
 class AsyncEventHook(Protocol):
-    """Async counterpart of EventHook for the async client path."""
+    """Async counterpart of `EventHook` for the async client path.
 
-    async def on_request(self, request: httpx.Request) -> None: ...
-    async def on_response(self, request: httpx.Request, response: httpx.Response) -> None: ...
+    Implement this protocol and pass instances via
+    `ClientExtension.async_event_hooks`.
+    """
+
+    async def on_request(self, request: httpx.Request) -> None:
+        """Called after the request is built but before it is sent.
+
+        Args:
+            request: The outgoing HTTP request.
+        """
+        ...
+
+    async def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
+        """Called after a response is received.
+
+        Args:
+            request: The original HTTP request.
+            response: The HTTP response.
+        """
+        ...
 
 
 @attrs.frozen
 class ClientExtension:
-    """Declarative configuration bundle for downstream SDK integration."""
+    """Declarative configuration bundle for downstream SDK integration.
+
+    All fields are optional. Pass an instance to `IonQClient` via the
+    ``extension`` parameter to customize client behavior.
+
+    Attributes:
+        user_agent_token: Extra token appended to the ``User-Agent`` header
+            (e.g. ``"my-sdk/1.0"``).
+        default_headers: Headers merged into every request.
+        event_hooks: Sync `EventHook` instances invoked on every request.
+        async_event_hooks: Async `AsyncEventHook` instances invoked on
+            every async request.
+        retryable_status_codes: HTTP status codes that should trigger a retry.
+            Overrides the default set (429, 500, 502, 503, 520-529).
+        max_retries: Maximum retry attempts. Overrides the default of 2.
+        timeout: Request timeout. Overrides the default of 60 seconds.
+        transport_wrapper: Callable that wraps the sync transport, useful for
+            adding middleware (e.g. caching, tracing).
+        async_transport_wrapper: Callable that wraps the async transport.
+        error_mapper: Callable that maps exceptions raised by the transport
+            to downstream-specific exception types. Return the original
+            exception to leave it unchanged.
+        debug_hooks: If ``True``, hook exceptions are re-raised instead of
+            being logged and suppressed. Useful during development.
+    """
 
     user_agent_token: str | None = None
     default_headers: dict[str, str] = attrs.Factory(dict)
@@ -73,7 +164,24 @@ async def _afire_hooks(hooks: tuple, method: str, *args, debug: bool = False) ->
 
 
 class HookTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    """Transport decorator that invokes EventHook instances and optionally maps exceptions."""
+    """Transport decorator that invokes `EventHook` instances and optionally maps exceptions.
+
+    Wraps an inner transport, firing hook callbacks before and after each
+    request. If a request raises an exception, ``on_error`` hooks are fired
+    and the optional ``error_mapper`` is applied before re-raising.
+
+    This class implements both ``httpx.BaseTransport`` and
+    ``httpx.AsyncBaseTransport``, so a single instance can be used for
+    both sync and async clients.
+
+    Args:
+        transport: The inner transport to wrap.
+        hooks: Tuple of `EventHook` or `AsyncEventHook` instances.
+        debug: If ``True``, hook exceptions are re-raised instead of
+            being logged and suppressed.
+        error_mapper: Optional callable that maps transport exceptions
+            to custom exception types.
+    """
 
     def __init__(
         self,
