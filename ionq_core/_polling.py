@@ -1,7 +1,24 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Job polling helpers for waiting on quantum job completion."""
+"""Job polling helpers for waiting on quantum job completion.
+
+After submitting a job, use `wait_for_job` (or `async_wait_for_job`) to
+block until it reaches a terminal state (completed, failed, or canceled).
+Polling uses exponential backoff from 1 second up to a 30-second maximum
+interval.
+
+Example:
+    ```python
+    from ionq_core import IonQClient, wait_for_job
+    from ionq_core.api.default import create_job
+
+    client = IonQClient()
+    job = create_job.sync(client=client, body=payload)
+    completed = wait_for_job(client, job.id, timeout=300)
+    print(completed.status)  # "completed"
+    ```
+"""
 
 from __future__ import annotations
 
@@ -27,7 +44,14 @@ _MAX_INTERVAL = 30.0
 
 
 class JobTimeoutError(IonQError):
-    """Raised when a job does not reach a terminal state within the timeout."""
+    """Raised when a job does not reach a terminal state within the timeout.
+
+    Attributes:
+        job_id: The ID of the job that timed out.
+        timeout: The timeout value in seconds that was exceeded.
+        last_status: The last observed status before the timeout
+            (e.g. ``"running"``, ``"submitted"``).
+    """
 
     def __init__(self, job_id: str, timeout: float, last_status: str) -> None:
         self.job_id = job_id
@@ -37,7 +61,13 @@ class JobTimeoutError(IonQError):
 
 
 class JobFailedError(IonQError):
-    """Raised when a polled job reaches 'failed' status."""
+    """Raised when a polled job reaches ``"failed"`` status.
+
+    Attributes:
+        job_id: The ID of the failed job.
+        failure: The failure detail object from the API response, or ``None``
+            if no failure details were provided.
+    """
 
     def __init__(self, job_id: str, failure: object) -> None:
         self.job_id = job_id
@@ -62,13 +92,30 @@ def wait_for_job(
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
-    """Poll a job until it reaches a terminal state (completed, failed, canceled).
+    """Poll a job until it reaches a terminal state.
 
-    Uses exponential backoff (up to 30s between polls).
+    Terminal states are ``"completed"``, ``"failed"``, and ``"canceled"``.
+    Polling starts at ``poll_interval`` and increases by 1.5x each
+    iteration, capped at 30 seconds.
+
+    Args:
+        client: An authenticated API client.
+        job_id: The UUID of the job to poll.
+        poll_interval: Initial interval between polls in seconds.
+            Defaults to 1.0.
+        timeout: Maximum total wait time in seconds. Defaults to 300
+            (5 minutes).
+        raise_on_failure: If ``True`` (the default), raise `JobFailedError`
+            when the job status is ``"failed"``. If ``False``, return the
+            failed job response instead.
+
+    Returns:
+        The final job response once a terminal state is reached.
 
     Raises:
-        JobTimeoutError: If the job does not finish within the timeout.
-        JobFailedError: If raise_on_failure is True and the job fails.
+        JobTimeoutError: If the job does not finish within ``timeout``.
+        JobFailedError: If ``raise_on_failure`` is ``True`` and the job fails.
+        IonQError: If the API returns a ``None`` response.
     """
     deadline = time.monotonic() + timeout
     interval = poll_interval
@@ -93,7 +140,24 @@ async def async_wait_for_job(
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
 ) -> GetJobResponse:
-    """Async version of wait_for_job."""
+    """Async version of `wait_for_job`.
+
+    Args:
+        client: An authenticated API client.
+        job_id: The UUID of the job to poll.
+        poll_interval: Initial interval between polls in seconds.
+            Defaults to 1.0.
+        timeout: Maximum total wait time in seconds. Defaults to 300.
+        raise_on_failure: If ``True``, raise `JobFailedError` on failure.
+
+    Returns:
+        The final job response once a terminal state is reached.
+
+    Raises:
+        JobTimeoutError: If the job does not finish within ``timeout``.
+        JobFailedError: If ``raise_on_failure`` is ``True`` and the job fails.
+        IonQError: If the API returns a ``None`` response.
+    """
     deadline = time.monotonic() + timeout
     interval = poll_interval
     while True:

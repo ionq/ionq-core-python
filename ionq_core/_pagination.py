@@ -1,7 +1,21 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Pagination helpers for cursor-based IonQ API endpoints."""
+"""Pagination helpers for cursor-based IonQ API endpoints.
+
+The IonQ API returns paginated results with a ``next`` cursor. The helpers
+in this module wrap the raw endpoint calls and automatically follow cursors,
+yielding individual job objects.
+
+Example:
+    ```python
+    from ionq_core import IonQClient, iter_jobs
+
+    client = IonQClient()
+    for job in iter_jobs(client, status="completed"):
+        print(job.id)
+    ```
+"""
 
 from __future__ import annotations
 
@@ -57,7 +71,23 @@ def iter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs, automatically following pagination cursors."""
+    """Iterate over all jobs, automatically following pagination cursors.
+
+    Args:
+        client: An authenticated API client.
+        status: Filter by job status (e.g. ``"completed"``, ``"failed"``).
+        target: Filter by backend target name.
+        session_id: Filter by session ID.
+        submitter_id: Filter by submitter user ID.
+        limit: Maximum number of jobs per page (server default applies
+            if unset).
+
+    Yields:
+        Individual job objects across all pages.
+
+    Raises:
+        IonQError: If the API returns a ``None`` response.
+    """
     return _paginate(
         get_jobs.sync,
         "jobs",
@@ -79,7 +109,22 @@ def aiter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async iterate over all jobs, automatically following pagination cursors."""
+    """Async version of `iter_jobs`.
+
+    Args:
+        client: An authenticated API client.
+        status: Filter by job status.
+        target: Filter by backend target name.
+        session_id: Filter by session ID.
+        submitter_id: Filter by submitter user ID.
+        limit: Maximum number of jobs per page.
+
+    Yields:
+        Individual job objects across all pages.
+
+    Raises:
+        IonQError: If the API returns a ``None`` response.
+    """
     return _apaginate(
         get_jobs.asyncio,
         "jobs",
@@ -101,7 +146,24 @@ def iter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs in a session, automatically following pagination cursors."""
+    """Iterate over all jobs in a specific session.
+
+    Like `iter_jobs`, but scoped to a single session.
+
+    Args:
+        client: An authenticated API client.
+        session_id: The session ID to list jobs for.
+        status: Filter by job status.
+        target: Filter by backend target name.
+        submitter_id: Filter by submitter user ID.
+        limit: Maximum number of jobs per page.
+
+    Yields:
+        Individual job objects across all pages.
+
+    Raises:
+        IonQError: If the API returns a ``None`` response.
+    """
     return _paginate(
         get_session_jobs.sync,
         "session jobs",
@@ -123,7 +185,22 @@ def aiter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async iterate over all jobs in a session, automatically following pagination cursors."""
+    """Async version of `iter_session_jobs`.
+
+    Args:
+        client: An authenticated API client.
+        session_id: The session ID to list jobs for.
+        status: Filter by job status.
+        target: Filter by backend target name.
+        submitter_id: Filter by submitter user ID.
+        limit: Maximum number of jobs per page.
+
+    Yields:
+        Individual job objects across all pages.
+
+    Raises:
+        IonQError: If the API returns a ``None`` response.
+    """
     return _apaginate(
         get_session_jobs.asyncio,
         "session jobs",
