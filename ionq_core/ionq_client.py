@@ -1,6 +1,3 @@
-# Copyright 2026 IonQ, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 """IonQ-specific client convenience wrapper."""
 
 import os

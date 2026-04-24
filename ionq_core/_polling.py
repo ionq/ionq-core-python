@@ -1,6 +1,3 @@
-# Copyright 2026 IonQ, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 """Job polling helpers for waiting on quantum job completion."""
 
 from __future__ import annotations

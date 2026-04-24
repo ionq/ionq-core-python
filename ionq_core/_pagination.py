@@ -1,6 +1,3 @@
-# Copyright 2026 IonQ, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 """Pagination helpers for cursor-based IonQ API endpoints."""
 
 from __future__ import annotations

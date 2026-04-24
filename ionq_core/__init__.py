@@ -1,6 +1,3 @@
-# Copyright 2026 IonQ, Inc.
-# SPDX-License-Identifier: Apache-2.0
-
 """A client library for accessing IonQ Cloud Platform API"""
 
 from ._exceptions import (
