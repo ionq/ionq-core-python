@@ -3,8 +3,8 @@ package_name_override: ionq_core
 literal_enums: true
 
 post_hooks:
-  - "python -Ic \"p=__import__('pathlib').Path('client.py');p.write_text(p.read_text().replace('    token: str\\n','    token: str = field(repr=False)\\n'))\""
-  - "python -Ic \"h='# Copyright 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n\\n';[p.write_text(h+p.read_text()) for p in __import__('pathlib').Path('.').rglob('*.py')]\""
+  - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
+  - "perl -pi -e 'print \"# Copyright 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n\\n\" if !$s{$ARGV}++' $(find . -name '*.py')"
   - "ruff check . --fix-only"
   - "ruff format ."
 
