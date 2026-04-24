@@ -1,7 +1,13 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""IonQ-specific client convenience wrapper."""
+"""IonQ-specific client convenience wrapper.
+
+The `IonQClient` factory function is the recommended way to create an API client.
+It reads the API key from the environment, configures retries with exponential
+backoff, sets a descriptive User-Agent header, and wires up both the sync and
+async httpx transports.
+"""
 
 import os
 import platform
@@ -37,14 +43,62 @@ def IonQClient(
 ) -> AuthenticatedClient:
     """Create an authenticated IonQ API client.
 
+    This is the recommended entry point for using the library. It handles
+    authentication, retry configuration, User-Agent construction, and transport
+    setup for both sync and async usage.
+
     Args:
-        api_key: IonQ API key. Falls back to ``IONQ_API_KEY`` env var.
-        base_url: API base URL.
-        max_retries: Max retry attempts for transient errors (429, 5xx).
-        timeout: Request timeout.
-        additional_user_agent: Extra token appended to User-Agent.
-        extension: A :class:`ClientExtension` bundle provided by a downstream SDK.
-        **kwargs: Passed through to :class:`AuthenticatedClient`.
+        api_key: IonQ API key. If not provided, reads the ``IONQ_API_KEY``
+            environment variable.
+        base_url: API base URL. Defaults to the IonQ production API.
+        max_retries: Maximum retry attempts for transient errors (429, 5xx).
+            Defaults to 2. Set to 0 to disable retries.
+        timeout: Request timeout as an ``httpx.Timeout`` instance. Defaults to
+            60 seconds with a 10-second connect timeout.
+        additional_user_agent: Extra token appended to the User-Agent header,
+            useful for identifying calling applications.
+        extension: A `ClientExtension` bundle provided by a downstream SDK.
+            Allows injecting hooks, custom headers, transport wrappers, and
+            error mappers.
+        **kwargs: Passed through to `AuthenticatedClient`.
+
+    Returns:
+        An `AuthenticatedClient` configured with retry transport and
+        authentication headers, ready for both sync and async API calls.
+
+    Raises:
+        ValueError: If no API key is provided and ``IONQ_API_KEY`` is not set.
+
+    Examples:
+        Basic usage with environment variable:
+
+        ```python
+        from ionq_core import IonQClient
+        from ionq_core.api.backends import get_backends
+
+        client = IonQClient()
+        backends = get_backends.sync(client=client)
+        ```
+
+        Explicit configuration:
+
+        ```python
+        import httpx
+        from ionq_core import IonQClient
+
+        client = IonQClient(
+            api_key="your-api-key",
+            max_retries=5,
+            timeout=httpx.Timeout(30.0, connect=10.0),
+        )
+        ```
+
+        Async usage with context manager:
+
+        ```python
+        async with IonQClient() as client:
+            backends = await get_backends.asyncio(client=client)
+        ```
     """
     key = api_key or os.environ.get("IONQ_API_KEY")
     if not key:

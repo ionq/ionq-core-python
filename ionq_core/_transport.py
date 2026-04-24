@@ -1,15 +1,28 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Transport layer: retry via httpx-retries, error raising for IonQ API responses."""
+"""Transport layer: retry via httpx-retries, error raising for IonQ API responses.
+
+This module provides the `ErrorRaisingTransport` that wraps httpx transports
+to convert HTTP error responses and connection failures into structured
+`IonQError` exceptions. The `build_transport` factory creates the default
+transport stack: ``RetryTransport`` (from httpx-retries) wrapped by
+``ErrorRaisingTransport``.
+
+The default retry configuration retries on status codes 429, 500, 502, 503,
+and 520-529 with exponential backoff (factor 0.5, jitter 0.5, max 60s).
+"""
 
 import httpx
 from httpx_retries import Retry, RetryTransport
 
 from ._exceptions import APIConnectionError, APITimeoutError, raise_for_status
 
-RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, *range(520, 530)})
-DEFAULT_MAX_RETRIES = 2
+RETRYABLE_STATUS_CODES: frozenset[int] = frozenset({429, 500, 502, 503, *range(520, 530)})
+"""HTTP status codes that trigger an automatic retry."""
+
+DEFAULT_MAX_RETRIES: int = 2
+"""Default number of retry attempts for transient errors."""
 
 
 def _raise_for_response(response: httpx.Response) -> None:
@@ -26,7 +39,18 @@ def _raise_for_response(response: httpx.Response) -> None:
 
 
 class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    """Wraps a transport to raise structured IonQ exceptions on error responses."""
+    """Wraps a transport to raise structured IonQ exceptions on error responses.
+
+    For HTTP 4xx/5xx responses, reads the response body and raises the
+    appropriate `APIError` subclass. For connection and timeout errors from
+    httpx, raises `APIConnectionError` or `APITimeoutError` respectively.
+
+    This class implements both sync and async transport interfaces so a
+    single instance works with both ``httpx.Client`` and ``httpx.AsyncClient``.
+
+    Args:
+        transport: The inner transport to wrap (typically a ``RetryTransport``).
+    """
 
     def __init__(self, transport) -> None:
         self._transport = transport
@@ -66,6 +90,21 @@ def build_transport(
     max_retries: int = DEFAULT_MAX_RETRIES,
     retryable_status_codes: frozenset[int] = RETRYABLE_STATUS_CODES,
 ) -> ErrorRaisingTransport:
+    """Build the default transport stack for `IonQClient`.
+
+    Creates a ``RetryTransport`` (from httpx-retries) with exponential
+    backoff, wrapped by `ErrorRaisingTransport` for structured error handling.
+
+    Args:
+        max_retries: Maximum number of retry attempts. Defaults to
+            `DEFAULT_MAX_RETRIES` (2).
+        retryable_status_codes: HTTP status codes that trigger a retry.
+            Defaults to `RETRYABLE_STATUS_CODES`.
+
+    Returns:
+        A configured `ErrorRaisingTransport` ready to be passed to an
+        httpx client.
+    """
     return ErrorRaisingTransport(
         RetryTransport(
             retry=Retry(
@@ -74,6 +113,7 @@ def build_transport(
                 backoff_jitter=0.5,
                 max_backoff_wait=60.0,
                 status_forcelist=retryable_status_codes,
+                allowed_methods=Retry.RETRYABLE_METHODS | {"POST"},
             )
         )
     )

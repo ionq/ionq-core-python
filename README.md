@@ -253,6 +253,10 @@ session = SessionManager.from_id(client, "existing-session-id")
 | Get job cost | `ionq_core.api.default.get_job_cost` | Yes |
 | Get compiled circuit | `ionq_core.api.default.get_compiled_file` | Yes |
 | Estimate job cost | `ionq_core.api.default.estimate_job_cost` | Yes |
+| Get job probabilities | `ionq_core.api.default.get_job_probabilities` | Yes |
+| Get variant histogram | `ionq_core.api.default.get_variant_histogram` | Yes |
+| Get variant probabilities | `ionq_core.api.default.get_variant_probabilities` | Yes |
+| Get variant shots | `ionq_core.api.default.get_variant_shots` | Yes |
 
 ### Sessions
 
