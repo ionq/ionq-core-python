@@ -51,6 +51,11 @@ class TestBuildTransport:
     def test_returns_error_raising(self):
         assert isinstance(build_transport(), ErrorRaisingTransport)
 
+    def test_retries_post_requests(self):
+        transport = build_transport()
+        retry = transport._transport.retry
+        assert "POST" in retry.allowed_methods
+
 
 class TestErrorRaisingTransportSync:
     def test_success_passes_through(self):

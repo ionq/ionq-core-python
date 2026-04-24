@@ -113,6 +113,7 @@ def build_transport(
                 backoff_jitter=0.5,
                 max_backoff_wait=60.0,
                 status_forcelist=retryable_status_codes,
+                allowed_methods=Retry.RETRYABLE_METHODS | {"POST"},
             )
         )
     )
