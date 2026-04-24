@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """ Contains all the data models used in inputs/outputs """
 
 from .add_job_results_payload import AddJobResultsPayload

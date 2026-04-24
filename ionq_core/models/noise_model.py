@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Literal, cast
 
 NoiseModel = Literal['aria-1', 'aria-2', 'forte-1', 'forte-enterprise-1', 'harmony', 'harmony-1', 'harmony-2', 'ideal']

@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Literal, cast
 
 FailureCode = Literal['CompilationError', 'ContractExpiredError', 'DebiasingError', 'InternalError', 'InvalidInput', 'NotEnoughQubits', 'OptimizationError', 'PreflightError', 'QuantumCircuitComplexityError', 'QuantumComputerError', 'QuotaExhaustedError', 'SimulationError', 'SimulationTimeout', 'SystemCancel', 'TooLongPredictedExecutionTime', 'TooManyControls', 'TooManyGates', 'TooManyShots', 'UnknownBillingError', 'UnsupportedGate']

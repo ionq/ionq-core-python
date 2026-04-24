@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Literal, cast
 
 QisGate = Literal['cnot', 'h', 'not', 'pauliexp', 'rx', 'ry', 'rz', 's', 'si', 'swap', 't', 'ti', 'v', 'vi', 'x', 'xx', 'y', 'yy', 'z', 'zz']

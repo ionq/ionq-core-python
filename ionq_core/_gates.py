@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """Pure-Python unitary matrices for IonQ native gates.
 
 Phase parameters (phi, phi0, phi1) are in turns (fractions of 2*pi).
