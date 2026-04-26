@@ -16,7 +16,7 @@ and 520-529 with exponential backoff (factor 0.5, jitter 0.5, max 60s).
 import httpx
 from httpx_retries import Retry, RetryTransport
 
-from ._exceptions import APIConnectionError, APITimeoutError, raise_for_status
+from .exceptions import APIConnectionError, APITimeoutError, raise_for_status
 
 RETRYABLE_STATUS_CODES: frozenset[int] = frozenset({429, 500, 502, 503, *range(520, 530)})
 """HTTP status codes that trigger an automatic retry."""

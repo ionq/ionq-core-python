@@ -3,7 +3,7 @@
 import pytest
 
 from ionq_core import SessionManager
-from ionq_core._exceptions import NotFoundError
+from ionq_core.exceptions import NotFoundError
 from ionq_core.api.default import get_session_jobs, get_sessions
 
 pytestmark = pytest.mark.integration

@@ -31,11 +31,13 @@ Most of the code in `ionq_core/` is **auto-generated** from the IonQ OpenAPI spe
 **Hand-written (edit freely):**
 - `ionq_core/__init__.py` -- public API exports
 - `ionq_core/ionq_client.py` -- IonQClient convenience wrapper
-- `ionq_core/_exceptions.py` -- exception hierarchy
-- `ionq_core/_extensions.py` -- extension API for downstream SDKs
-- `ionq_core/_transport.py` -- retry transport
-- `ionq_core/_pagination.py` -- pagination helpers
-- `ionq_core/_polling.py` -- job polling helpers
+- `ionq_core/exceptions.py` -- exception hierarchy
+- `ionq_core/extensions.py` -- extension API for downstream SDKs
+- `ionq_core/_transport.py` -- retry transport (internal)
+- `ionq_core/pagination.py` -- pagination helpers
+- `ionq_core/polling.py` -- job polling helpers
+- `ionq_core/gates.py` -- native gate matrices
+- `ionq_core/session.py` -- session lifecycle manager
 - `tests/` -- all tests
 
 ## Regenerating the client

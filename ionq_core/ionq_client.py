@@ -17,9 +17,9 @@ from importlib.metadata import version as _pkg_version
 
 import httpx
 
-from ._extensions import ClientExtension, HookTransport
 from ._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES, build_transport
 from .client import AuthenticatedClient
+from .extensions import ClientExtension, HookTransport
 
 try:
     __version__ = _pkg_version("ionq-core")

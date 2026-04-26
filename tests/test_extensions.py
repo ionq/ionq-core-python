@@ -4,8 +4,8 @@ import httpx
 import pytest
 
 from ionq_core import ClientExtension, EventHook, IonQClient
-from ionq_core._exceptions import APIError, NotFoundError
-from ionq_core._extensions import (
+from ionq_core.exceptions import APIError, NotFoundError
+from ionq_core.extensions import (
     AsyncEventHook,
     HookTransport,
 )

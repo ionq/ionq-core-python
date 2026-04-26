@@ -30,8 +30,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from ._exceptions import IonQError
 from .api.default import create_session, end_session, get_session
+from .exceptions import IonQError
 from .models.create_session_request import CreateSessionRequest
 from .models.session_cost_limit import SessionCostLimit
 from .models.session_settings_request import SessionSettingsRequest

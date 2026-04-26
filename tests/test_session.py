@@ -3,8 +3,8 @@ import json
 import httpx
 import pytest
 
-from ionq_core._exceptions import IonQError
-from ionq_core._session import SessionManager
+from ionq_core.exceptions import IonQError
+from ionq_core.session import SessionManager
 
 _BASE = "https://test.invalid/v0.4"
 

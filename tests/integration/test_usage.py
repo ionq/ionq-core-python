@@ -4,7 +4,7 @@ import datetime
 
 import pytest
 
-from ionq_core._exceptions import PermissionDeniedError
+from ionq_core.exceptions import PermissionDeniedError
 from ionq_core.api.usage import get_usages
 
 pytestmark = pytest.mark.integration

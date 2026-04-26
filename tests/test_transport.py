@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from ionq_core._exceptions import (
+from ionq_core.exceptions import (
     APIConnectionError,
     APITimeoutError,
     AuthenticationError,
