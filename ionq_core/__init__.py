@@ -1,8 +1,6 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""A client library for accessing IonQ Cloud Platform API"""
-
 from ._exceptions import (
     APIConnectionError,
     APIError,
@@ -63,3 +61,15 @@ __all__ = (
     "wait_for_job",
     "zz_matrix",
 )
+
+from . import _exceptions, _extensions, _gates, _pagination, _polling, _session
+
+__doc__ = "\n\n".join([
+    "A client library for accessing IonQ Cloud Platform API",
+    f"## Exceptions\n\n{_exceptions.__doc__}",
+    f"## Extensions\n\n{_extensions.__doc__}",
+    f"## Native Gates\n\n{_gates.__doc__}",
+    f"## Job Polling\n\n{_polling.__doc__}",
+    f"## Pagination\n\n{_pagination.__doc__}",
+    f"## Sessions\n\n{_session.__doc__}",
+])
