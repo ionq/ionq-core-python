@@ -27,6 +27,12 @@ __all__ = sorted(
         "Client",
         "UNSET",
         "Unset",
+        *exceptions.__all__,
+        *extensions.__all__,
+        *gates.__all__,
+        *ionq_client.__all__,
+        *pagination.__all__,
+        *polling.__all__,
+        *session.__all__,
     }
-    | {n for m in (exceptions, extensions, gates, ionq_client, pagination, polling, session) for n in m.__all__}
 )

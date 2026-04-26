@@ -8,7 +8,7 @@ from .{{ m }} import *  # noqa: F403
 {% endfor -%}
 from .types import UNSET, Unset  # noqa: F401
 
-__all__ = sorted(
-    {{"{"}} {{ mods | map("tojson") | join(", ") }}, "AuthenticatedClient", "Client", "UNSET", "Unset" {{"}"}}
-    | {n for m in ({{ mods | join(", ") }}) for n in m.__all__}
-)
+__all__ = sorted({{ "{" }}
+    {{ mods | map("tojson") | join(", ") }}, "AuthenticatedClient", "Client", "UNSET", "Unset",
+    {% for m in mods %}*{{ m }}.__all__, {% endfor %}
+{{ "}" }})
