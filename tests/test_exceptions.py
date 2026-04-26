@@ -1,6 +1,6 @@
 import pytest
 
-from ionq_core._exceptions import (
+from ionq_core.exceptions import (
     APIError,
     AuthenticationError,
     BadRequestError,

@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 
-from ionq_core._exceptions import IonQError
-from ionq_core._polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
+from ionq_core.exceptions import IonQError
+from ionq_core.polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
 from tests.conftest import make_job_json
 
 _real_sleep = asyncio.sleep
@@ -17,7 +17,7 @@ class TestWaitForJob:
         assert wait_for_job(auth_client, "j1", timeout=5).status == "completed"
 
     def test_polls_until_completed(self, httpx_mock, auth_client, monkeypatch):
-        monkeypatch.setattr("ionq_core._polling.time.sleep", lambda _: None)
+        monkeypatch.setattr("ionq_core.polling.time.sleep", lambda _: None)
         for s in ("submitted", "ready", "completed"):
             httpx_mock.add_response(json=make_job_json("j1", s))
         assert wait_for_job(auth_client, "j1", poll_interval=0.01, timeout=10).status == "completed"
@@ -42,7 +42,7 @@ class TestWaitForJob:
             wait_for_job(auth_client, "j1", timeout=5)
 
     def test_timeout_raises(self, httpx_mock, auth_client, monkeypatch):
-        monkeypatch.setattr("ionq_core._polling.time.sleep", lambda _: None)
+        monkeypatch.setattr("ionq_core.polling.time.sleep", lambda _: None)
         httpx_mock.add_response(json=make_job_json("j1", "submitted"), is_reusable=True)
         with pytest.raises(JobTimeoutError, match="j1"):
             wait_for_job(auth_client, "j1", poll_interval=0.01, timeout=0.0)
@@ -69,13 +69,13 @@ class TestAsyncWaitForJob:
             await async_wait_for_job(auth_client, "j1", timeout=5)
 
     async def test_timeout_raises(self, httpx_mock, auth_client, monkeypatch):
-        monkeypatch.setattr("ionq_core._polling.asyncio.sleep", lambda _: _real_sleep(0))
+        monkeypatch.setattr("ionq_core.polling.asyncio.sleep", lambda _: _real_sleep(0))
         httpx_mock.add_response(json=make_job_json("j1", "submitted"), is_reusable=True)
         with pytest.raises(JobTimeoutError, match="j1"):
             await async_wait_for_job(auth_client, "j1", poll_interval=0.01, timeout=0.0)
 
     async def test_polls_until_completed(self, httpx_mock, auth_client, monkeypatch):
-        monkeypatch.setattr("ionq_core._polling.asyncio.sleep", lambda _: _real_sleep(0))
+        monkeypatch.setattr("ionq_core.polling.asyncio.sleep", lambda _: _real_sleep(0))
         for s in ("submitted", "ready", "completed"):
             httpx_mock.add_response(json=make_job_json("j1", s))
         result = await async_wait_for_job(auth_client, "j1", poll_interval=0.01, timeout=10)

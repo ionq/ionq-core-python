@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from ionq_core._gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
+from ionq_core.gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 
 _PHIS = [0, 0.1, 0.25, 0.5, 0.73]
 

@@ -27,8 +27,8 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
-from ._exceptions import IonQError
 from .api.default import get_job
+from .exceptions import IonQError
 from .types import Unset
 
 if TYPE_CHECKING:

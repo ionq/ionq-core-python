@@ -31,11 +31,13 @@ Most of the code in `ionq_core/` is **auto-generated** from the IonQ OpenAPI spe
 **Hand-written (edit freely):**
 - `ionq_core/__init__.py` -- public API exports
 - `ionq_core/ionq_client.py` -- IonQClient convenience wrapper
-- `ionq_core/_exceptions.py` -- exception hierarchy
-- `ionq_core/_extensions.py` -- extension API for downstream SDKs
-- `ionq_core/_transport.py` -- retry transport
-- `ionq_core/_pagination.py` -- pagination helpers
-- `ionq_core/_polling.py` -- job polling helpers
+- `ionq_core/exceptions.py` -- exception hierarchy
+- `ionq_core/extensions.py` -- extension API for downstream SDKs
+- `ionq_core/_transport.py` -- retry transport (internal)
+- `ionq_core/pagination.py` -- pagination helpers
+- `ionq_core/polling.py` -- job polling helpers
+- `ionq_core/gates.py` -- native gate matrices
+- `ionq_core/session.py` -- session lifecycle manager
 - `tests/` -- all tests
 
 ## Regenerating the client
@@ -64,6 +66,10 @@ uvx openapi-python-client==0.28.3 generate \
 - Add tests for new hand-written code. CI enforces 100% branch coverage on all hand-written code.
 - CI must pass before merging (lint, tests, type check, generated code staleness check).
 - The generated code staleness check on PRs verifies that `ionq_core/` matches what the generator produces. If it fails, regenerate and commit the result.
+
+## Contributor License Agreement
+
+To receive IonQ's CLA, please contact @mjk or email [opensource@ionq.com](mailto:opensource@ionq.com).
 
 ## License
 

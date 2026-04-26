@@ -23,8 +23,8 @@ import logging
 from collections.abc import AsyncIterator, Callable, Iterator
 from typing import TYPE_CHECKING, Any
 
-from ._exceptions import IonQError
 from .api.default import get_jobs, get_session_jobs
+from .exceptions import IonQError
 from .types import UNSET, Unset
 
 if TYPE_CHECKING:

@@ -1,7 +1,8 @@
 import httpx
 import pytest
 
-from ionq_core._exceptions import (
+from ionq_core._transport import ErrorRaisingTransport, build_transport
+from ionq_core.exceptions import (
     APIConnectionError,
     APITimeoutError,
     AuthenticationError,
@@ -10,7 +11,6 @@ from ionq_core._exceptions import (
     RateLimitError,
     ServerError,
 )
-from ionq_core._transport import ErrorRaisingTransport, build_transport
 
 _URL = "https://api.ionq.co/v0.4/backends"
 

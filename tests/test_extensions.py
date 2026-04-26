@@ -4,12 +4,12 @@ import httpx
 import pytest
 
 from ionq_core import ClientExtension, EventHook, IonQClient
-from ionq_core._exceptions import APIError, NotFoundError
-from ionq_core._extensions import (
+from ionq_core._transport import ErrorRaisingTransport
+from ionq_core.exceptions import APIError, NotFoundError
+from ionq_core.extensions import (
     AsyncEventHook,
     HookTransport,
 )
-from ionq_core._transport import ErrorRaisingTransport
 
 _BACKENDS_URL = "https://api.ionq.co/v0.4/backends"
 
