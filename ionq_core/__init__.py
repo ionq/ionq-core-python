@@ -16,10 +16,6 @@ from .types import UNSET, Unset
 
 __all__ = sorted(
     {
-        "AuthenticatedClient",
-        "Client",
-        "UNSET",
-        "Unset",
         "exceptions",
         "extensions",
         "gates",
@@ -27,12 +23,10 @@ __all__ = sorted(
         "pagination",
         "polling",
         "session",
-        *exceptions.__all__,
-        *extensions.__all__,
-        *gates.__all__,
-        *ionq_client.__all__,
-        *pagination.__all__,
-        *polling.__all__,
-        *session.__all__,
+        "AuthenticatedClient",
+        "Client",
+        "UNSET",
+        "Unset",
     }
+    | {n for m in (exceptions, extensions, gates, ionq_client, pagination, polling, session) for n in m.__all__}
 )
