@@ -7,8 +7,4 @@ from .client import AuthenticatedClient, Client  # noqa: F401
 from .{{ m }} import *  # noqa: F403
 {% endfor -%}
 from .types import UNSET, Unset  # noqa: F401
-
-__all__ = sorted({{ "{" }}
-    {{ mods | map("tojson") | join(", ") }}, "AuthenticatedClient", "Client", "UNSET", "Unset",
-    {% for m in mods %}*{{ m }}.__all__, {% endfor %}
-{{ "}" }})
+__all__ = sorted({{ "{" }}{{ mods | map("tojson") | join(", ") }}, "AuthenticatedClient", "Client", "UNSET", "Unset", {% for m in mods %}*{{ m }}.__all__, {% endfor %}{{ "}" }})
