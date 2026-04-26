@@ -5,7 +5,6 @@ literal_enums: true
 post_hooks:
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
   - "perl -0777 -pi -e 's/\\A(?!# Copyright)/# Copyright 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n\\n/' $(find . -name '*.py')"
-  - "python3 ../scripts/extend_init.py"
   - "ruff check . --fix-only"
   - "ruff format ."
 
