@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """ Contains shared errors types that can be raised from API functions """
 
 class UnexpectedStatus(Exception):

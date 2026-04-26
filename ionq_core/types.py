@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 """ Contains some shared types for properties """
 
 from collections.abc import Mapping, MutableMapping

@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Literal, cast
 
 GetBackendBackend = Literal['qpu.aria-1', 'qpu.aria-2', 'qpu.forte-1', 'qpu.forte-enterprise-1', 'qpu.forte-enterprise-2', 'qpu.forte-enterprise-3']

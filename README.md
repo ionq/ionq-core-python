@@ -406,6 +406,12 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+## Getting help
+
+- **Bug reports and feature requests** - [GitHub Issues](https://github.com/ionq/ionq-core-python/issues)
+- **Account, billing, or QPU questions** - [IonQ Support](https://ionq.com/contact)
+- **API documentation** - [docs.ionq.com](https://docs.ionq.com/)
+
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE) for details.

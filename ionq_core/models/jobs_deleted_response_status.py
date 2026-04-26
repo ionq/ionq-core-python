@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from typing import Literal, cast
 
 JobsDeletedResponseStatus = Literal['deleted']

@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from __future__ import annotations
 
 from collections.abc import Mapping

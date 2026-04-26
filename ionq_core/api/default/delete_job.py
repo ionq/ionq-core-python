@@ -1,3 +1,6 @@
+# Copyright 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 from http import HTTPStatus
 from typing import Any, cast
 from urllib.parse import quote
