@@ -32,6 +32,19 @@ Example:
     ```
 """
 
+__all__ = [
+    "APIConnectionError",
+    "APIError",
+    "APITimeoutError",
+    "AuthenticationError",
+    "BadRequestError",
+    "IonQError",
+    "NotFoundError",
+    "PermissionDeniedError",
+    "RateLimitError",
+    "ServerError",
+]
+
 
 class IonQError(Exception):
     """Base exception for all IonQ errors.

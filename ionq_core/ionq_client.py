@@ -9,6 +9,8 @@ backoff, sets a descriptive User-Agent header, and wires up both the sync and
 async httpx transports.
 """
 
+__all__ = ["IonQClient", "__version__"]
+
 import os
 import platform
 import warnings

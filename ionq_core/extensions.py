@@ -38,6 +38,8 @@ from typing import Protocol, runtime_checkable
 import attrs
 import httpx
 
+__all__ = ["AsyncEventHook", "ClientExtension", "EventHook"]
+
 logger = logging.getLogger("ionq_core")
 
 

@@ -1,6 +1,7 @@
 # Copyright 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+
 """A client library for accessing IonQ Cloud Platform API"""
 
 from .client import AuthenticatedClient, Client
@@ -20,12 +21,7 @@ from .extensions import AsyncEventHook, ClientExtension, EventHook
 from .gates import gpi2_matrix, gpi_matrix, ms_matrix, zz_matrix
 from .ionq_client import IonQClient, __version__
 from .pagination import aiter_jobs, aiter_session_jobs, iter_jobs, iter_session_jobs
-from .polling import (
-    JobFailedError,
-    JobTimeoutError,
-    async_wait_for_job,
-    wait_for_job,
-)
+from .polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
 from .session import SessionManager
 from .types import UNSET, Unset
 
@@ -60,6 +56,7 @@ __all__ = (
     "gates",
     "gpi2_matrix",
     "gpi_matrix",
+    "ionq_client",
     "iter_jobs",
     "iter_session_jobs",
     "ms_matrix",

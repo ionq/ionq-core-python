@@ -22,6 +22,8 @@ Example:
 
 from __future__ import annotations
 
+__all__ = ["JobFailedError", "JobTimeoutError", "async_wait_for_job", "wait_for_job"]
+
 import asyncio
 import logging
 import time

@@ -55,7 +55,6 @@ uvx openapi-python-client==0.28.3 generate \
     --path /tmp/patched-spec.json \
     --meta none \
     --config openapi-python-client-config.yaml \
-    --custom-template-path custom-templates \
     --output-path ionq_core \
     --overwrite
 ```

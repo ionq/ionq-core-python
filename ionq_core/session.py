@@ -27,6 +27,8 @@ Example:
 
 from __future__ import annotations
 
+__all__ = ["SessionManager"]
+
 import logging
 from typing import TYPE_CHECKING
 
