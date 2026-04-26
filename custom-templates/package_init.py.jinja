@@ -2,11 +2,11 @@
 {%- set mods = ["exceptions", "extensions", "gates", "ionq_client", "pagination", "polling", "session"] %}
 {{ safe_docstring(package_description) }}
 from . import {{ mods | join(", ") }}
-from .client import AuthenticatedClient, Client
+from .client import AuthenticatedClient, Client  # noqa: F401
 {% for m in mods -%}
 from .{{ m }} import *  # noqa: F403
 {% endfor -%}
-from .types import UNSET, Unset
+from .types import UNSET, Unset  # noqa: F401
 
 __all__ = sorted(
     {{"{"}} {{ mods | map("tojson") | join(", ") }}, "AuthenticatedClient", "Client", "UNSET", "Unset" {{"}"}}
