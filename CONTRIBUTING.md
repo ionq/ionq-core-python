@@ -65,6 +65,10 @@ uvx openapi-python-client==0.28.3 generate \
 - CI must pass before merging (lint, tests, type check, generated code staleness check).
 - The generated code staleness check on PRs verifies that `ionq_core/` matches what the generator produces. If it fails, regenerate and commit the result.
 
+## Contributor License Agreement
+
+To receive IonQ's CLA, please contact @mjk or email [opensource@ionq.com](mailto:opensource@ionq.com).
+
 ## License
 
 By submitting a pull request, you represent that you have the right to license your
