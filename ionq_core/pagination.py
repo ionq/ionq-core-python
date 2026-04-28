@@ -19,6 +19,8 @@ Example:
 
 from __future__ import annotations
 
+__all__ = ["aiter_jobs", "aiter_session_jobs", "iter_jobs", "iter_session_jobs"]
+
 import logging
 from collections.abc import AsyncIterator, Callable, Iterator
 from typing import TYPE_CHECKING, Any

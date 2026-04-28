@@ -31,6 +31,8 @@ Example:
     ```
 """
 
+__all__ = ["AsyncEventHook", "ClientExtension", "EventHook"]
+
 import logging
 from collections.abc import Callable
 from typing import Protocol, runtime_checkable
