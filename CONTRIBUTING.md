@@ -12,29 +12,15 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unac
 - **Account, billing, or platform questions** -> <https://ionq.com/contact>.
 - **Security vulnerabilities** -> see [SECURITY.md](SECURITY.md). Do not open a public issue.
 
-## Reporting bugs
-
-Open a [bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and fill in every required field. Incomplete reports may be closed.
-
 ## Proposing changes
 
 `ionq-core` is generated from IonQ's OpenAPI specification, and most of the package is overwritten on every regeneration. Before opening a pull request, check where your change belongs:
 
 - **API surface changes** (new endpoints, parameter names, response shapes) -> these originate in the upstream OpenAPI spec, not this repo. Open an issue describing the change you want to see.
-- **Bugs in generated code** (any file with the `# @generated` marker) -> these originate upstream or in the generator config. File an issue rather than editing the generated output. See [Code structure](#code-structure).
+- **Bugs in generated code** -> files marked `linguist-generated=true` in [`.gitattributes`](.gitattributes) are overwritten on every regeneration; never edit them directly. File an issue rather than editing the generated output.
 - **Hand-written extensions, tests, docs, type hints, tooling** -> pull requests welcome.
 
 For non-trivial changes, open an issue first to confirm scope before investing significant time.
-
-## Code structure
-
-`ionq_core/` mixes machine-generated and hand-written code. Files carrying the `# @generated` marker are overwritten on every regeneration; never edit them directly:
-
-- `ionq_core/api/**` and `ionq_core/models/**`
-- `ionq_core/client.py`, `errors.py`, `types.py`
-- `ionq_core/__init__.py` (regenerated from `custom-templates/package_init.py.jinja`)
-
-Everything else under `ionq_core/`, plus `tests/` and `custom-templates/`, is hand-written. The [`generated`](.github/workflows/generated.yml) workflow regenerates on every PR and fails if the output differs from what is committed; tool-specific exclusions for generated paths live in `pyproject.toml` and `.gitattributes`.
 
 ## Development setup
 
@@ -47,7 +33,7 @@ uv sync
 pre-commit install
 ```
 
-Python 3.12 or newer is required; the CI matrix is the source of truth for tested interpreters.
+The supported Python floor is set by `requires-python` in `pyproject.toml`; the CI matrix in [`ci.yml`](.github/workflows/ci.yml) is the source of truth for tested interpreters.
 
 ## Running checks locally
 
@@ -108,20 +94,6 @@ Commit the regenerated files alongside the spec or template change that caused t
 There is no enforced commit-message format, but PR titles become release notes via `gh release create --generate-notes`. Write each title as the line you would want to see in a changelog: imperative mood, user-facing, no leading ticket number.
 
 User-visible changes should also be reflected in [CHANGELOG.md](CHANGELOG.md) under the next release section, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
-
-## Versioning
-
-This project follows [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) with three carve-outs documented in the [README](README.md#versioning). The SDK version is independent of the IonQ API version.
-
-## Releasing
-
-Maintainers only:
-
-1. Bump `version` in `pyproject.toml`.
-2. Add a dated section to `CHANGELOG.md`.
-3. Tag the commit `vX.Y.Z` on `main` and push the tag.
-
-The [`release`](.github/workflows/release.yml) workflow verifies that the tag matches `pyproject.toml` and that the version is not already on PyPI, builds with `hatchling`, publishes via PyPI Trusted Publishing (OIDC, no API token), and creates a GitHub Release with auto-generated notes.
 
 ## Contributor License Agreement
 

@@ -33,11 +33,6 @@ If you are unsure whether a planned activity is consistent with this policy, con
 
 `ionq-core` is pre-1.0. While the package is in the `0.x` series, **only the latest released minor receives security fixes**. This policy will harden once `1.0` is released.
 
-| Version           | Supported |
-| ----------------- | --------- |
-| `0.1.x` (latest)  | Yes       |
-| Older `0.x`       | No        |
-
 ## Scope
 
 This policy covers the source code in this repository and the `ionq-core` distribution published to PyPI from it.

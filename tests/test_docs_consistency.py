@@ -8,10 +8,10 @@ from urllib.parse import urlparse
 
 import pytest
 
-from ionq_core import exceptions, extensions, polling
+from ionq_core import extensions, polling
 from ionq_core._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES
-from ionq_core.ionq_client import _AUTH_PREFIX, _DEFAULT_BASE_URL, _DEFAULT_TIMEOUT
-from ionq_core.polling import _BACKOFF_FACTOR, _DEFAULT_INTERVAL, _MAX_INTERVAL
+from ionq_core.ionq_client import _DEFAULT_BASE_URL, _DEFAULT_TIMEOUT
+from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
 
 ROOT = Path(__file__).parent.parent
@@ -55,39 +55,8 @@ def _pin(text: str, package: str) -> str:
     return m.group(1)
 
 
-@pytest.mark.parametrize(
-    "needle",
-    [
-        *(str(c) for c in (429, 500, 502, 503)),
-        "520",
-        "529",
-        f"{DEFAULT_MAX_RETRIES} retries",
-        f"{int(_DEFAULT_TIMEOUT.read)} seconds",
-        f"{int(_DEFAULT_TIMEOUT.connect)}-second connect",
-        f"{int(_DEFAULT_INTERVAL)} second ",
-        f"{int(_MAX_INTERVAL)}-second cap",
-        f"{int(_POLL_DEFAULT_TIMEOUT)} seconds",
-        f"{_BACKOFF_FACTOR}x",
-        _DEFAULT_BASE_URL,
-        f"Authorization: {_AUTH_PREFIX} ",
-    ],
-)
-def test_readme_mentions_runtime_constant(needle):
-    assert needle in README
-
-
 def test_retryable_status_codes_match_runtime():
     assert frozenset({429, 500, 502, 503, *range(520, 530)}) == RETRYABLE_STATUS_CODES
-
-
-@pytest.mark.parametrize("name", exceptions.__all__)
-def test_readme_lists_exception_class(name):
-    assert name in README, f"{name} missing from README exception diagram"
-
-
-@pytest.mark.parametrize("name", polling.__all__)
-def test_readme_lists_polling_name(name):
-    assert name in README, f"{name} (from polling.__all__) missing from README"
 
 
 @pytest.mark.parametrize(
@@ -117,10 +86,9 @@ def test_polling_docstring_pins(fn, needle):
     assert needle in (fn.__doc__ or ""), f"{needle!r} missing from {fn.__name__}"
 
 
-@pytest.mark.parametrize("name,text", [("session.py", SESSION_PY), ("README.md", README)])
-def test_session_example_backend_consistent(name, text):
-    backends = set(_BACKEND_PATTERN.findall(text))
-    assert backends == {EXAMPLE_BACKEND}, f"divergent backends in {name}: {backends}"
+def test_session_example_backend_consistent():
+    backends = set(_BACKEND_PATTERN.findall(SESSION_PY))
+    assert backends == {EXAMPLE_BACKEND}, f"divergent backends in session.py: {backends}"
 
 
 def test_pyproject_floor_matches_ci_matrix():
