@@ -3,11 +3,43 @@ description: Report a bug in ionq-core
 labels: [bug]
 
 body:
-  - type: textarea
-    id: description
+  - type: markdown
     attributes:
-      label: Description
-      description: What happened, and what did you expect to happen?
+      value: |
+        Thanks for taking the time to file a bug report. Please search
+        [existing issues](https://github.com/ionq/ionq-core-python/issues) first,
+        and review the [reporting guide](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#reporting-bugs)
+        for what to include.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: |
+        Most of `ionq_core/` is generated from the OpenAPI spec. See
+        [code structure](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#code-structure).
+      options:
+        - Generated client (ionq_core/api/, ionq_core/models/, client.py, errors.py, types.py)
+        - Hand-written extensions (exceptions, retry, pagination, polling, sessions, native gates)
+        - API surface / OpenAPI spec (originates upstream)
+        - Documentation
+        - Tests or tooling
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, including any error message or traceback.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
     validations:
       required: true
 
@@ -17,6 +49,8 @@ body:
       label: Reproduction
       description: Minimal code or steps to reproduce the bug.
       render: Python
+    validations:
+      required: true
 
   - type: textarea
     id: version
@@ -25,8 +59,16 @@ body:
       description: |
         Paste the output of:
         ```bash
-        python -c "import ionq_core; print(ionq_core.__version__); import platform; print(platform.python_version()); print(platform.platform())"
+        python -c "import ionq_core, sys, platform; print(ionq_core.__version__, sys.version, platform.platform())"
         ```
       render: Text
     validations:
       required: true
+
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Pre-submit checks
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
