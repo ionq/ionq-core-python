@@ -1,5 +1,6 @@
-# Copyright 2026 IonQ, Inc.
+# SPDX-FileCopyrightText: 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
+# @generated
 
 from http import HTTPStatus
 from typing import Any, cast
