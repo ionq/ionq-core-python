@@ -16,7 +16,7 @@ If you are looking for a higher-level interface (Qiskit, Cirq, PennyLane, CUDA-Q
 
 ## Reporting bugs
 
-Open a [bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and fill in every required field, including the version-info one-liner the template asks for. Incomplete reports may be closed.
+Open a [bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and fill in every required field. Incomplete reports may be closed.
 
 ## Proposing changes
 

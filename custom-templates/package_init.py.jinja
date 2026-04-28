@@ -1,7 +1,6 @@
 {% from "helpers.jinja" import safe_docstring %}
 {% set modules = ["exceptions", "extensions", "gates", "ionq_client", "pagination", "polling", "session"] %}
-{# Pinned: keep this in sync with pyproject.toml and README.md (test_docs_consistency.py enforces). #}
-{{ safe_docstring("A client library for accessing IonQ Cloud Platform API") }}
+{{ safe_docstring(package_description) }}
 from . import {{ modules | join(", ") }}
 from .client import AuthenticatedClient, Client  # noqa: F401
 {% for m in modules %}

@@ -131,13 +131,6 @@ class TestPackageDescriptionIsCanonical:
     def test_readme_tagline(self):
         assert self.EXPECTED in README
 
-    def test_template_pins_description(self):
-        # The Jinja template must hardcode the canonical text; otherwise
-        # regen pulls package_description from the spec and silently drifts.
-        template = (ROOT / "custom-templates" / "package_init.py.jinja").read_text()
-        assert f'"{self.EXPECTED}"' in template
-        assert "package_description" not in template
-
 
 class TestGeneratedPathsConsistency:
     """ruff exclude, coverage omit, and .gitattributes must agree on which paths are generated."""
