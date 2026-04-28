@@ -1,4 +1,4 @@
-# Copyright 2026 IonQ, Inc.
+# SPDX-FileCopyrightText: 2026 IonQ, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 """Structured exceptions for the IonQ API client.
