@@ -1,6 +1,6 @@
 # ionq-core
 
-Python client for the IonQ Cloud Platform API.
+A client library for accessing IonQ Cloud Platform API.
 
 [![PyPI](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python versions](https://img.shields.io/pypi/pyversions/ionq-core.svg)](https://pypi.org/project/ionq-core/)

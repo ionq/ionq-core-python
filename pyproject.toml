@@ -1,7 +1,7 @@
 [project]
 name = "ionq-core"
 version = "0.1.0"
-description = "Python client for the IonQ Cloud Platform API"
+description = "A client library for accessing IonQ Cloud Platform API"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 readme = "README.md"

@@ -5,8 +5,7 @@ import pytest
 
 from ionq_core.exceptions import IonQError
 from ionq_core.session import SessionManager
-
-_BASE = "https://test.invalid/v0.4"
+from tests.conftest import BASE_URL as _BASE
 
 
 def _session_json(session_id="sess-1", status="created", active=True):

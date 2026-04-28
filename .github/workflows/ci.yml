@@ -23,9 +23,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - uses: ./.github/actions/setup-uv
         with:
-          python-version: "3.12"
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
       - run: uv run ruff check
@@ -43,7 +42,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - uses: ./.github/actions/setup-uv
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: ${{ github.event_name == 'push' }}
@@ -57,8 +56,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+      - uses: ./.github/actions/setup-uv
         with:
-          python-version: "3.12"
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uvx pip-audit --require-hashes --strict -r <(uv pip compile pyproject.toml --generate-hashes)

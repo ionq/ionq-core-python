@@ -2,6 +2,8 @@ import pytest
 
 from ionq_core import AuthenticatedClient, Client
 
+BASE_URL = "https://test.invalid/v0.4"
+
 
 def make_job_json(job_id, status="completed", **overrides):
     """Minimal valid job dict usable as both BaseJob and GetJobResponse."""
@@ -35,13 +37,13 @@ def make_job_json(job_id, status="completed", **overrides):
 
 @pytest.fixture
 def client() -> Client:
-    return Client(base_url="https://test.invalid/v0.4")
+    return Client(base_url=BASE_URL)
 
 
 @pytest.fixture
 def auth_client() -> AuthenticatedClient:
     return AuthenticatedClient(
-        base_url="https://test.invalid/v0.4",
+        base_url=BASE_URL,
         token="test-api-key",
         prefix="apiKey",
         auth_header_name="Authorization",

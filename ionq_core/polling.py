@@ -5,8 +5,9 @@
 
 After submitting a job, use `wait_for_job` (or `async_wait_for_job`) to
 block until it reaches a terminal state (completed, failed, or canceled).
-Polling starts at `_DEFAULT_INTERVAL` and grows by 1.5x each iteration up
-to `_MAX_INTERVAL`; the default total wait is `_DEFAULT_TIMEOUT` seconds.
+Polling starts at `_DEFAULT_INTERVAL` and grows by `_BACKOFF_FACTOR` each
+iteration up to `_MAX_INTERVAL`; the default total wait is
+`_DEFAULT_TIMEOUT` seconds.
 
 Example:
     ```python
@@ -43,6 +44,7 @@ _TERMINAL = frozenset({"completed", "failed", "canceled"})
 _DEFAULT_INTERVAL = 1.0
 _DEFAULT_TIMEOUT = 300.0
 _MAX_INTERVAL = 30.0
+_BACKOFF_FACTOR = 1.5
 
 
 class JobTimeoutError(IonQError):
@@ -131,7 +133,7 @@ def wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
         time.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_INTERVAL)
+        interval = min(interval * _BACKOFF_FACTOR, _MAX_INTERVAL)
 
 
 async def async_wait_for_job(
@@ -172,4 +174,4 @@ async def async_wait_for_job(
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
         await asyncio.sleep(max(0, min(interval, deadline - time.monotonic())))
-        interval = min(interval * 1.5, _MAX_INTERVAL)
+        interval = min(interval * _BACKOFF_FACTOR, _MAX_INTERVAL)

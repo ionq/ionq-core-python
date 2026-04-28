@@ -16,16 +16,7 @@ If you are looking for a higher-level interface (Qiskit, Cirq, PennyLane, CUDA-Q
 
 ## Reporting bugs
 
-When opening a bug report, include:
-
-- A minimal reproduction.
-- Expected vs. actual behavior, including any traceback.
-- The output of:
-  ```sh
-  python -c "import ionq_core, sys, platform; print(ionq_core.__version__, sys.version, platform.platform())"
-  ```
-
-Incomplete reports may be closed and pointed back to this section.
+Open a [bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and fill in every required field, including the version-info one-liner the template asks for. Incomplete reports may be closed.
 
 ## Proposing changes
 
