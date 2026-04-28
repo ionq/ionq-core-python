@@ -19,7 +19,7 @@ The full API reference for this package is published at [ionq.github.io/ionq-cor
 - **Qiskit** users -> [`qiskit-ionq`](https://pypi.org/project/qiskit-ionq/)
 - **Cirq** users -> [`cirq-ionq`](https://pypi.org/project/cirq-ionq/)
 - **PennyLane** users -> [`pennylane-ionq`](https://pypi.org/project/pennylane-ionq/)
-- **CUDA-Q** users -> IonQ is configured as a backend in NVIDIA CUDA-Q.
+- **CUDA-Q** users -> IonQ is configured as a backend in [NVIDIA CUDA-Q](https://github.com/NVIDIA/cuda-quantum/blob/main/runtime/cudaq/platform/default/rest/helpers/ionq/IonQServerHelper.cpp).
 - **Multi-vendor users** -> IonQ is reachable via [`qbraid`](https://pypi.org/project/qbraid/).
 
 Use this package directly if you want programmatic access to the IonQ REST API close to the wire, or if you are building a downstream SDK on top of it.
