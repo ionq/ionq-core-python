@@ -16,11 +16,11 @@ body:
     attributes:
       label: Affected area
       description: |
-        Most of `ionq_core/` is generated from the OpenAPI spec. See
-        [code structure](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#code-structure).
+        See [code structure](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#code-structure)
+        for the boundary between generated and hand-written code.
       options:
-        - Generated client (ionq_core/api/, ionq_core/models/, client.py, errors.py, types.py)
-        - Hand-written extensions (exceptions, retry, pagination, polling, sessions, native gates)
+        - Generated client (regenerated from OpenAPI spec)
+        - Hand-written extensions (retry, pagination, polling, sessions, native gates, etc.)
         - API surface / OpenAPI spec (originates upstream)
         - Documentation
         - Tests or tooling

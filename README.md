@@ -256,11 +256,7 @@ ms_matrix(0.0, 0.0)    # maximally-entangling Molmer-Sorensen gate
 
 ## SDK version vs API spec version
 
-| `ionq-core` | IonQ REST API | Status  |
-| ----------- | ------------- | ------- |
-| 0.1.x       | v0.4          | Current |
-
-The SDK version follows its own [SemVer 2.0](https://semver.org/spec/v2.0.0.html) cadence, independent of the upstream REST API version. Override the API version with `IonQClient(base_url=...)`.
+The SDK version follows its own [SemVer 2.0](https://semver.org/spec/v2.0.0.html) cadence, independent of the upstream REST API version. To pin against a different API, pass an explicit `base_url` to `IonQClient`.
 
 ## Versioning
 
@@ -279,19 +275,9 @@ print(ionq_core.__version__)
 
 The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
-## Requirements
-
-- Python 3.12, 3.13, or 3.14
-- `httpx >= 0.27, < 0.29`
-- `httpx-retries >= 0.5`
-- `attrs >= 24.2`
-- `python-dateutil >= 2.9`
-
 ## Contributing
 
-Most of `ionq_core/` is generated from the OpenAPI spec; pull requests touching files under `ionq_core/api/`, `ionq_core/models/`, or the generated `client.py`, `errors.py`, and `types.py` will be overwritten on the next regeneration. Hand-written extensions, tests, and docs accept contributions freely.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, the regeneration command, the 100% branch-coverage gate on hand-written code, and CLA details.
+Most of `ionq_core/` is generated from the OpenAPI spec and overwritten on every regeneration. See [CONTRIBUTING.md](CONTRIBUTING.md) for the boundary between generated and hand-written code, development setup, the regeneration command, the 100% branch-coverage gate on hand-written code, and CLA details.
 
 ## Support
 
