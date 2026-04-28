@@ -40,7 +40,7 @@ dev = [
     "pytest-httpx>=0.36",
     "pytest-asyncio>=1",
     "pytest-cov>=7",
-    "ruff>=0.15",
+    "ruff>=0.15.12",
     "ty",
     "pdoc>=16",
 ]
