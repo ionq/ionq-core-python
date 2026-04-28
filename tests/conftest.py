@@ -1,8 +1,11 @@
+from urllib.parse import urlparse
+
 import pytest
 
 from ionq_core import AuthenticatedClient, Client
+from ionq_core.ionq_client import _DEFAULT_BASE_URL
 
-BASE_URL = "https://test.invalid/v0.4"
+BASE_URL = "https://test.invalid" + urlparse(_DEFAULT_BASE_URL).path
 
 
 def make_job_json(job_id, status="completed", **overrides):

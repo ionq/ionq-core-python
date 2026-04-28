@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 
 import httpx
 import pytest
@@ -6,6 +7,8 @@ import pytest
 from ionq_core.exceptions import IonQError
 from ionq_core.session import SessionManager
 from tests.conftest import BASE_URL as _BASE
+
+_API_PATH = urlparse(_BASE).path
 
 
 def _session_json(session_id="sess-1", status="created", active=True):
@@ -36,7 +39,7 @@ class TestContextManager:
             assert mgr.session_id == "sess-1"
 
         reqs = httpx_mock.get_requests()
-        assert reqs[0].method == "POST" and reqs[0].url.path == "/v0.4/sessions"
+        assert reqs[0].method == "POST" and reqs[0].url.path == f"{_API_PATH}/sessions"
         assert "/sessions/sess-1/end" in str(reqs[1].url)
 
     def test_end_called_on_exception(self, httpx_mock, auth_client):
@@ -98,7 +101,7 @@ class TestOpenClose:
         mgr.close()
 
         reqs = httpx_mock.get_requests()
-        assert reqs[0].url.path == "/v0.4/sessions"
+        assert reqs[0].url.path == f"{_API_PATH}/sessions"
         assert "/sessions/sess-1/end" in str(reqs[1].url)
 
     def test_open_when_already_open_raises(self, httpx_mock, auth_client):
@@ -137,7 +140,7 @@ class TestAsyncContextManager:
             assert mgr.session_id == "sess-1"
 
         reqs = httpx_mock.get_requests()
-        assert reqs[0].method == "POST" and reqs[0].url.path == "/v0.4/sessions"
+        assert reqs[0].method == "POST" and reqs[0].url.path == f"{_API_PATH}/sessions"
         assert "/sessions/sess-1/end" in str(reqs[1].url)
 
     async def test_end_called_on_exception(self, httpx_mock, auth_client):
