@@ -12,7 +12,7 @@ from ionq_core.exceptions import (
     ServerError,
 )
 
-_URL = "https://api.ionq.co/v0.4/backends"
+_URL = "https://test.invalid/backends"
 
 
 class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):

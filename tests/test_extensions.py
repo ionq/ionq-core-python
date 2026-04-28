@@ -11,7 +11,7 @@ from ionq_core.extensions import (
     HookTransport,
 )
 
-_BACKENDS_URL = "https://api.ionq.co/v0.4/backends"
+_BACKENDS_URL = "https://test.invalid/backends"
 
 
 class RecordingHook:

@@ -1,6 +1,6 @@
 # ionq-core
 
-Python client for the IonQ Quantum Cloud Platform API.
+Python client for the IonQ Cloud Platform API.
 
 [![PyPI](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python versions](https://img.shields.io/pypi/pyversions/ionq-core.svg)](https://pypi.org/project/ionq-core/)
@@ -8,7 +8,7 @@ Python client for the IonQ Quantum Cloud Platform API.
 [![CI](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-ionq.github.io-blue.svg)](https://ionq.github.io/ionq-core-python/)
 
-`ionq-core` is a typed, async-capable Python client for the [IonQ Quantum Cloud Platform](https://ionq.com) REST API. It covers job submission and lifecycle, results retrieval, backend characterizations, sessions, and usage reporting. The HTTP layer is generated from IonQ's OpenAPI specification with [`openapi-python-client`](https://github.com/openapi-generators/openapi-python-client); a small set of hand-written extensions wraps it with retries, polling, pagination, structured exceptions, and an extension API for downstream SDKs.
+`ionq-core` is a typed, async-capable Python client for the [IonQ Cloud Platform](https://ionq.com) REST API. It covers job submission and lifecycle, results retrieval, backend characterizations, sessions, and usage reporting. The HTTP layer is generated from IonQ's OpenAPI specification with [`openapi-python-client`](https://github.com/openapi-generators/openapi-python-client); a small set of hand-written extensions wraps it with retries, polling, pagination, structured exceptions, and an extension API for downstream SDKs.
 
 The full API reference for this package is published at [ionq.github.io/ionq-core-python](https://ionq.github.io/ionq-core-python/).
 
@@ -207,10 +207,10 @@ from ionq_core import IonQClient, ClientExtension, EventHook
 
 class LoggingHook(EventHook):
     def on_request(self, request: httpx.Request) -> None:
-        print(f">>> {request.method} {request.url}")
+        print(f"--> {request.method} {request.url}")
 
     def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
-        print(f"<<< {response.status_code} {request.url}")
+        print(f"<-- {response.status_code} {request.url}")
 
 client = IonQClient(extension=ClientExtension(event_hooks=(LoggingHook(),)))
 ```

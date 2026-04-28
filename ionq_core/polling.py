@@ -5,8 +5,8 @@
 
 After submitting a job, use `wait_for_job` (or `async_wait_for_job`) to
 block until it reaches a terminal state (completed, failed, or canceled).
-Polling uses exponential backoff from 1 second up to a 30-second maximum
-interval.
+Polling starts at `_DEFAULT_INTERVAL` and grows by 1.5x each iteration up
+to `_MAX_INTERVAL`; the default total wait is `_DEFAULT_TIMEOUT` seconds.
 
 Example:
     ```python

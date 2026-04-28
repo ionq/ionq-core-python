@@ -28,6 +28,7 @@ try:
 except PackageNotFoundError:
     __version__ = "0.0.0"
 
+_DEFAULT_BASE_URL = "https://api.ionq.co/v0.4"
 _DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 _AUTH_PREFIX = "apiKey"
 _AUTH_HEADER = "Authorization"
@@ -36,7 +37,7 @@ _AUTH_HEADER = "Authorization"
 def IonQClient(
     *,
     api_key: str | None = None,
-    base_url: str = "https://api.ionq.co/v0.4",
+    base_url: str = _DEFAULT_BASE_URL,
     max_retries: int | None = None,
     timeout: httpx.Timeout | None = None,
     additional_user_agent: str | None = None,

@@ -47,7 +47,7 @@ For non-trivial changes, open an issue first to confirm scope before investing s
 
 Everything else under `ionq_core/`, plus `tests/` and `custom-templates/`, is hand-written and accepts pull requests. `openapi.json` is the vendored upstream spec and is refreshed by the regeneration command below.
 
-The PR-time [`generated`](.github/workflows/generated.yml) workflow regenerates the client and fails the build if the result differs from what is committed. The mechanically generated paths (api/, models/, client.py, errors.py, types.py) are also excluded from `ruff` lint, `ty` type checks, and coverage measurement in `pyproject.toml`. `__init__.py` stays in scope because its template is ours to maintain.
+The PR-time [`generated`](.github/workflows/generated.yml) workflow regenerates the client and fails the build if the result differs from what is committed. The mechanically generated paths (api/, models/, client.py, errors.py, types.py) are excluded from `ruff` lint and coverage measurement in `pyproject.toml`; `ty` runs against the whole package but with `invalid-argument-type` loosened for `api/` and `models/`, where it triggers on spec-driven `attrs` models. `__init__.py` stays in scope for all three because its template is ours to maintain.
 
 ## Development setup
 
