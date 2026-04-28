@@ -1,13 +1,28 @@
 # ionq-core
 
-[![PyPI version](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+Python client for the IonQ Quantum Cloud Platform API.
+
+[![PyPI](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ionq-core.svg)](https://pypi.org/project/ionq-core/)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![CI](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml)
-[![API Docs](https://img.shields.io/badge/docs-API%20reference-blue)](https://ionq.github.io/ionq-core-python/)
+[![Docs](https://img.shields.io/badge/docs-ionq.github.io-blue.svg)](https://ionq.github.io/ionq-core-python/)
 
-A Python client library for the [IonQ Cloud Platform API](https://docs.ionq.com/), providing full access to IonQ's quantum computing services. Supports both synchronous and asynchronous usage, with typed models for all request and response objects.
+`ionq-core` is a typed, async-capable Python client for the [IonQ Quantum Cloud Platform](https://ionq.com) REST API. It covers job submission and lifecycle, results retrieval, backend characterizations, sessions, and usage reporting. The HTTP layer is generated from IonQ's OpenAPI specification with [`openapi-python-client`](https://github.com/openapi-generators/openapi-python-client); a small set of hand-written extensions wraps it with retries, polling, pagination, structured exceptions, and an extension API for downstream SDKs.
 
-Auto-generated from the [IonQ OpenAPI specification](https://docs.ionq.com/api-reference/v0.4/introduction) using [openapi-python-client](https://github.com/openapi-generators/openapi-python-client).
+The full API reference for this package is published at [ionq.github.io/ionq-core-python](https://ionq.github.io/ionq-core-python/).
+
+## Looking for a higher-level interface?
+
+`ionq-core` is the low-level HTTP client. Most users should pick the integration that matches their existing stack:
+
+- **Qiskit** users -> [`qiskit-ionq`](https://pypi.org/project/qiskit-ionq/)
+- **Cirq** users -> [`cirq-ionq`](https://pypi.org/project/cirq-ionq/)
+- **PennyLane** users -> [`pennylane-ionq`](https://pypi.org/project/pennylane-ionq/)
+- **CUDA-Q** users -> IonQ is configured as a backend in NVIDIA CUDA-Q.
+- **Multi-vendor users** -> IonQ is reachable via [`qbraid`](https://pypi.org/project/qbraid/).
+
+Use this package directly if you want programmatic access to the IonQ REST API close to the wire, or if you are building a downstream SDK on top of it.
 
 ## Installation
 
@@ -15,403 +30,275 @@ Auto-generated from the [IonQ OpenAPI specification](https://docs.ionq.com/api-r
 pip install ionq-core
 ```
 
-Requires Python 3.12+.
+Requires Python 3.12 or newer.
 
-## Usage
+## Quickstart
+
+Submit a Bell-state circuit on the cloud simulator and read the result probabilities:
 
 ```python
-from ionq_core import IonQClient
-from ionq_core.api.backends import get_backends
-from ionq_core.api.default import create_job
+from ionq_core import IonQClient, wait_for_job
+from ionq_core.api.default import create_job, get_job_probabilities
 from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
 
-# Uses IONQ_API_KEY env var by default
-client = IonQClient()
+client = IonQClient()  # reads IONQ_API_KEY from the environment
 
-# List available backends
-backends = get_backends.sync(client=client)
-for backend in backends:
-    print(f"{backend.backend}: {backend.status} ({backend.qubits} qubits)")
+body = CircuitJobCreationPayload.from_dict({
+    "type": "ionq.circuit.v1",
+    "backend": "simulator",
+    "shots": 100,
+    "input": {
+        "gateset": "qis",
+        "circuit": [
+            {"gate": "h", "targets": [0]},
+            {"gate": "cnot", "control": 0, "target": 1},
+        ],
+    },
+})
 
-# Submit a quantum circuit
-job = create_job.sync(
-    client=client,
-    body=CircuitJobCreationPayload.from_dict({
-        "type": "ionq.circuit.v1",
-        "backend": "simulator",
-        "shots": 1000,
-        "input": {
-            "gateset": "qis",
-            "circuit": [
-                {"gate": "h", "targets": [0]},
-                {"gate": "cnot", "targets": [0], "controls": [1]},
-            ],
-        },
-    }),
-)
-print(f"Job submitted: {job.id} (status: {job.status})")
+job = create_job.sync(client=client, body=body)
+completed = wait_for_job(client, job.id, timeout=120)
+probs = get_job_probabilities.sync(uuid=job.id, client=client)
+print(probs.additional_properties)
 ```
+
+Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, `asyncio`, and `asyncio_detailed`. The `sync` and `asyncio` variants return the parsed body; the `_detailed` variants return a `Response[T]` with the status code, headers, and parsed body.
 
 ## Authentication
 
-IonQ uses API key authentication. Get your key from the [IonQ Cloud Console](https://cloud.ionq.com).
+Authentication uses an API key passed as `Authorization: apiKey <key>` (note the `apiKey` prefix, not `Bearer`). `IonQClient` reads the key from the `IONQ_API_KEY` environment variable by default:
+
+```sh
+export IONQ_API_KEY="your-api-key"
+```
 
 ```python
 from ionq_core import IonQClient
 
-# Option 1: Set the IONQ_API_KEY environment variable (recommended)
-client = IonQClient()
-
-# Option 2: Pass the key directly
-client = IonQClient(api_key="your-api-key")
-
-# Option 3: Use AuthenticatedClient for full control
-from ionq_core import AuthenticatedClient
-
-client = AuthenticatedClient(
-    base_url="https://api.ionq.co/v0.4",
-    token="your-api-key",
-    prefix="apiKey",
-    auth_header_name="Authorization",
-)
+client = IonQClient()                                       # IONQ_API_KEY from env
+client = IonQClient(api_key="your-key")                     # explicit
+client = IonQClient(base_url="https://api.ionq.co/v0.4")    # default base URL
 ```
 
-Some endpoints (e.g., listing backends) do not require authentication. Use `Client` for those:
-
-```python
-from ionq_core import Client
-
-client = Client(base_url="https://api.ionq.co/v0.4")
-```
+If neither argument nor environment variable is set, `IonQClient()` raises `ValueError`. API keys are issued from your IonQ account.
 
 ## Async usage
 
-Every endpoint has both sync and async variants:
+Every endpoint exposes `asyncio` and `asyncio_detailed` callables alongside the synchronous variants. `IonQClient` itself supports both `with` and `async with`:
 
 ```python
 import asyncio
 from ionq_core import IonQClient
 from ionq_core.api.backends import get_backends
 
-
 async def main():
-    client = IonQClient()
-    backends = await get_backends.asyncio(client=client)
-    for backend in backends:
-        print(f"{backend.backend}: {backend.status}")
-
+    async with IonQClient() as client:
+        backends = await get_backends.asyncio(client=client)
+        print([b.backend for b in backends])
 
 asyncio.run(main())
 ```
 
-Both client types support context managers for proper connection cleanup:
-
-```python
-async with IonQClient() as client:
-    backends = await get_backends.asyncio(client=client)
-```
+The client opens both sync and async httpx transports during construction, so the same `client` instance can be used from both code paths.
 
 ## Handling errors
 
-The client raises typed exceptions for all HTTP error responses:
+All exceptions inherit from `IonQError`. Concrete subclasses map to HTTP statuses and transport failures:
+
+```text
+IonQError
+├── APIConnectionError        # network / DNS / TLS failures
+│   └── APITimeoutError       # request timed out
+└── APIError                  # 4xx / 5xx HTTP responses
+    ├── BadRequestError       # 400
+    ├── AuthenticationError   # 401
+    ├── PermissionDeniedError # 403
+    ├── NotFoundError         # 404
+    ├── RateLimitError        # 429 (carries retry_after)
+    └── ServerError           # 5xx
+```
 
 ```python
-from ionq_core import IonQClient, RateLimitError, AuthenticationError, ServerError
-
-client = IonQClient()
+from ionq_core import AuthenticationError, RateLimitError
+from ionq_core.api.default import create_job
 
 try:
     job = create_job.sync(client=client, body=payload)
-except AuthenticationError:
-    print("Invalid API key")
+except AuthenticationError as e:
+    print(f"Invalid API key (request {e.request_id})")
 except RateLimitError as e:
-    print(f"Rate limited, retry after {e.retry_after}s")
-except ServerError as e:
-    print(f"Server error: {e.status_code}")
+    print(f"Rate limited; retry after {e.retry_after}s")
 ```
 
-| Status code | Exception |
-|---|---|
-| 400 | `BadRequestError` |
-| 401 | `AuthenticationError` |
-| 403 | `PermissionDeniedError` |
-| 404 | `NotFoundError` |
-| 429 | `RateLimitError` |
-| 5xx | `ServerError` |
+Every `APIError` carries `status_code`, `body` (parsed JSON or raw string), `message`, and `request_id` from the `x-request-id` response header. Include `request_id` when contacting IonQ support about a specific failure.
 
-All exceptions inherit from `APIError`, which inherits from `IonQError`. Connection failures raise `APIConnectionError`; timeouts raise `APITimeoutError`.
+## Retries and timeouts
 
-## Retries
-
-The client automatically retries transient errors (429, 500, 502, 503, 520-529) and connection/timeout failures with exponential backoff. Default: 2 retries.
+Transient failures are retried automatically. The default policy is 2 retries on `429`, `500`, `502`, `503`, and `520`-`529`, with exponential backoff (factor 0.5, jitter 0.5, capped at 60 seconds). `Retry-After` headers are honored. The default request timeout is 60 seconds with a 10-second connect timeout.
 
 ```python
-client = IonQClient(max_retries=5)  # more retries
-client = IonQClient(max_retries=0)  # disable retries
+import httpx
+from ionq_core import IonQClient
+
+client = IonQClient(
+    max_retries=5,
+    timeout=httpx.Timeout(30.0, connect=10.0),
+)
 ```
 
-`Retry-After` headers on 429 responses are respected.
+Set `max_retries=0` to disable retries entirely.
 
 ## Pagination
 
-Endpoints that return paginated results have auto-pagination helpers:
+List endpoints return cursor-paginated responses. `iter_jobs`, `aiter_jobs`, `iter_session_jobs`, and `aiter_session_jobs` follow the cursor automatically and yield individual job objects:
 
 ```python
-from ionq_core import IonQClient, iter_jobs
+from itertools import islice
+from ionq_core import iter_jobs
 
-client = IonQClient()
-for job in iter_jobs(client, status="completed"):
-    print(job.id)
+for job in islice(iter_jobs(client, status="completed"), 100):
+    print(job.id, job.backend)
 ```
 
-Async:
+Each helper accepts the same filters as the underlying `get_jobs` / `get_session_jobs` endpoints (`status`, `target`, `session_id`, `submitter_id`, `limit`).
+
+## Polling for job completion
+
+`wait_for_job` polls a job until it reaches a terminal state (`completed`, `failed`, or `canceled`) or the timeout elapses. Polling starts at 1 second and grows by 1.5x to a 30-second cap; the default total timeout is 300 seconds.
 
 ```python
-from ionq_core import aiter_jobs
+from ionq_core import wait_for_job, JobTimeoutError, JobFailedError
 
-async for job in aiter_jobs(client):
-    print(job.id)
+try:
+    job = wait_for_job(client, job_id, timeout=300)
+except JobTimeoutError as e:
+    print(f"Polling timed out (last status: {e.last_status})")
+except JobFailedError as e:
+    print(f"Job failed: {e.failure}")
 ```
 
-Also available: `iter_session_jobs` / `aiter_session_jobs`.
+Pass `raise_on_failure=False` to receive the failed-job object instead of an exception. The async equivalent is `async_wait_for_job`.
 
-## Waiting for job completion
+## Sessions
 
-```python
-from ionq_core import IonQClient, wait_for_job
-
-client = IonQClient()
-job = create_job.sync(client=client, body=payload)
-completed_job = wait_for_job(client, job.id, timeout=300)
-print(completed_job.status)  # "completed"
-```
-
-Polls with exponential backoff (1s initial, 30s max). Raises `JobTimeoutError` on timeout, `JobFailedError` if the job fails. Async: `async_wait_for_job`.
-
-## Native gate matrices
-
-Pure-Python unitary matrices for IonQ's native trapped-ion gates, useful for simulation and verification:
+`SessionManager` owns a long-running IonQ QPU session, optionally with limits on jobs, time (in minutes), or cost (in USD):
 
 ```python
-from ionq_core import gpi_matrix, gpi2_matrix, ms_matrix, zz_matrix
-
-# Phase parameters (phi) are in turns (fractions of 2*pi)
-# Interaction parameters (angle) are in units of pi
-gpi_matrix(0)       # 2x2 Pauli X
-gpi2_matrix(0.25)   # 2x2 pi/2 rotation
-ms_matrix(0, 0)     # 4x4 maximally-entangling MS gate (angle defaults to 0.25)
-zz_matrix(0.1)      # 4x4 ZZ interaction
-```
-
-Matrices are returned as nested tuples of complex numbers (no numpy dependency).
-
-## Session management
-
-`SessionManager` provides a context manager for IonQ priority sessions:
-
-```python
-from ionq_core import IonQClient, SessionManager
-
-client = IonQClient()
+from ionq_core import SessionManager
 
 with SessionManager(client, "qpu.aria-1", max_jobs=10, max_time=60) as session:
-    # submit jobs using session.session_id
     print(session.session_id)
-    print(session.status())
-
-# Reconnect to an existing session
-session = SessionManager.from_id(client, "existing-session-id")
+    print(session.status())  # "started"
+    # submit jobs against session.session_id ...
+# the session is ended automatically on exit
 ```
 
-## Available endpoints
-
-### Backends
-
-| Function | Module | Auth |
-|---|---|---|
-| List backends | `ionq_core.api.backends.get_backends` | No |
-| Get a backend | `ionq_core.api.backends.get_backend` | No |
-
-### Characterizations
-
-| Function | Module | Auth |
-|---|---|---|
-| List characterizations | `ionq_core.api.characterizations.get_characterizations_for_backend` | No |
-| Get a characterization | `ionq_core.api.characterizations.get_characterization` | Yes |
-
-### Jobs
-
-| Function | Module | Auth |
-|---|---|---|
-| Create a job | `ionq_core.api.default.create_job` | Yes |
-| List jobs | `ionq_core.api.default.get_jobs` | Yes |
-| Get a job | `ionq_core.api.default.get_job` | Yes |
-| Delete a job | `ionq_core.api.default.delete_job` | Yes |
-| Delete jobs (bulk) | `ionq_core.api.default.delete_jobs` | Yes |
-| Cancel a job | `ionq_core.api.default.cancel_job` | Yes |
-| Cancel jobs (bulk) | `ionq_core.api.default.cancel_jobs` | Yes |
-| Get job cost | `ionq_core.api.default.get_job_cost` | Yes |
-| Get compiled circuit | `ionq_core.api.default.get_compiled_file` | Yes |
-| Estimate job cost | `ionq_core.api.default.estimate_job_cost` | Yes |
-| Get job probabilities | `ionq_core.api.default.get_job_probabilities` | Yes |
-| Get variant histogram | `ionq_core.api.default.get_variant_histogram` | Yes |
-| Get variant probabilities | `ionq_core.api.default.get_variant_probabilities` | Yes |
-| Get variant shots | `ionq_core.api.default.get_variant_shots` | Yes |
-
-### Sessions
-
-| Function | Module | Auth |
-|---|---|---|
-| Create a session | `ionq_core.api.default.create_session` | Yes |
-| List sessions | `ionq_core.api.default.get_sessions` | Yes |
-| Get a session | `ionq_core.api.default.get_session` | Yes |
-| End a session | `ionq_core.api.default.end_session` | Yes |
-| List session jobs | `ionq_core.api.default.get_session_jobs` | Yes |
-
-### Other
-
-| Function | Module | Auth |
-|---|---|---|
-| Who am I | `ionq_core.api.whoami.get_whoami` | Yes |
-| Get usage | `ionq_core.api.usage.get_usages` | Yes |
-
-Each endpoint module provides four functions:
-
-- **`sync`** - synchronous call, returns the parsed response
-- **`asyncio`** - async call, returns the parsed response
-- **`sync_detailed`** - synchronous call, returns `Response[T]` with status code, headers, and parsed body
-- **`asyncio_detailed`** - async call, returns `Response[T]` with status code, headers, and parsed body
-
-## Models
-
-All request and response bodies are typed as [attrs](https://www.attrs.org/) classes with `from_dict()` and `to_dict()` methods:
-
-```python
-from ionq_core.models.backend import Backend
-
-# Deserialize from API response dict
-backend = Backend.from_dict({"backend": "qpu.aria-1", "status": "available", ...})
-
-# Access typed attributes
-print(backend.backend)  # "qpu.aria-1"
-print(backend.qubits)   # 25
-
-# Serialize back to dict
-data = backend.to_dict()
-```
-
-Optional fields use the `Unset` sentinel (not `None`) to distinguish between "not provided" and "explicitly null":
-
-```python
-from ionq_core.types import UNSET, Unset
-
-if not isinstance(backend.characterization_id, Unset):
-    print(f"Characterization: {backend.characterization_id}")
-```
+`SessionManager.from_id(client, session_id)` reconnects to an existing session. The async path uses `async with` and `async_status()`.
 
 ## Advanced
 
-### Timeouts
+### Logging and request hooks
+
+`ClientExtension` bundles hooks, headers, and transport overrides. The `EventHook` and `AsyncEventHook` protocols receive each request and response, and may opt into `on_error`:
 
 ```python
 import httpx
-from ionq_core import IonQClient
+from ionq_core import IonQClient, ClientExtension, EventHook
 
-client = IonQClient(timeout=httpx.Timeout(30.0, connect=10.0))
+class LoggingHook(EventHook):
+    def on_request(self, request: httpx.Request) -> None:
+        print(f">>> {request.method} {request.url}")
+
+    def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
+        print(f"<<< {response.status_code} {request.url}")
+
+client = IonQClient(extension=ClientExtension(event_hooks=(LoggingHook(),)))
 ```
 
-### Custom headers
-
-```python
-client = IonQClient().with_headers({"X-Custom-Header": "value"})
-```
+Hook exceptions are logged and suppressed by default. Set `debug_hooks=True` on `ClientExtension` to re-raise them.
 
 ### Custom HTTP client
 
-For full control over the HTTP layer, inject your own `httpx.Client`:
+For unusual deployments (proxies, custom CA bundles, mTLS), pass `httpx_args` through `IonQClient` or attach your own `httpx.Client` to the returned client:
 
 ```python
 import httpx
-from ionq_core import IonQClient
 
-custom_httpx = httpx.Client(
-    base_url="https://api.ionq.co/v0.4",
-    headers={"Authorization": "apiKey your-key"},
-    timeout=60.0,
-)
-
-client = IonQClient(api_key="your-key")
-client.set_httpx_client(custom_httpx)
+custom = httpx.Client(verify="/path/to/ca-bundle.pem")
+client.set_httpx_client(custom)
 ```
 
-### Accessing raw responses
+For programmatic transport composition (caching, tracing, request signing), set `ClientExtension.transport_wrapper` and `async_transport_wrapper` to wrap the default retry transport.
 
-Use the `_detailed` variants to get status codes and headers:
+### Mapping errors for downstream SDKs
+
+`ClientExtension.error_mapper` lets a downstream SDK translate raised exceptions without losing the original chain:
 
 ```python
-from ionq_core.api.whoami import get_whoami
+def map_error(exc: Exception) -> Exception:
+    if isinstance(exc, RateLimitError):
+        return MyDownstreamRateLimit(str(exc))
+    return exc
 
-response = get_whoami.sync_detailed(client=client)
-print(response.status_code)  # HTTPStatus.OK
-print(response.headers)  # dict of response headers
-print(response.parsed)  # Whoami object
-print(response.content)  # raw bytes
+client = IonQClient(extension=ClientExtension(error_mapper=map_error))
 ```
 
-## Regenerating the client
+### Native trapped-ion gates
 
-The client is generated from the vendored OpenAPI spec. To regenerate after API changes:
+`gpi_matrix`, `gpi2_matrix`, `ms_matrix`, and `zz_matrix` return unitary matrices for IonQ's native gates as plain Python nested tuples (no NumPy dependency). Phase parameters are in turns (fractions of 2*pi); interaction angles are in units of pi.
 
-```sh
-# Fetch the latest spec
-curl -s https://api.ionq.co/v0.4/api-docs -o openapi.json
+```python
+from ionq_core import gpi_matrix, ms_matrix
 
-# Apply overlay if present (patches spec issues that the generator can't handle)
-if [ -f openapi-overlay.yaml ]; then
-    uvx oas-patch==0.6.0 overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
-else
-    cp openapi.json /tmp/patched-spec.json
-fi
-
-# Regenerate (custom template preserves hand-written __init__.py exports)
-uvx openapi-python-client==0.28.3 generate \
-    --path /tmp/patched-spec.json \
-    --meta none \
-    --config openapi-python-client-config.yaml \
-    --custom-template-path custom-templates \
-    --output-path ionq_core \
-    --overwrite
+gpi_matrix(0.0)        # Pauli X
+ms_matrix(0.0, 0.0)    # maximally-entangling Molmer-Sorensen gate
 ```
 
-### OpenAPI Overlay
+## SDK version vs API spec version
 
-If the upstream spec contains patterns that the code generator cannot handle, fixes are applied via an [OpenAPI Overlay](https://spec.openapis.org/overlay/v1.1.0.html) file (`openapi-overlay.yaml`) using [oas-patch](https://pypi.org/project/oas-patch/). The overlay is declarative, version-controlled, and applied automatically during generation. The vendored `openapi.json` is always the unmodified upstream spec. When the upstream issue is resolved, delete the corresponding action from the overlay (or the entire file) and the pipeline continues to work without it.
+| `ionq-core` | IonQ REST API | Status  |
+| ----------- | ------------- | ------- |
+| 0.1.x       | v0.4          | Current |
 
-## Development
+The SDK version follows its own [SemVer 2.0](https://semver.org/spec/v2.0.0.html) cadence, independent of the upstream REST API version. Override the API version with `IonQClient(base_url=...)`.
 
-```sh
-uv sync                    # Install dependencies
-uv run pytest              # Run tests
-uv run ruff check          # Lint
-uv run ruff format --check # Check formatting
-uv run ty check ionq_core/ # Type check
+## Versioning
+
+This package follows [SemVer](https://semver.org/spec/v2.0.0.html), with three carve-outs that may ship in minor releases:
+
+1. Changes that affect static types only, without changing runtime behavior.
+2. Changes to library internals that are technically importable but not documented for external use (anything beginning with an underscore, or absent from the API reference).
+3. Changes that we do not expect to impact the vast majority of users in practice.
+
+Print the installed version with:
+
+```python
+import ionq_core
+print(ionq_core.__version__)
 ```
 
-## Publishing
+The full release history is in [CHANGELOG.md](CHANGELOG.md).
 
-For a new build to be accepted at PyPI, the version number in pyproject.toml must be incremented. Publishing is handled automatically via trusted publishing on tagged releases:
+## Requirements
 
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
+- Python 3.12, 3.13, or 3.14
+- `httpx >= 0.27, < 0.29`
+- `httpx-retries >= 0.5`
+- `attrs >= 24.2`
+- `python-dateutil >= 2.9`
 
-## Getting help
+## Contributing
 
-- **Bug reports and feature requests** - [GitHub Issues](https://github.com/ionq/ionq-core-python/issues)
-- **Account, billing, or QPU questions** - [IonQ Support](https://ionq.com/contact)
-- **API documentation** - [docs.ionq.com](https://docs.ionq.com/)
+Most of `ionq_core/` is generated from the OpenAPI spec; pull requests touching files under `ionq_core/api/`, `ionq_core/models/`, or the generated `client.py`, `errors.py`, and `types.py` will be overwritten on the next regeneration. Hand-written extensions, tests, and docs accept contributions freely.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, the regeneration command, the 100% branch-coverage gate on hand-written code, and CLA details.
+
+## Support
+
+- Bug reports and feature requests: [GitHub Issues](https://github.com/ionq/ionq-core-python/issues)
+- Security disclosures: see [SECURITY.md](SECURITY.md)
+- Account, billing, or hardware-access questions: [ionq.com/contact](https://ionq.com/contact)
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) for details.
+Apache License 2.0. See [LICENSE](LICENSE).
