@@ -17,6 +17,18 @@ Please include enough detail to reproduce the issue, and redact your API key fro
 - We follow **coordinated disclosure**. Please do not publicly disclose, share working exploits, or notify third parties until a fix is released and an advisory is published. Our default disclosure window is **90 days** from acknowledgement; we may agree on a shorter or longer timeline depending on severity and where the fix needs to land.
 - For confirmed vulnerabilities in this package, we request CVEs through GitHub's CNA via the [repository security advisory](https://docs.github.com/en/code-security/security-advisories) workflow.
 
+## Safe Harbor
+
+When conducting security research consistent with this policy, we consider your research to be authorized and lawful. Specifically:
+
+- We will not initiate or support legal action against you for accidental, good-faith violations of this policy under applicable anti-hacking laws (such as the U.S. Computer Fraud and Abuse Act).
+- We will not bring a claim against you for circumvention of technical controls under relevant anti-circumvention laws (such as DMCA section 1201).
+- If a third party initiates legal action against you for activities conducted in good-faith compliance with this policy, we will take steps to make it known that your actions were authorized.
+
+In return, we ask that you comply with all applicable laws, make reasonable efforts to avoid privacy violations, service disruption, and destruction of data, limit testing to your own account or accounts you control, and use the channels above to discuss vulnerabilities with us.
+
+If you are unsure whether a planned activity is consistent with this policy, contact <security@ionq.co> before proceeding. Safe harbor applies only to claims within IonQ's control; this policy does not bind independent third parties.
+
 ## Supported Versions
 
 `ionq-core` is pre-1.0. While the package is in the `0.x` series, **only the latest released minor receives security fixes**. This policy will harden once `1.0` is released.

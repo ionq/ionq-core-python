@@ -4,7 +4,7 @@ Thanks for your interest in improving `ionq-core`. This guide covers how to file
 
 ## Code of conduct
 
-This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unacceptable behavior to <support@ionq.co>.
+This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unacceptable behavior to <conduct@ionq.co>.
 
 ## Getting help
 

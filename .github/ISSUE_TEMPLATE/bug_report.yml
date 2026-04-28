@@ -40,8 +40,7 @@ body:
     id: expected
     attributes:
       label: What did you expect to happen?
-    validations:
-      required: true
+      description: Optional - skip if a traceback or error message above already shows the problem.
 
   - type: textarea
     id: reproduction

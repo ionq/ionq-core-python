@@ -4,7 +4,7 @@ Python client for the IonQ Quantum Cloud Platform API.
 
 [![PyPI](https://img.shields.io/pypi/v/ionq-core.svg)](https://pypi.org/project/ionq-core/)
 [![Python versions](https://img.shields.io/pypi/pyversions/ionq-core.svg)](https://pypi.org/project/ionq-core/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/ionq/ionq-core-python/blob/main/LICENSE)
 [![CI](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml/badge.svg)](https://github.com/ionq/ionq-core-python/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-ionq.github.io-blue.svg)](https://ionq.github.io/ionq-core-python/)
 
@@ -273,18 +273,18 @@ import ionq_core
 print(ionq_core.__version__)
 ```
 
-The full release history is in [CHANGELOG.md](CHANGELOG.md).
+The full release history is in [CHANGELOG.md](https://github.com/ionq/ionq-core-python/blob/main/CHANGELOG.md).
 
 ## Contributing
 
-Most of `ionq_core/` is generated from the OpenAPI spec and overwritten on every regeneration. See [CONTRIBUTING.md](CONTRIBUTING.md) for the boundary between generated and hand-written code, development setup, the regeneration command, the 100% branch-coverage gate on hand-written code, and CLA details.
+Most of `ionq_core/` is generated from the OpenAPI spec and overwritten on every regeneration. See [CONTRIBUTING.md](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md) for the boundary between generated and hand-written code, development setup, the regeneration command, the 100% branch-coverage gate on hand-written code, and CLA details.
 
 ## Support
 
 - Bug reports and feature requests: [GitHub Issues](https://github.com/ionq/ionq-core-python/issues)
-- Security disclosures: see [SECURITY.md](SECURITY.md)
+- Security disclosures: see [SECURITY.md](https://github.com/ionq/ionq-core-python/blob/main/SECURITY.md)
 - Account, billing, or hardware-access questions: [ionq.com/contact](https://ionq.com/contact)
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE).
+Apache License 2.0. See [LICENSE](https://github.com/ionq/ionq-core-python/blob/main/LICENSE).

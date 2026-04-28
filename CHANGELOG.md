@@ -23,3 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Native trapped-ion gate unitaries `gpi_matrix`, `gpi2_matrix`, `ms_matrix`, and `zz_matrix` as plain Python nested tuples (no NumPy dependency).
 - Typed `attrs` request and response models with `from_dict()` / `to_dict()` and an `Unset` sentinel that distinguishes "not provided" from `None`.
 - Python 3.12 - 3.14 support, `py.typed` marker, Apache-2.0 license.
+
+[Unreleased]: https://github.com/ionq/ionq-core-python/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ionq/ionq-core-python/releases/tag/v0.1.0
