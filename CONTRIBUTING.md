@@ -12,8 +12,6 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unac
 - **Account, billing, or platform questions** -> <https://ionq.com/contact>.
 - **Security vulnerabilities** -> see [SECURITY.md](SECURITY.md). Do not open a public issue.
 
-If you are looking for a higher-level interface (Qiskit, Cirq, PennyLane, CUDA-Q, qBraid), see the framework SDKs linked from the [README](README.md#looking-for-a-higher-level-interface). `ionq-core` is the low-level HTTP client those SDKs are built on.
-
 ## Reporting bugs
 
 Open a [bug report](.github/ISSUE_TEMPLATE/bug_report.yml) and fill in every required field. Incomplete reports may be closed.
@@ -30,15 +28,13 @@ For non-trivial changes, open an issue first to confirm scope before investing s
 
 ## Code structure
 
-`ionq_core/` mixes machine-generated and hand-written code. Files that are overwritten on every regeneration carry the `# @generated` marker in their header; never edit them directly:
+`ionq_core/` mixes machine-generated and hand-written code. Files carrying the `# @generated` marker are overwritten on every regeneration; never edit them directly:
 
 - `ionq_core/api/**` and `ionq_core/models/**`
 - `ionq_core/client.py`, `errors.py`, `types.py`
 - `ionq_core/__init__.py` (regenerated from `custom-templates/package_init.py.jinja`)
 
-Everything else under `ionq_core/`, plus `tests/` and `custom-templates/`, is hand-written and accepts pull requests. `openapi.json` is the vendored upstream spec and is refreshed by the regeneration command below.
-
-The PR-time [`generated`](.github/workflows/generated.yml) workflow regenerates the client and fails the build if the result differs from what is committed. The mechanically generated paths (api/, models/, client.py, errors.py, types.py) are excluded from `ruff` lint and coverage measurement in `pyproject.toml`; `ty` runs against the whole package but with `invalid-argument-type` loosened for `api/` and `models/`, where it triggers on spec-driven `attrs` models. `__init__.py` stays in scope for all three because its template is ours to maintain.
+Everything else under `ionq_core/`, plus `tests/` and `custom-templates/`, is hand-written. The [`generated`](.github/workflows/generated.yml) workflow regenerates on every PR and fails if the output differs from what is committed; tool-specific exclusions for generated paths live in `pyproject.toml` and `.gitattributes`.
 
 ## Development setup
 
@@ -97,9 +93,7 @@ uvx openapi-python-client==0.28.3 generate \
     --overwrite
 ```
 
-Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR.
-
-Post-generation hooks defined in `openapi-python-client-config.yaml` patch `AuthenticatedClient.token` so API keys do not leak into `repr`, prepend the SPDX and `# @generated` header to every Python file, and run `ruff check --fix-only` followed by `ruff format`.
+Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
 
 Commit the regenerated files alongside the spec or template change that caused them. Spec drift is checked weekly by [`spec-drift.yml`](.github/workflows/spec-drift.yml), which opens an issue if `openapi.json` falls behind upstream.
 

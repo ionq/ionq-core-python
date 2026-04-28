@@ -254,13 +254,9 @@ gpi_matrix(0.0)        # Pauli X
 ms_matrix(0.0, 0.0)    # maximally-entangling Molmer-Sorensen gate
 ```
 
-## SDK version vs API spec version
-
-The SDK version follows its own [SemVer 2.0](https://semver.org/spec/v2.0.0.html) cadence, independent of the upstream REST API version. To pin against a different API, pass an explicit `base_url` to `IonQClient`.
-
 ## Versioning
 
-This package follows [SemVer](https://semver.org/spec/v2.0.0.html), with three carve-outs that may ship in minor releases:
+This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independent of the upstream REST API version - pass an explicit `base_url` to `IonQClient` to pin against a different API. Three carve-outs may ship in minor releases:
 
 1. Changes that affect static types only, without changing runtime behavior.
 2. Changes to library internals that are technically importable but not documented for external use (anything beginning with an underscore, or absent from the API reference).
