@@ -4,10 +4,7 @@
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report privately through either channel:
-
-- **GitHub Private Vulnerability Reporting** (preferred): [Report a vulnerability](https://github.com/ionq/ionq-core-python/security/advisories/new). The report is visible only to repository maintainers and people you invite to the advisory.
-- **Email**: [security@ionq.co](mailto:security@ionq.co) with the subject line `[ionq-core-python]`.
+Email [security@ionq.co](mailto:security@ionq.co) with the subject line `[ionq-core-python]`.
 
 Please include enough detail to reproduce the issue, and redact your API key from any logs or response payloads you share.
 
@@ -25,7 +22,7 @@ When conducting security research consistent with this policy, we consider your 
 - We will not bring a claim against you for circumvention of technical controls under relevant anti-circumvention laws (such as DMCA section 1201).
 - If a third party initiates legal action against you for activities conducted in good-faith compliance with this policy, we will take steps to make it known that your actions were authorized.
 
-In return, we ask that you comply with all applicable laws, make reasonable efforts to avoid privacy violations, service disruption, and destruction of data, limit testing to your own account or accounts you control, and use the channels above to discuss vulnerabilities with us.
+In return, we ask that you comply with all applicable laws, make reasonable efforts to avoid privacy violations, service disruption, and destruction of data, limit testing to your own account or accounts you control, and use the email above to discuss vulnerabilities with us.
 
 If you are unsure whether a planned activity is consistent with this policy, contact <security@ionq.co> before proceeding. Safe harbor applies only to claims within IonQ's control; this policy does not bind independent third parties.
 
