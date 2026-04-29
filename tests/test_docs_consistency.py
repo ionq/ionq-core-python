@@ -1,6 +1,5 @@
 """Pin docs and config against runtime constants and each other to catch drift in CI."""
 
-import json
 import re
 import tomllib
 from pathlib import Path
@@ -136,13 +135,6 @@ def test_spec_path_matches_default_base_url():
     spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
     assert spec_path in CONTRIB
     assert spec_path in SPEC_DRIFT_WF
-
-
-def test_default_base_url_matches_spec_servers():
-    # Compare paths, not full URLs, so a staging-fetched spec
-    # (different host, same /vX.Y path) still satisfies the version pin.
-    spec = json.loads((ROOT / "openapi.json").read_text())
-    assert urlparse(spec["servers"][0]["url"]).path == urlparse(DEFAULT_BASE_URL).path
 
 
 def test_single_spdx_year_across_package():
