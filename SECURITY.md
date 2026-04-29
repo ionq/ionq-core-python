@@ -4,10 +4,7 @@
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report privately through either channel:
-
-- **GitHub Private Vulnerability Reporting** (preferred): [Report a vulnerability](https://github.com/ionq/ionq-core-python/security/advisories/new). The report is visible only to repository maintainers and people you invite to the advisory.
-- **Email**: [security@ionq.co](mailto:security@ionq.co) with the subject line `[ionq-core-python]`.
+Email [security@ionq.co](mailto:security@ionq.co) with the subject line `[ionq-core-python]`.
 
 Please include enough detail to reproduce the issue, and redact your API key from any logs or response payloads you share.
 
