@@ -17,6 +17,7 @@ ROOT = Path(__file__).parent.parent
 PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text())
 GITATTRIBUTES = (ROOT / ".gitattributes").read_text()
 CONTRIB = (ROOT / "CONTRIBUTING.md").read_text()
+CHANGELOG = (ROOT / "CHANGELOG.md").read_text()
 GENERATED_WF = (ROOT / ".github" / "workflows" / "generated.yml").read_text()
 SPEC_DRIFT_WF = (ROOT / ".github" / "workflows" / "spec-drift.yml").read_text()
 
@@ -100,6 +101,11 @@ def test_classifiers_match_ci_matrix():
         if c.startswith("Programming Language :: Python :: 3.")
     )
     assert sorted(_ci_python_versions()) == classifiers, f"matrix={_ci_python_versions()} classifiers={classifiers}"
+
+
+def test_pyproject_version_in_changelog():
+    version = PYPROJECT["project"]["version"]
+    assert f"## [{version}]" in CHANGELOG, f"pyproject version {version} missing from CHANGELOG.md"
 
 
 def test_ruff_excludes_match_coverage_omits():
