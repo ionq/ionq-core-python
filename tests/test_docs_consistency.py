@@ -139,8 +139,10 @@ def test_spec_path_matches_default_base_url():
 
 
 def test_default_base_url_matches_spec_servers():
+    # Compare paths, not full URLs, so a staging-fetched spec
+    # (different host, same /vX.Y path) still satisfies the version pin.
     spec = json.loads((ROOT / "openapi.json").read_text())
-    assert spec["servers"][0]["url"] == DEFAULT_BASE_URL
+    assert urlparse(spec["servers"][0]["url"]).path == urlparse(DEFAULT_BASE_URL).path
 
 
 def test_single_spdx_year_across_package():
