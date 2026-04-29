@@ -108,7 +108,7 @@ def test_ruff_excludes_match_coverage_omits():
 
 
 def test_gitattributes_covers_ruff_paths_plus_init():
-    # __init__.py is template-generated but the template is hand-edited; in ruff/coverage scope, but still linguist-generated.
+    # __init__.py: hand-edited template, generated output; in ruff/coverage scope, marked linguist-generated.
     gitattr = {
         _normalize(line.split()[0])
         for line in GITATTRIBUTES.splitlines()
