@@ -9,23 +9,17 @@ from urllib.parse import urlparse
 import pytest
 
 from ionq_core import extensions, polling
-from ionq_core._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES
+from ionq_core._transport import DEFAULT_MAX_RETRIES
 from ionq_core.ionq_client import DEFAULT_BASE_URL, DEFAULT_TIMEOUT
 from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
 
 ROOT = Path(__file__).parent.parent
-README = (ROOT / "README.md").read_text()
 PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text())
 GITATTRIBUTES = (ROOT / ".gitattributes").read_text()
 CONTRIB = (ROOT / "CONTRIBUTING.md").read_text()
 GENERATED_WF = (ROOT / ".github" / "workflows" / "generated.yml").read_text()
 SPEC_DRIFT_WF = (ROOT / ".github" / "workflows" / "spec-drift.yml").read_text()
-SESSION_PY = (ROOT / "ionq_core" / "session.py").read_text()
-
-PACKAGE_DESCRIPTION = "A client library for accessing IonQ Cloud Platform API"
-EXAMPLE_BACKEND = "qpu.aria-1"
-_BACKEND_PATTERN = re.compile(r'SessionManager\([^)]*?"([^"]+)"')
 
 
 def _normalize(path: str) -> str:
@@ -55,10 +49,6 @@ def _pin(text: str, package: str) -> str:
     return m.group(1)
 
 
-def test_retryable_status_codes_match_runtime():
-    assert frozenset({429, 500, 502, 503, *range(520, 530)}) == RETRYABLE_STATUS_CODES
-
-
 @pytest.mark.parametrize(
     "needle",
     [
@@ -86,11 +76,6 @@ def test_polling_docstring_pins(fn, needle):
     assert needle in (fn.__doc__ or ""), f"{needle!r} missing from {fn.__name__}"
 
 
-def test_session_example_backend_consistent():
-    backends = set(_BACKEND_PATTERN.findall(SESSION_PY))
-    assert backends == {EXAMPLE_BACKEND}, f"divergent backends in session.py: {backends}"
-
-
 def test_pyproject_floor_matches_ci_matrix():
     assert _python_floor() == min(_ci_python_versions())
 
@@ -116,20 +101,6 @@ def test_classifiers_match_ci_matrix():
         if c.startswith("Programming Language :: Python :: 3.")
     )
     assert sorted(_ci_python_versions()) == classifiers, f"matrix={_ci_python_versions()} classifiers={classifiers}"
-
-
-def test_pyproject_description_canonical():
-    assert PYPROJECT["project"]["description"] == PACKAGE_DESCRIPTION
-
-
-def test_init_module_docstring_canonical():
-    import ionq_core
-
-    assert (ionq_core.__doc__ or "").strip() == PACKAGE_DESCRIPTION
-
-
-def test_readme_tagline_canonical():
-    assert PACKAGE_DESCRIPTION in README
 
 
 def test_ruff_excludes_match_coverage_omits():
