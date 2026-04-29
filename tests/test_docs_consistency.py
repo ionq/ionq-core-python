@@ -25,7 +25,7 @@ SESSION_PY = (ROOT / "ionq_core" / "session.py").read_text()
 
 PACKAGE_DESCRIPTION = "A client library for accessing IonQ Cloud Platform API"
 EXAMPLE_BACKEND = "qpu.aria-1"
-_BACKEND_PATTERN = re.compile(r'SessionManager\([^)]*?"(qpu\.[^"]+)"')
+_BACKEND_PATTERN = re.compile(r'SessionManager\([^)]*?"([^"]+)"')
 
 
 def _normalize(path: str) -> str:

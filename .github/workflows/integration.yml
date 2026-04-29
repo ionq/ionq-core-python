@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-uv
         with:
-          enable-cache: "true"
+          enable-cache: true
       - run: uv sync
       - name: Run integration tests
         env:
