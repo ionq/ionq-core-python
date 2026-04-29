@@ -10,7 +10,7 @@ import pytest
 
 from ionq_core import extensions, polling
 from ionq_core._transport import DEFAULT_MAX_RETRIES, RETRYABLE_STATUS_CODES
-from ionq_core.ionq_client import _DEFAULT_BASE_URL, _DEFAULT_TIMEOUT
+from ionq_core.ionq_client import DEFAULT_BASE_URL, DEFAULT_TIMEOUT
 from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
 
@@ -65,7 +65,7 @@ def test_retryable_status_codes_match_runtime():
         *(str(c) for c in (429, 500, 502, 503)),
         "520-529",
         f"default of {DEFAULT_MAX_RETRIES}",
-        f"default of {int(_DEFAULT_TIMEOUT.read)} seconds",
+        f"default of {int(DEFAULT_TIMEOUT.read)} seconds",
     ],
 )
 def test_client_extension_docstring_pins(needle):
@@ -159,17 +159,17 @@ def test_oas_patch_versions_match():
 
 
 def test_spec_path_matches_default_base_url():
-    # Pinning to _DEFAULT_BASE_URL means a v0.4 -> v0.5 bump fails this test until
+    # Pinning to DEFAULT_BASE_URL means a v0.4 -> v0.5 bump fails this test until
     # CONTRIBUTING and spec-drift.yml are updated too. Otherwise the drift workflow
     # would silently keep curl'ing the stale endpoint.
-    spec_path = f"{urlparse(_DEFAULT_BASE_URL).path}/api-docs"
+    spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
     assert spec_path in CONTRIB
     assert spec_path in SPEC_DRIFT_WF
 
 
 def test_default_base_url_matches_spec_servers():
     spec = json.loads((ROOT / "openapi.json").read_text())
-    assert spec["servers"][0]["url"] == _DEFAULT_BASE_URL
+    assert spec["servers"][0]["url"] == DEFAULT_BASE_URL
 
 
 def test_single_spdx_year_across_package():
