@@ -3,6 +3,11 @@ description: Suggest a feature for ionq-core
 labels: [enhancement]
 
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search [existing issues](https://github.com/ionq/ionq-core-python/issues) before opening a new request. For API surface changes (new endpoints, parameter names, response shapes), see [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes).
+
   - type: textarea
     id: description
     attributes:
@@ -10,3 +15,11 @@ body:
       description: What problem would this solve, and how would you like it to work?
     validations:
       required: true
+
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: Pre-submit checks
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true

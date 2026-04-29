@@ -11,8 +11,9 @@ from ionq_core.exceptions import (
     RateLimitError,
     ServerError,
 )
+from tests.conftest import BASE_URL
 
-_URL = "https://api.ionq.co/v0.4/backends"
+_URL = f"{BASE_URL}/backends"
 
 
 class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):

@@ -4,6 +4,6 @@ literal_enums: true
 
 post_hooks:
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
-  - "perl -0777 -pi -e 's/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: 2026 IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/' $(find . -name '*.py')"
+  - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/' $(find . -name '*.py')"
   - "ruff check . --fix-only"
   - "ruff format ."

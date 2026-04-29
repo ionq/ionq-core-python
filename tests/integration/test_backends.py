@@ -4,16 +4,15 @@ import pytest
 
 from ionq_core import Client
 from ionq_core.api.backends import get_backend, get_backends
+from ionq_core.ionq_client import DEFAULT_BASE_URL
 
 pytestmark = pytest.mark.integration
-
-BASE_URL = "https://api.ionq.co/v0.4"
 
 
 @pytest.fixture(scope="module")
 def backends():
     # Backends listing is unauthenticated - no API key needed.
-    return get_backends.sync(client=Client(base_url=BASE_URL))
+    return get_backends.sync(client=Client(base_url=DEFAULT_BASE_URL))
 
 
 def test_list_returns_backends(backends):

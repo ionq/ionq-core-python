@@ -1,6 +1,11 @@
+from urllib.parse import urlparse
+
 import pytest
 
 from ionq_core import AuthenticatedClient, Client
+from ionq_core.ionq_client import DEFAULT_BASE_URL
+
+BASE_URL = "https://test.invalid" + urlparse(DEFAULT_BASE_URL).path
 
 
 def make_job_json(job_id, status="completed", **overrides):
@@ -35,13 +40,13 @@ def make_job_json(job_id, status="completed", **overrides):
 
 @pytest.fixture
 def client() -> Client:
-    return Client(base_url="https://test.invalid/v0.4")
+    return Client(base_url=BASE_URL)
 
 
 @pytest.fixture
 def auth_client() -> AuthenticatedClient:
     return AuthenticatedClient(
-        base_url="https://test.invalid/v0.4",
+        base_url=BASE_URL,
         token="test-api-key",
         prefix="apiKey",
         auth_header_name="Authorization",

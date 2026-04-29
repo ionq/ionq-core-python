@@ -10,8 +10,9 @@ from ionq_core.extensions import (
     AsyncEventHook,
     HookTransport,
 )
+from tests.conftest import BASE_URL
 
-_BACKENDS_URL = "https://api.ionq.co/v0.4/backends"
+_BACKENDS_URL = f"{BASE_URL}/backends"
 
 
 class RecordingHook:

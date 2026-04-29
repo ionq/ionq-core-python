@@ -28,7 +28,8 @@ try:
 except PackageNotFoundError:
     __version__ = "0.0.0"
 
-_DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
+DEFAULT_BASE_URL = "https://api.ionq.co/v0.4"
+DEFAULT_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 _AUTH_PREFIX = "apiKey"
 _AUTH_HEADER = "Authorization"
 
@@ -36,7 +37,7 @@ _AUTH_HEADER = "Authorization"
 def IonQClient(
     *,
     api_key: str | None = None,
-    base_url: str = "https://api.ionq.co/v0.4",
+    base_url: str = DEFAULT_BASE_URL,
     max_retries: int | None = None,
     timeout: httpx.Timeout | None = None,
     additional_user_agent: str | None = None,
@@ -129,9 +130,8 @@ def IonQClient(
         *filter(None, (additional_user_agent, ext.user_agent_token)),
     ]
     user_agent = " ".join(ua_parts)
-    effective_timeout = timeout or ext.timeout or _DEFAULT_TIMEOUT
-    ext_retries = ext.max_retries if ext.max_retries is not None else DEFAULT_MAX_RETRIES
-    effective_retries = max_retries if max_retries is not None else ext_retries
+    effective_timeout = timeout or ext.timeout or DEFAULT_TIMEOUT
+    effective_retries = next(v for v in (max_retries, ext.max_retries, DEFAULT_MAX_RETRIES) if v is not None)
 
     headers = {**ext.default_headers, "User-Agent": user_agent}
 
