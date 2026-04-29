@@ -6,16 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to file a bug report. Please search
-        [existing issues](https://github.com/ionq/ionq-core-python/issues) first.
+        Thanks for taking the time to file a bug report. Please search [existing issues](https://github.com/ionq/ionq-core-python/issues) first.
 
   - type: dropdown
     id: area
     attributes:
       label: Affected area
       description: |
-        See [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes)
-        for the boundary between generated and hand-written code.
+        See [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes) for the boundary between generated and hand-written code.
       options:
         - Generated client (regenerated from OpenAPI spec)
         - Hand-written extensions (retry, pagination, polling, sessions, native gates, etc.)
