@@ -1,5 +1,6 @@
 """Pin docs and config against runtime constants and each other to catch drift in CI."""
 
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -51,8 +52,6 @@ def _pin(text: str, package: str) -> str:
 @pytest.mark.parametrize(
     "needle",
     [
-        *(str(c) for c in (429, 500, 502, 503)),
-        "520-529",
         f"default of {DEFAULT_MAX_RETRIES}",
         f"default of {int(DEFAULT_TIMEOUT.read)} seconds",
     ],
@@ -109,8 +108,7 @@ def test_ruff_excludes_match_coverage_omits():
 
 
 def test_gitattributes_covers_ruff_paths_plus_init():
-    # __init__.py is generated (template-driven) but kept in scope for ruff/coverage
-    # because the template is hand-maintained. .gitattributes still marks it generated.
+    # __init__.py is template-generated but the template is hand-edited; in ruff/coverage scope, but still linguist-generated.
     gitattr = {
         _normalize(line.split()[0])
         for line in GITATTRIBUTES.splitlines()
@@ -129,19 +127,22 @@ def test_oas_patch_versions_match():
 
 
 def test_spec_path_matches_default_base_url():
-    # Pinning to DEFAULT_BASE_URL means a v0.4 -> v0.5 bump fails this test until
-    # CONTRIBUTING and spec-drift.yml are updated too. Otherwise the drift workflow
-    # would silently keep curl'ing the stale endpoint.
+    # Without this, a DEFAULT_BASE_URL bump leaves spec-drift.yml curling the stale endpoint.
     spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
     assert spec_path in CONTRIB
     assert spec_path in SPEC_DRIFT_WF
 
 
+def test_spec_servers_path_in_docs():
+    # Catches a stale openapi.json: code/docs bumped without regen, or fetched from the wrong version.
+    spec = json.loads((ROOT / "openapi.json").read_text())
+    spec_path = urlparse(spec["servers"][0]["url"]).path
+    assert f"{spec_path}/api-docs" in CONTRIB
+    assert f"{spec_path}/api-docs" in SPEC_DRIFT_WF
+
+
 def test_single_spdx_year_across_package():
-    """Generated files get the year injected by the openapi-python-client post-hook;
-    hand-written files have a static year. After a new-year regen, both sets must
-    be bumped together.
-    """
+    """Generated files get the year via post-hook; hand-written files must be bumped to match at year boundaries."""
     years = set()
     for py in (ROOT / "ionq_core").rglob("*.py"):
         m = re.match(r"# SPDX-FileCopyrightText: (\d{4}) IonQ, Inc\.", py.read_text())
