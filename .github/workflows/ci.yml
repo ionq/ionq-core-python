@@ -37,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -47,7 +47,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
-      - run: uv run pytest ${{ matrix.python-version != '3.12' && '--no-cov' || '' }}
+      - run: uv run pytest ${{ matrix.python-version != '3.11' && '--no-cov' || '' }}
 
   audit:
     runs-on: ubuntu-latest
