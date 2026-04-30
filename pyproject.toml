@@ -5,7 +5,7 @@ description = "A client library for accessing IonQ Cloud Platform API"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [{name = "IonQ", email = "support@ionq.co"}]
 keywords = ["ionq", "quantum", "quantum-computing", "sdk", "api-client"]
 classifiers = [
@@ -14,6 +14,7 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
@@ -53,7 +54,7 @@ build-backend = "hatchling.build"
 packages = ["ionq_core"]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py311"
 line-length = 120
 extend-exclude = [
     "ionq_core/api",
@@ -76,7 +77,7 @@ known-first-party = ["ionq_core"]
 "tests/**" = ["RUF012"]
 
 [tool.ty.environment]
-python-version = "3.12"
+python-version = "3.11"
 
 [[tool.ty.overrides]]
 include = ["ionq_core/models/**", "ionq_core/api/**"]

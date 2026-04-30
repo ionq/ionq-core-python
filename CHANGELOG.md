@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Lowered minimum supported Python version from 3.12 to 3.11. CI now tests Python 3.11 - 3.14.
+
 ## [0.1.0] - 2026-04-29
 
 ### Added

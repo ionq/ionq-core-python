@@ -5,7 +5,7 @@ inputs:
   python-version:
     description: Python version to install. Defaults to the project's floor.
     required: false
-    default: "3.12"
+    default: "3.11"
   enable-cache:
     description: Pass-through to astral-sh/setup-uv enable-cache.
     required: false
