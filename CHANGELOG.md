@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-04-30
+
 ### Changed
 
 - Lowered minimum supported Python version from 3.12 to 3.11. CI now tests Python 3.11 - 3.14.
@@ -27,5 +29,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Typed `attrs` request and response models with `from_dict()` / `to_dict()` and an `Unset` sentinel that distinguishes "not provided" from `None`.
 - Python 3.12 - 3.14 support, `py.typed` marker, Apache-2.0 license.
 
-[Unreleased]: https://github.com/ionq/ionq-core-python/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ionq/ionq-core-python/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ionq/ionq-core-python/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ionq/ionq-core-python/releases/tag/v0.1.0
