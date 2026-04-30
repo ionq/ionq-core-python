@@ -1,0 +1,23 @@
+overlay: 1.0.0
+info:
+  title: ionq-core-python local OpenAPI fixes
+  version: 0.1.0
+  description: |
+    Patches applied to openapi.json before client generation. The upstream
+    spec marks QisCircuitInput.qubits as optional and floating-point, but
+    the simulator preflight rejects payloads without it (surfacing as
+    UnexpectedCompilationError) and qubit counts are non-negative integers.
+
+actions:
+  - target: $.components.schemas.QisCircuitInput.required
+    remove: true
+  - target: $.components.schemas.QisCircuitInput
+    update:
+      required:
+        - circuit
+        - gateset
+        - qubits
+  - target: $.components.schemas.QisCircuitInput.properties.qubits
+    update:
+      type: integer
+      format: int32
