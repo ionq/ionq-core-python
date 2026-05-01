@@ -4,7 +4,14 @@ on:
   push:
     tags: ["v*"]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions: {}
+
+env:
+  UV_FROZEN: true
 
 jobs:
   build:
@@ -63,6 +70,7 @@ jobs:
         with:
           name: dist
           path: dist/
-      - run: |
+      - name: Create or update GitHub Release
+        run: |
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes
           gh release upload "$TAG" --clobber dist/*
