@@ -14,7 +14,6 @@ from ..types import UNSET, Unset
 
 from ..models.qis_circuit_input_gateset import check_qis_circuit_input_gateset
 from ..models.qis_circuit_input_gateset import QisCircuitInputGateset
-from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
@@ -32,14 +31,14 @@ T = TypeVar("T", bound="QisCircuitInput")
 class QisCircuitInput:
     """ 
         Attributes:
+            qubits (int):
             circuit (list[GateQisGate]):
             gateset (QisCircuitInputGateset):
-            qubits (float | Unset):
      """
 
+    qubits: int
     circuit: list[GateQisGate]
     gateset: QisCircuitInputGateset
-    qubits: float | Unset = UNSET
 
 
 
@@ -47,6 +46,8 @@ class QisCircuitInput:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.gate_qis_gate import GateQisGate
+        qubits = self.qubits
+
         circuit = []
         for circuit_item_data in self.circuit:
             circuit_item = circuit_item_data.to_dict()
@@ -56,17 +57,14 @@ class QisCircuitInput:
 
         gateset: str = self.gateset
 
-        qubits = self.qubits
-
 
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
+            "qubits": qubits,
             "circuit": circuit,
             "gateset": gateset,
         })
-        if qubits is not UNSET:
-            field_dict["qubits"] = qubits
 
         return field_dict
 
@@ -76,6 +74,8 @@ class QisCircuitInput:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.gate_qis_gate import GateQisGate
         d = dict(src_dict)
+        qubits = d.pop("qubits")
+
         circuit = []
         _circuit = d.pop("circuit")
         for circuit_item_data in (_circuit):
@@ -91,12 +91,10 @@ class QisCircuitInput:
 
 
 
-        qubits = d.pop("qubits", UNSET)
-
         qis_circuit_input = cls(
+            qubits=qubits,
             circuit=circuit,
             gateset=gateset,
-            qubits=qubits,
         )
 
         return qis_circuit_input

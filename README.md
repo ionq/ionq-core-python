@@ -47,8 +47,9 @@ body = CircuitJobCreationPayload.from_dict({
     "shots": 100,
     "input": {
         "gateset": "qis",
+        "qubits": 2,
         "circuit": [
-            {"gate": "h", "targets": [0]},
+            {"gate": "h", "target": 0},
             {"gate": "cnot", "control": 0, "target": 1},
         ],
     },
