@@ -4,16 +4,19 @@ on:
   push:
     tags: ["v*"]
 
-permissions:
-  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
 
 env:
   UV_FROZEN: true
 
 jobs:
-  verify-version:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -21,26 +24,13 @@ jobs:
       - name: Verify tag matches pyproject version
         run: |
           set -euo pipefail
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          PYPROJECT_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          if [[ "$TAG_VERSION" != "$PYPROJECT_VERSION" ]]; then
-            echo "::error::Tag ${GITHUB_REF_NAME} does not match pyproject.toml version ${PYPROJECT_VERSION}"
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          [[ "$TAG" == "$VERSION" ]] || { echo "::error::Tag $GITHUB_REF_NAME does not match pyproject version $VERSION"; exit 1; }
+          if curl -sf "https://pypi.org/pypi/ionq-core/$VERSION/json" >/dev/null 2>&1; then
+            echo "::error::Version $VERSION already exists on PyPI"
             exit 1
           fi
-          if curl -sf "https://pypi.org/pypi/ionq-core/${PYPROJECT_VERSION}/json" > /dev/null 2>&1; then
-            echo "::error::Version ${PYPROJECT_VERSION} already exists on PyPI"
-            exit 1
-          fi
-          echo "Releasing ionq-core ${PYPROJECT_VERSION}"
-
-  build:
-    needs: verify-version
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
       - uses: ./.github/actions/setup-uv
       - run: uv build
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -49,7 +39,7 @@ jobs:
           path: dist/
           if-no-files-found: error
 
-  publish:
+  publish-pypi:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -58,7 +48,6 @@ jobs:
       url: https://pypi.org/p/ionq-core
     permissions:
       id-token: write
-      attestations: write
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
@@ -67,16 +56,21 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
 
   github-release:
-    needs: publish
+    needs: publish-pypi
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          persist-credentials: false
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+          name: dist
+          path: dist/
+      - name: Create or update GitHub Release
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --generate-notes
+          gh release upload "$TAG" --clobber dist/*
