@@ -33,8 +33,47 @@ from .create_session_request import CreateSessionRequest
 from .error import Error
 from .failure import Failure
 from .failure_code import FailureCode
+from .gate_cnot import GateCnot
+from .gate_cnot_gate import GateCnotGate
+from .gate_h import GateH
+from .gate_h_gate import GateHGate
 from .gate_native_gate import GateNativeGate
-from .gate_qis_gate import GateQisGate
+from .gate_not import GateNot
+from .gate_not_gate import GateNotGate
+from .gate_pauliexp import GatePauliexp
+from .gate_pauliexp_gate import GatePauliexpGate
+from .gate_rx import GateRx
+from .gate_rx_gate import GateRxGate
+from .gate_ry import GateRy
+from .gate_ry_gate import GateRyGate
+from .gate_rz import GateRz
+from .gate_rz_gate import GateRzGate
+from .gate_s import GateS
+from .gate_s_gate import GateSGate
+from .gate_si import GateSi
+from .gate_si_gate import GateSiGate
+from .gate_swap import GateSwap
+from .gate_swap_gate import GateSwapGate
+from .gate_t import GateT
+from .gate_t_gate import GateTGate
+from .gate_ti import GateTi
+from .gate_ti_gate import GateTiGate
+from .gate_v import GateV
+from .gate_v_gate import GateVGate
+from .gate_vi import GateVi
+from .gate_vi_gate import GateViGate
+from .gate_x import GateX
+from .gate_x_gate import GateXGate
+from .gate_xx import GateXX
+from .gate_xx_gate import GateXXGate
+from .gate_y import GateY
+from .gate_y_gate import GateYGate
+from .gate_yy import GateYY
+from .gate_yy_gate import GateYYGate
+from .gate_z import GateZ
+from .gate_z_gate import GateZGate
+from .gate_zz import GateZZ
+from .gate_zz_gate import GateZZGate
 from .generic_quantum_function_input import GenericQuantumFunctionInput
 from .generic_quantum_function_input_data import GenericQuantumFunctionInputData
 from .get_backend_backend import GetBackendBackend
@@ -145,8 +184,47 @@ __all__ = (
     "Error",
     "Failure",
     "FailureCode",
+    "GateCnot",
+    "GateCnotGate",
+    "GateH",
+    "GateHGate",
     "GateNativeGate",
-    "GateQisGate",
+    "GateNot",
+    "GateNotGate",
+    "GatePauliexp",
+    "GatePauliexpGate",
+    "GateRx",
+    "GateRxGate",
+    "GateRy",
+    "GateRyGate",
+    "GateRz",
+    "GateRzGate",
+    "GateS",
+    "GateSGate",
+    "GateSi",
+    "GateSiGate",
+    "GateSwap",
+    "GateSwapGate",
+    "GateT",
+    "GateTGate",
+    "GateTi",
+    "GateTiGate",
+    "GateV",
+    "GateVGate",
+    "GateVi",
+    "GateViGate",
+    "GateX",
+    "GateXGate",
+    "GateXX",
+    "GateXXGate",
+    "GateY",
+    "GateYGate",
+    "GateYY",
+    "GateYYGate",
+    "GateZ",
+    "GateZGate",
+    "GateZZ",
+    "GateZZGate",
     "GenericQuantumFunctionInput",
     "GenericQuantumFunctionInputData",
     "GetBackendBackend",

@@ -112,7 +112,7 @@ class TestCreateJob:
                 "type": "ionq.circuit.v1",
                 "backend": "simulator",
                 "shots": 100,
-                "input": {"gateset": "qis", "qubits": 1, "circuit": [{"gate": "h", "target": 0}]},
+                "input": {"gateset": "qis", "qubits": 1, "circuit": [{"gate": "h", "targets": [0]}]},
             }
         )
         result = create_job.sync(client=auth_client, body=body)

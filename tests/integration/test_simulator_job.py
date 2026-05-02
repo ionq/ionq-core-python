@@ -27,8 +27,8 @@ BELL_CIRCUIT = {
         "gateset": "qis",
         "qubits": 2,
         "circuit": [
-            {"gate": "h", "target": 0},
-            {"gate": "cnot", "control": 0, "target": 1},
+            {"gate": "h", "targets": [0]},
+            {"gate": "cnot", "targets": [1], "controls": [0]},
         ],
     },
 }
