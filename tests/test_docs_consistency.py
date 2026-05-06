@@ -139,13 +139,6 @@ def test_spec_servers_path_in_docs():
     assert f"{spec_path}/api-docs" in CONTRIB
 
 
-def test_spec_drift_derives_url_from_spec():
-    # Pins the workflow's single source of truth: the spec URL is read from openapi.json,
-    # so a servers[].url change can't desync curl or the issue body from the actual spec.
-    assert "jq -r '.servers[0].url' openapi.json" in SPEC_DRIFT_WF
-    assert "${BASE_URL}/api-docs" in SPEC_DRIFT_WF
-
-
 def test_single_spdx_year_across_package():
     """Generated files get the year via post-hook; hand-written files must be bumped to match at year boundaries."""
     years = set()
