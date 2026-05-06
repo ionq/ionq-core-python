@@ -7,7 +7,7 @@ ionq_core/api/**      linguist-generated=true
 ionq_core/models/**   linguist-generated=true
 
 # Vendored upstream OpenAPI spec.
-openapi.json linguist-vendored=true
+openapi.json linguist-vendored=true linguist-generated=true
 
 # Lockfile.
 uv.lock linguist-generated=true
