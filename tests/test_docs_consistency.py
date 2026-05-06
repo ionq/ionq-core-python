@@ -127,10 +127,9 @@ def test_oas_patch_versions_match():
 
 
 def test_spec_path_matches_default_base_url():
-    # Without this, a DEFAULT_BASE_URL bump leaves spec-drift.yml curling the stale endpoint.
+    # Without this, a DEFAULT_BASE_URL bump leaves CONTRIBUTING.md pointing at a stale endpoint.
     spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
     assert spec_path in CONTRIB
-    assert spec_path in SPEC_DRIFT_WF
 
 
 def test_spec_servers_path_in_docs():
@@ -138,7 +137,13 @@ def test_spec_servers_path_in_docs():
     spec = json.loads((ROOT / "openapi.json").read_text())
     spec_path = urlparse(spec["servers"][0]["url"]).path
     assert f"{spec_path}/api-docs" in CONTRIB
-    assert f"{spec_path}/api-docs" in SPEC_DRIFT_WF
+
+
+def test_spec_drift_derives_url_from_spec():
+    # Pins the workflow's single source of truth: the spec URL is read from openapi.json,
+    # so a servers[].url change can't desync curl or the issue body from the actual spec.
+    assert "jq -r '.servers[0].url' openapi.json" in SPEC_DRIFT_WF
+    assert "${BASE_URL}/api-docs" in SPEC_DRIFT_WF
 
 
 def test_single_spdx_year_across_package():
