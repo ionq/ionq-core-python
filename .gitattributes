@@ -6,7 +6,7 @@ ionq_core/types.py    linguist-generated=true
 ionq_core/api/**      linguist-generated=true
 ionq_core/models/**   linguist-generated=true
 
-# Vendored upstream OpenAPI spec; also marked generated so PR diffs collapse by default.
+# Vendored upstream OpenAPI spec.
 openapi.json linguist-vendored=true linguist-generated=true
 
 # Lockfile.
