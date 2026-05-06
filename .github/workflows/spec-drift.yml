@@ -22,18 +22,40 @@ jobs:
       - name: Check for drift
         id: drift
         run: |
-          if ! diff -q <(python3 -m json.tool openapi.json) <(python3 -m json.tool /tmp/latest-spec.json) > /dev/null 2>&1; then
-            echo "drifted=true" >> "$GITHUB_OUTPUT"
+          python3 -m json.tool --sort-keys openapi.json > /tmp/vendored-spec.json
+          python3 -m json.tool --sort-keys /tmp/latest-spec.json > /tmp/upstream-spec.json
+          if diff -q /tmp/vendored-spec.json /tmp/upstream-spec.json > /dev/null 2>&1; then
+            exit 0
           fi
-      - name: Open issue
+          echo "drifted=true" >> "$GITHUB_OUTPUT"
+          # diff exits 1 when files differ; pipefail would trip errexit, so capture first.
+          diff -u /tmp/vendored-spec.json /tmp/upstream-spec.json > /tmp/spec.diff || true
+          {
+            echo "The spec at api.ionq.co/v0.4/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client."
+            echo
+            echo "<details><summary>Diff (vendored → upstream, pretty-printed JSON)</summary>"
+            echo
+            echo '```diff'
+            head -c 60000 /tmp/spec.diff
+            if [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]]; then
+              echo
+              echo "... (diff truncated at 60000 bytes; fetch the spec to see the rest)"
+            fi
+            echo '```'
+            echo
+            echo "</details>"
+          } > /tmp/issue-body.md
+      - name: Open or update issue
         if: steps.drift.outputs.drifted == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          existing=$(gh issue list --label spec-drift --state open --json number --jq length)
-          if [[ "$existing" == "0" ]]; then
+          existing=$(gh issue list --label spec-drift --state open --json number --jq '.[0].number // empty')
+          if [[ -z "$existing" ]]; then
             gh issue create \
               --title "OpenAPI spec has changed upstream" \
-              --body "The spec at api.ionq.co/v0.4/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client." \
+              --body-file /tmp/issue-body.md \
               --label spec-drift
+          else
+            gh issue edit "$existing" --body-file /tmp/issue-body.md
           fi
