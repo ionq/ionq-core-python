@@ -18,6 +18,7 @@ ROOT = Path(__file__).parent.parent
 PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text())
 GITATTRIBUTES = (ROOT / ".gitattributes").read_text()
 CONTRIB = (ROOT / "CONTRIBUTING.md").read_text()
+AGENTS = (ROOT / "AGENTS.md").read_text()
 GENERATED_WF = (ROOT / ".github" / "workflows" / "generated.yml").read_text()
 SPEC_DRIFT_WF = (ROOT / ".github" / "workflows" / "spec-drift.yml").read_text()
 
@@ -147,3 +148,57 @@ def test_single_spdx_year_across_package():
         if m:
             years.add(m.group(1))
     assert len(years) == 1, f"expected exactly one SPDX year, found: {years}"
+
+
+# --- AGENTS.md drift checks --------------------------------------------------
+# AGENTS.md restates several values that live in canonical configs; these
+# tests fail CI when the duplicate goes out of sync.
+
+
+@pytest.mark.parametrize("package", ["openapi-python-client", "oas-patch"])
+def test_generator_pin_in_agents_md(package):
+    """Pinned versions in the AGENTS.md regen block match CONTRIBUTING.md."""
+    assert _pin(AGENTS, package) == _pin(CONTRIB, package), f"{package} pin in AGENTS.md does not match CONTRIBUTING.md"
+
+
+def test_spec_path_in_agents_md():
+    """The api-docs path quoted in AGENTS.md tracks DEFAULT_BASE_URL."""
+    spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
+    assert spec_path in AGENTS
+
+
+@pytest.mark.parametrize(
+    "needle",
+    [
+        f"Python {_python_floor()}",
+        "py" + _python_floor().replace(".", ""),
+    ],
+)
+def test_python_floor_in_agents_md(needle):
+    """Both the prose 'Python X.Y' and the ruff/ty 'pyXY' form appear in AGENTS.md."""
+    assert needle in AGENTS, f"{needle!r} missing from AGENTS.md"
+
+
+def test_coverage_threshold_in_agents_md():
+    """--cov-fail-under=N in AGENTS.md matches pytest addopts."""
+    addopts = PYPROJECT["tool"]["pytest"]["ini_options"]["addopts"]
+    m = re.search(r"--cov-fail-under=\d+", addopts)
+    assert m, f"--cov-fail-under not in pytest addopts: {addopts!r}"
+    assert m.group(0) in AGENTS
+
+
+def test_ruff_line_length_in_agents_md():
+    assert f"line-length = {PYPROJECT['tool']['ruff']['line-length']}" in AGENTS
+
+
+def test_ruff_select_in_agents_md():
+    """Ruff rule list in AGENTS.md matches pyproject (order-sensitive)."""
+    rules = ", ".join(PYPROJECT["tool"]["ruff"]["lint"]["select"])
+    assert rules in AGENTS, f"ruff select rules {rules!r} not in AGENTS.md"
+
+
+def test_auth_header_in_agents_md():
+    """The wire-header phrasing in AGENTS.md matches _AUTH_HEADER + _AUTH_PREFIX."""
+    from ionq_core.ionq_client import _AUTH_HEADER, _AUTH_PREFIX
+
+    assert f"{_AUTH_HEADER}: {_AUTH_PREFIX} " in AGENTS
