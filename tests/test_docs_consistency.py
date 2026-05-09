@@ -150,11 +150,6 @@ def test_single_spdx_year_across_package():
     assert len(years) == 1, f"expected exactly one SPDX year, found: {years}"
 
 
-# --- AGENTS.md drift checks --------------------------------------------------
-# AGENTS.md restates several values that live in canonical configs; these
-# tests fail CI when the duplicate goes out of sync.
-
-
 @pytest.mark.parametrize("package", ["openapi-python-client", "oas-patch"])
 def test_generator_pin_in_agents_md(package):
     """Pinned versions in the AGENTS.md regen block match CONTRIBUTING.md."""
