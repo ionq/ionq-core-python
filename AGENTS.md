@@ -121,12 +121,12 @@ When authoring a new workflow, use the local [`.github/actions/setup-uv`](.githu
 - PR titles become release-notes lines (`gh release create --generate-notes`). Imperative mood, user-facing, no leading ticket number.
 - User-visible changes go under `## [Unreleased]` in `CHANGELOG.md`, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 - Release: bump `pyproject.toml` `[project] version`, promote `[Unreleased]` → `[X.Y.Z]` in `CHANGELOG.md`, tag `vX.Y.Z`. `release.yml` rejects mismatched tag/version pairs and refuses to republish an existing PyPI version.
-- Keep public artifacts free of personal/internal information: no real names, internal Slack/Jira links, or internal email addresses in commit messages, branch names, PR titles/bodies, code comments, docstrings, or test names.
+- Ensure the contribution is completely free of IonQ confidential information: proprietary algorithms, trade secrets, internal project codenames, internal file paths, server names, IP addresses, API keys, passwords, non-public experimental data, sensitive customer information, internal-only comments or documentation, etc.
 
 ## Things to avoid (and what to do instead)
 
 - **Editing generated files by hand** → fix the spec, the overlay, the post-hooks, or the template, then regenerate. CI's `generated.yml` will catch it otherwise.
-- **Adding a dep with `pip install`** → `uv add <pkg>` (or edit `pyproject.toml` and `uv lock`).
+- **Adding a dependency with `pip install`** → `uv add <pkg>` (or edit `pyproject.toml` and `uv lock`). Confirm the dependency's license before adding: MIT, Apache-2.0, BSD-2-Clause, and BSD-3-Clause are pre-approved.
 - **`Bearer` token examples / `requests` / `aiohttp`** in docs or tests → the library is `httpx`-only and the auth prefix is `apiKey`.
 - **Dropping the SPDX header or `# @generated` marker** on regenerated files → if a post-hook regression made this happen, fix `openapi-python-client-config.yaml` rather than re-adding by hand.
 - **Lowering the Python floor in one file** → run the local checks in the "Run" section; `tests/test_docs_consistency.py` will list every peer that needs updating in the same commit.
