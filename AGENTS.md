@@ -55,6 +55,7 @@ Run exactly what's in [`CONTRIBUTING.md`](CONTRIBUTING.md) and mirrored in [`.gi
 
 ```sh
 uv sync --group regen
+# If v0.4 isn't found, search for the latest API version.
 curl -sf https://api.ionq.co/v0.4/api-docs -o openapi.json
 uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
 uv run openapi-python-client generate \
