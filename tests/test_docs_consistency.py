@@ -19,8 +19,6 @@ PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text())
 GITATTRIBUTES = (ROOT / ".gitattributes").read_text()
 CONTRIB = (ROOT / "CONTRIBUTING.md").read_text()
 AGENTS = (ROOT / "AGENTS.md").read_text()
-GENERATED_WF = (ROOT / ".github" / "workflows" / "generated.yml").read_text()
-SPEC_DRIFT_WF = (ROOT / ".github" / "workflows" / "spec-drift.yml").read_text()
 
 
 def _normalize(path: str) -> str:
@@ -42,12 +40,6 @@ def _ci_python_versions() -> list[str]:
     m = re.search(r"python-version:\s*\[([^\]]+)\]", ci_text)
     assert m, "CI matrix not found in ci.yml"
     return re.findall(r'"(\d+\.\d+)"', m.group(1))
-
-
-def _pin(text: str, package: str) -> str:
-    m = re.search(rf"{re.escape(package)}==(\S+)", text)
-    assert m, f"{package} pin not found"
-    return m.group(1)
 
 
 @pytest.mark.parametrize(
@@ -119,14 +111,6 @@ def test_gitattributes_covers_ruff_paths_plus_init():
     assert gitattr == ruff | {"ionq_core/__init__.py"}
 
 
-def test_openapi_python_client_versions_match():
-    assert _pin(CONTRIB, "openapi-python-client") == _pin(GENERATED_WF, "openapi-python-client")
-
-
-def test_oas_patch_versions_match():
-    assert _pin(CONTRIB, "oas-patch") == _pin(GENERATED_WF, "oas-patch")
-
-
 def test_spec_path_matches_default_base_url():
     # Without this, a DEFAULT_BASE_URL bump leaves CONTRIBUTING.md pointing at a stale endpoint.
     spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
@@ -148,12 +132,6 @@ def test_single_spdx_year_across_package():
         if m:
             years.add(m.group(1))
     assert len(years) == 1, f"expected exactly one SPDX year, found: {years}"
-
-
-@pytest.mark.parametrize("package", ["openapi-python-client", "oas-patch"])
-def test_generator_pin_in_agents_md(package):
-    """Pinned versions in the AGENTS.md regen block match CONTRIBUTING.md."""
-    assert _pin(AGENTS, package) == _pin(CONTRIB, package), f"{package} pin in AGENTS.md does not match CONTRIBUTING.md"
 
 
 def test_spec_path_in_agents_md():

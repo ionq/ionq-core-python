@@ -45,6 +45,10 @@ dev = [
     "ty",
     "pdoc>=16",
 ]
+regen = [
+    "oas-patch==0.6.0",
+    "openapi-python-client==0.28.3",
+]
 
 [build-system]
 requires = ["hatchling"]

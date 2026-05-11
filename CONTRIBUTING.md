@@ -62,15 +62,16 @@ CI runs them on a weekly schedule via the [`integration`](.github/workflows/inte
 To regenerate `ionq_core/api/`, `ionq_core/models/`, and the root-level generated files, run:
 
 ```sh
+uv sync --group regen
 curl -sf https://api.ionq.co/v0.4/api-docs -o openapi.json
 
 if [ -f openapi-overlay.yaml ]; then
-    uvx oas-patch==0.6.0 overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+    uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
 else
     cp openapi.json /tmp/patched-spec.json
 fi
 
-uvx openapi-python-client==0.28.3 generate \
+uv run openapi-python-client generate \
     --path /tmp/patched-spec.json \
     --meta none \
     --config openapi-python-client-config.yaml \

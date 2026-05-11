@@ -54,16 +54,17 @@ When you hit a bug in generated code:
 Run exactly what's in [`CONTRIBUTING.md`](CONTRIBUTING.md) and mirrored in [`.github/workflows/generated.yml`](.github/workflows/generated.yml):
 
 ```sh
+uv sync --group regen
 curl -sf https://api.ionq.co/v0.4/api-docs -o openapi.json
-uvx oas-patch==0.6.0 overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
-uvx openapi-python-client==0.28.3 generate \
+uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+uv run openapi-python-client generate \
   --path /tmp/patched-spec.json --meta none \
   --config openapi-python-client-config.yaml \
   --custom-template-path custom-templates \
   --output-path ionq_core --overwrite
 ```
 
-Both pinned versions appear in `CONTRIBUTING.md` *and* `.github/workflows/generated.yml`; `tests/test_docs_consistency.py` fails CI if you bump one without the other. Commit regenerated files in the same PR as the spec/template/overlay change that produced them.
+Commit regenerated files in the same PR as the spec/template/overlay change that produced them.
 
 ## Calling generated endpoints
 
