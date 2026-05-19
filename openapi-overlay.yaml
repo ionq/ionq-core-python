@@ -1,14 +1,48 @@
 overlay: 1.0.0
 info:
   title: ionq-core-python local OpenAPI fixes
-  version: 0.1.0
+  version: 0.2.0
   description: |
-    Patches applied to openapi.json before client generation. The upstream
-    spec marks QisCircuitInput.qubits as optional and floating-point, but
-    the simulator preflight rejects payloads without it (surfacing as
-    UnexpectedCompilationError) and qubit counts are non-negative integers.
+    Patches applied to openapi.json before client generation by oas-patch.
+
+    Patch 1 - QisCircuitInput.qubits
+
+       Mark `qubits` required and type it as a non-negative integer.
+       Upstream marks it optional and floating-point.
+
+    Patch 2 - Gate_QisGate restructure (oneOf + discriminator)
+
+       Upstream Gate_QisGate is a single flat object allowing any
+       combination of {gate, target, targets, control, controls, rotation}
+       with additionalProperties: false. Three problems:
+
+         (a) `pauliexp` needs terms/coefficients/time fields the schema
+             does not declare, so every pauliexp payload violates it.
+         (b) targets/controls are typed number/double, but qubit indices
+             are non-negative integers.
+         (c) The flat-bag shape lets nonsensical combinations validate
+             (e.g. {gate: "h", control: 0, controls: [1], rotation: 1.5}).
+
+       Replace with a oneOf + discriminator(propertyName: gate) tagged
+       union, one variant per gate. This is OpenAPI's standard pattern
+       for polymorphic types, also used by AWS Braket JAQCD.
+
+       openapi-python-client 0.28.3 emits a Union[Gate_X, Gate_Y, ...]
+       alias and tries each variant's from_dict in order. With each
+       variant pinning `gate` to `enum: [<name>]` (and `literal_enums:
+       true` in the generator config), each class gets `Literal["x"]`
+       typing and mismatches reject cleanly. Variants are listed most-
+       constrained first (pauliexp -> parametric -> 2-qubit -> 1-qubit)
+       so payloads resolve to the most specific variant.
+
+    Once upstream openapi.json at api.ionq.co adopts these fixes, prune
+    the corresponding actions here.
 
 actions:
+  # ===========================================================================
+  # Patch 1 - QisCircuitInput.qubits required + integer
+  # ===========================================================================
+
   - target: $.components.schemas.QisCircuitInput.required
     remove: true
   - target: $.components.schemas.QisCircuitInput
@@ -21,3 +55,356 @@ actions:
     update:
       type: integer
       format: int32
+      minimum: 0
+
+  # ===========================================================================
+  # Patch 2 - Replace Gate_QisGate with discriminated union of per-gate variants
+  # ===========================================================================
+
+  - target: $.components.schemas.Gate_QisGate
+    remove: true
+
+  - target: $.components.schemas
+    update:
+
+      # ---- single-target Pauli/Clifford/T-family gates --------------------
+
+      Gate_X:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: |
+          Pauli-X. With `controls`, this is the canonical multi-controlled
+          NOT (Gate_Cnot for the single-control case, Gate_Not for the
+          explicit form).
+        properties:
+          gate: { type: string, enum: [x] }
+          targets: &single_target
+            type: array
+            minItems: 1
+            maxItems: 1
+            items: &qubit_index
+              type: integer
+              format: int32
+              minimum: 0
+            description: The single qubit the gate acts on.
+          controls: &controls
+            type: array
+            items: *qubit_index
+            description: Optional control qubits.
+
+      Gate_Y:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        properties:
+          gate: { type: string, enum: [y] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_Z:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        properties:
+          gate: { type: string, enum: [z] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_H:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        properties:
+          gate: { type: string, enum: [h] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_S:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        properties:
+          gate: { type: string, enum: [s] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_Si:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: S-dagger (inverse of S).
+        properties:
+          gate: { type: string, enum: [si] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_T:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        properties:
+          gate: { type: string, enum: [t] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_Ti:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: T-dagger (inverse of T).
+        properties:
+          gate: { type: string, enum: [ti] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_V:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: Square root of X.
+        properties:
+          gate: { type: string, enum: [v] }
+          targets: *single_target
+          controls: *controls
+
+      Gate_Vi:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: V-dagger (inverse of V).
+        properties:
+          gate: { type: string, enum: [vi] }
+          targets: *single_target
+          controls: *controls
+
+      # ---- multi-controlled NOT --------------------------------------------
+
+      Gate_Not:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, controls]
+        description: |
+          Multi-controlled NOT with one or more controls. Functionally
+          equivalent to Gate_X with `controls`; kept as an explicit
+          alternative.
+        properties:
+          gate: { type: string, enum: [not] }
+          targets: *single_target
+          controls:
+            type: array
+            minItems: 1
+            items: *qubit_index
+            description: One or more control qubits.
+
+      # ---- two-qubit non-parametric gates ---------------------------------
+
+      Gate_Cnot:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, controls]
+        description: Controlled-NOT with one control and one target.
+        properties:
+          gate: { type: string, enum: [cnot] }
+          targets: *single_target
+          controls:
+            type: array
+            minItems: 1
+            maxItems: 1
+            items: *qubit_index
+            description: The single control qubit.
+
+      Gate_Swap:
+        type: object
+        additionalProperties: false
+        required: [gate, targets]
+        description: Two-qubit SWAP.
+        properties:
+          gate: { type: string, enum: [swap] }
+          targets: &two_targets
+            type: array
+            minItems: 2
+            maxItems: 2
+            items: *qubit_index
+            description: The two qubits the gate acts on.
+
+      # ---- single-qubit parametric rotations ------------------------------
+
+      Gate_Rx:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        properties:
+          gate: { type: string, enum: [rx] }
+          targets: *single_target
+          rotation: &rotation_radians
+            type: number
+            format: double
+            description: Rotation angle in radians.
+          controls: *controls
+
+      Gate_Ry:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        properties:
+          gate: { type: string, enum: [ry] }
+          targets: *single_target
+          rotation: *rotation_radians
+          controls: *controls
+
+      Gate_Rz:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        properties:
+          gate: { type: string, enum: [rz] }
+          targets: *single_target
+          rotation: *rotation_radians
+          controls: *controls
+
+      # ---- two-qubit parametric Pauli (Ising) rotations -------------------
+
+      Gate_XX:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        description: Two-qubit XX (Ising-XX) rotation, exp(-i theta/2 X⊗X).
+        properties:
+          gate: { type: string, enum: [xx] }
+          targets: *two_targets
+          rotation: *rotation_radians
+
+      Gate_YY:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        description: Two-qubit YY (Ising-YY) rotation, exp(-i theta/2 Y⊗Y).
+        properties:
+          gate: { type: string, enum: [yy] }
+          targets: *two_targets
+          rotation: *rotation_radians
+
+      Gate_ZZ:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, rotation]
+        description: |
+          Two-qubit ZZ (Ising-ZZ) rotation, exp(-i theta/2 Z⊗Z), with
+          `rotation` in radians. Distinct from the native-gateset `zz`,
+          which takes a `phase` parameter in turns.
+        properties:
+          gate: { type: string, enum: [zz] }
+          targets: *two_targets
+          rotation: *rotation_radians
+
+      # ---- Pauli exponential (sparse Hamiltonian time evolution) ----------
+
+      Gate_Pauliexp:
+        type: object
+        additionalProperties: false
+        required: [gate, targets, terms, coefficients, time]
+        description: |
+          Sparse Pauli exponential gate. Trotter-decomposed per term:
+
+            U = prod_k exp(-i * coefficients[k] * time * P_k)
+
+          where P_k is the tensor product of single-qubit Paulis encoded
+          as `terms[k]`, and `terms[k][i]` (a character in {I,X,Y,Z}) acts
+          on the qubit at `targets[i]`.
+
+          `time` is a global multiplier on every coefficient.
+
+          Constraints:
+            * `terms[k]` has length equal to `len(targets)` for every k.
+            * `coefficients` has the same length as `terms`.
+            * `coefficients` are real numbers.
+            * `time` is strictly positive.
+            * Endianness: `terms[k][0]` acts on `targets[0]` (big-endian
+              by position).
+
+          Because the formula is a Trotter decomposition, non-commuting
+          terms yield an approximation rather than the exact exp(-i t H).
+        properties:
+          gate: { type: string, enum: [pauliexp] }
+          targets:
+            type: array
+            minItems: 1
+            items: *qubit_index
+            description: Qubits the Pauli operators act on, in order.
+          terms:
+            type: array
+            minItems: 1
+            items:
+              type: string
+              pattern: '^[IXYZ]+$'
+            description: |
+              Pauli words in {I, X, Y, Z}. `terms[k][i]` acts on
+              `targets[i]`. Every term has length equal to `len(targets)`.
+          coefficients:
+            type: array
+            minItems: 1
+            items:
+              type: number
+              format: double
+            description: Real coefficient for each Pauli term, parallel to `terms`.
+          time:
+            type: number
+            format: double
+            minimum: 0
+            exclusiveMinimum: true
+            description: |
+              Strictly-positive global multiplier. The kth term's
+              effective rotation is `coefficients[k] * time`.
+
+      # ---- discriminated union --------------------------------------------
+
+      Gate_QisGate:
+        description: |
+          A single QIS-gateset instruction. Tagged union discriminated by
+          the `gate` field. Variants are listed most-constrained first
+          (see Patch 2 notes).
+        oneOf:
+          - { $ref: '#/components/schemas/Gate_Pauliexp' }
+          - { $ref: '#/components/schemas/Gate_Cnot' }
+          - { $ref: '#/components/schemas/Gate_Swap' }
+          - { $ref: '#/components/schemas/Gate_Rx' }
+          - { $ref: '#/components/schemas/Gate_Ry' }
+          - { $ref: '#/components/schemas/Gate_Rz' }
+          - { $ref: '#/components/schemas/Gate_XX' }
+          - { $ref: '#/components/schemas/Gate_YY' }
+          - { $ref: '#/components/schemas/Gate_ZZ' }
+          - { $ref: '#/components/schemas/Gate_Not' }
+          - { $ref: '#/components/schemas/Gate_X' }
+          - { $ref: '#/components/schemas/Gate_Y' }
+          - { $ref: '#/components/schemas/Gate_Z' }
+          - { $ref: '#/components/schemas/Gate_H' }
+          - { $ref: '#/components/schemas/Gate_S' }
+          - { $ref: '#/components/schemas/Gate_Si' }
+          - { $ref: '#/components/schemas/Gate_T' }
+          - { $ref: '#/components/schemas/Gate_Ti' }
+          - { $ref: '#/components/schemas/Gate_V' }
+          - { $ref: '#/components/schemas/Gate_Vi' }
+        discriminator:
+          propertyName: gate
+          mapping:
+            pauliexp: '#/components/schemas/Gate_Pauliexp'
+            cnot:     '#/components/schemas/Gate_Cnot'
+            swap:     '#/components/schemas/Gate_Swap'
+            rx:       '#/components/schemas/Gate_Rx'
+            ry:       '#/components/schemas/Gate_Ry'
+            rz:       '#/components/schemas/Gate_Rz'
+            xx:       '#/components/schemas/Gate_XX'
+            yy:       '#/components/schemas/Gate_YY'
+            zz:       '#/components/schemas/Gate_ZZ'
+            not:      '#/components/schemas/Gate_Not'
+            x:        '#/components/schemas/Gate_X'
+            y:        '#/components/schemas/Gate_Y'
+            z:        '#/components/schemas/Gate_Z'
+            h:        '#/components/schemas/Gate_H'
+            s:        '#/components/schemas/Gate_S'
+            si:       '#/components/schemas/Gate_Si'
+            t:        '#/components/schemas/Gate_T'
+            ti:       '#/components/schemas/Gate_Ti'
+            v:        '#/components/schemas/Gate_V'
+            vi:       '#/components/schemas/Gate_Vi'
