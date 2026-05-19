@@ -6,6 +6,8 @@ from ionq_core.exceptions import IonQError
 from ionq_core.polling import JobFailedError, JobTimeoutError, async_wait_for_job, wait_for_job
 from tests.conftest import make_job_json
 
+# Captured at import time so async tests can call the real sleep even after
+# `monkeypatch.setattr("ionq_core.polling.asyncio.sleep", ...)` shadows it.
 _real_sleep = asyncio.sleep
 
 _FAILURE = {"code": "SimulationError", "message": "boom"}
