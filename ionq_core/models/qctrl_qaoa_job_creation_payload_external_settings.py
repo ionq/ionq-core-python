@@ -25,7 +25,7 @@ T = TypeVar("T", bound="QctrlQaoaJobCreationPayloadExternalSettings")
 
 @_attrs_define
 class QctrlQaoaJobCreationPayloadExternalSettings:
-    """
+    """ 
         Attributes:
             api_credentials (str): API Key for your Q-CTRL Account
             external_organization (str | Unset): Optional unique slug for your target Q-CTRL organization

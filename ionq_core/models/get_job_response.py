@@ -38,7 +38,7 @@ T = TypeVar("T", bound="GetJobResponse")
 
 @_attrs_define
 class GetJobResponse:
-    """
+    """ 
         Attributes:
             id (str):
             status (JobStatus):
@@ -467,3 +467,4 @@ class GetJobResponse:
         )
 
         return get_job_response
+

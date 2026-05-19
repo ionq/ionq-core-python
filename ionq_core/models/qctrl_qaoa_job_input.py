@@ -29,7 +29,7 @@ T = TypeVar("T", bound="QctrlQaoaJobInput")
 
 @_attrs_define
 class QctrlQaoaJobInput:
-    """
+    """ 
         Attributes:
             problem_type (QctrlQaoaJobInputProblemType):
             problem (QctrlQaoaJobInputProblem): A NetworkX adjacency_graph object Example: {'directed': False, 'multigraph':

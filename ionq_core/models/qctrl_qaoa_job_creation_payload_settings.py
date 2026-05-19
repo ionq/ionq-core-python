@@ -28,7 +28,7 @@ T = TypeVar("T", bound="QctrlQaoaJobCreationPayloadSettings")
 
 @_attrs_define
 class QctrlQaoaJobCreationPayloadSettings:
-    """
+    """ 
         Attributes:
             error_mitigation (QctrlQaoaJobCreationPayloadSettingsErrorMitigation | Unset):
      """

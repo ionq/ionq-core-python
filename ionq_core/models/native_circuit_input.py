@@ -30,7 +30,7 @@ T = TypeVar("T", bound="NativeCircuitInput")
 
 @_attrs_define
 class NativeCircuitInput:
-    """
+    """ 
         Attributes:
             circuit (list[GateNativeGate]):
             gateset (NativeCircuitInputGateset):
@@ -100,3 +100,4 @@ class NativeCircuitInput:
         )
 
         return native_circuit_input
+

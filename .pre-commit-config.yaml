@@ -2,8 +2,14 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # Skip generated paths (see .gitattributes); openapi-python-client emits
+      # docstring trailing spaces and double-trailing-newlines that CI
+      # reproduces on every regen, so stripping them locally creates a
+      # generated.yml staleness mismatch.
       - id: trailing-whitespace
+        exclude: ^ionq_core/(__init__|client|errors|types)\.py$|^ionq_core/(api|models)/
       - id: end-of-file-fixer
+        exclude: ^ionq_core/(__init__|client|errors|types)\.py$|^ionq_core/(api|models)/
       - id: check-yaml
       - id: check-added-large-files
 
