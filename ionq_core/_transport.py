@@ -28,9 +28,11 @@ DEFAULT_MAX_RETRIES: int = 2
 def _raise_for_response(response: httpx.Response) -> None:
     try:
         body: dict | str | None = response.json()
-    except Exception:
+    except (ValueError, UnicodeDecodeError):
+        # json.JSONDecodeError subclasses ValueError; UnicodeDecodeError covers
+        # bodies that aren't decodable in the declared (or guessed) encoding.
         body = (response.text or "")[:500] or None
-    message = body.get("message") or body.get("error") if isinstance(body, dict) else None
+    message = (body.get("message") or body.get("error")) if isinstance(body, dict) else None
     try:
         retry_after = max(0.0, float(response.headers["retry-after"]))
     except (KeyError, ValueError):

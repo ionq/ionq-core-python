@@ -15,6 +15,7 @@ from ... import errors
 from ...models.circuit_job_creation_payload import CircuitJobCreationPayload
 from ...models.job_creation_response import JobCreationResponse
 from ...models.json_multi_circuit_job import JSONMultiCircuitJob
+from ...models.qctrl_qaoa_job_creation_payload import QctrlQaoaJobCreationPayload
 from ...models.quantum_function_job_creation_payload import QuantumFunctionJobCreationPayload
 from typing import cast
 
@@ -22,7 +23,7 @@ from typing import cast
 
 def _get_kwargs(
     *,
-    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QuantumFunctionJobCreationPayload,
+    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload | QuantumFunctionJobCreationPayload,
 
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
@@ -41,6 +42,8 @@ def _get_kwargs(
     if isinstance(body, CircuitJobCreationPayload):
         _kwargs["json"] = body.to_dict()
     elif isinstance(body, JSONMultiCircuitJob):
+        _kwargs["json"] = body.to_dict()
+    elif isinstance(body, QuantumFunctionJobCreationPayload):
         _kwargs["json"] = body.to_dict()
     else:
         _kwargs["json"] = body.to_dict()
@@ -96,7 +99,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QuantumFunctionJobCreationPayload,
+    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload | QuantumFunctionJobCreationPayload,
 
 ) -> Response[Any | JobCreationResponse]:
     """  Submit a single-circuit or multi-circuit job for simulation or execution. In `ionq.multi-circuit.v1`
@@ -104,7 +107,7 @@ def sync_detailed(
     its own `gateset`.
 
     Args:
-        body (CircuitJobCreationPayload | JSONMultiCircuitJob |
+        body (CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload |
             QuantumFunctionJobCreationPayload):  Example: {'type': 'ionq.circuit.v1', 'input':
             {'qubits': 1, 'gateset': 'qis', 'circuit': [{'gate': 'h', 'target': 0}]}, 'backend':
             'qpu.forte-1', 'shots': 500, 'settings': {'error_mitigation': {'debiasing': False}}}.
@@ -132,7 +135,7 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QuantumFunctionJobCreationPayload,
+    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload | QuantumFunctionJobCreationPayload,
 
 ) -> Any | JobCreationResponse | None:
     """  Submit a single-circuit or multi-circuit job for simulation or execution. In `ionq.multi-circuit.v1`
@@ -140,7 +143,7 @@ def sync(
     its own `gateset`.
 
     Args:
-        body (CircuitJobCreationPayload | JSONMultiCircuitJob |
+        body (CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload |
             QuantumFunctionJobCreationPayload):  Example: {'type': 'ionq.circuit.v1', 'input':
             {'qubits': 1, 'gateset': 'qis', 'circuit': [{'gate': 'h', 'target': 0}]}, 'backend':
             'qpu.forte-1', 'shots': 500, 'settings': {'error_mitigation': {'debiasing': False}}}.
@@ -163,7 +166,7 @@ body=body,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QuantumFunctionJobCreationPayload,
+    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload | QuantumFunctionJobCreationPayload,
 
 ) -> Response[Any | JobCreationResponse]:
     """  Submit a single-circuit or multi-circuit job for simulation or execution. In `ionq.multi-circuit.v1`
@@ -171,7 +174,7 @@ async def asyncio_detailed(
     its own `gateset`.
 
     Args:
-        body (CircuitJobCreationPayload | JSONMultiCircuitJob |
+        body (CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload |
             QuantumFunctionJobCreationPayload):  Example: {'type': 'ionq.circuit.v1', 'input':
             {'qubits': 1, 'gateset': 'qis', 'circuit': [{'gate': 'h', 'target': 0}]}, 'backend':
             'qpu.forte-1', 'shots': 500, 'settings': {'error_mitigation': {'debiasing': False}}}.
@@ -199,7 +202,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QuantumFunctionJobCreationPayload,
+    body: CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload | QuantumFunctionJobCreationPayload,
 
 ) -> Any | JobCreationResponse | None:
     """  Submit a single-circuit or multi-circuit job for simulation or execution. In `ionq.multi-circuit.v1`
@@ -207,7 +210,7 @@ async def asyncio(
     its own `gateset`.
 
     Args:
-        body (CircuitJobCreationPayload | JSONMultiCircuitJob |
+        body (CircuitJobCreationPayload | JSONMultiCircuitJob | QctrlQaoaJobCreationPayload |
             QuantumFunctionJobCreationPayload):  Example: {'type': 'ionq.circuit.v1', 'input':
             {'qubits': 1, 'gateset': 'qis', 'circuit': [{'gate': 'h', 'target': 0}]}, 'backend':
             'qpu.forte-1', 'shots': 500, 'settings': {'error_mitigation': {'debiasing': False}}}.

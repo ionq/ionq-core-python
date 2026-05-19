@@ -1,12 +1,17 @@
 overlay: 1.0.0
 info:
   title: ionq-core-python local OpenAPI fixes
-  version: 0.1.0
+  version: 0.2.0
   description: |
     Patches applied to openapi.json before client generation. The upstream
-    spec marks QisCircuitInput.qubits as optional and floating-point, but
-    the simulator preflight rejects payloads without it (surfacing as
-    UnexpectedCompilationError) and qubit counts are non-negative integers.
+    spec marks QisCircuitInput.qubits as optional, but the simulator
+    preflight rejects payloads without it (surfacing as
+    UnexpectedCompilationError), so we make it required locally.
+
+    Previously this overlay also coerced QisCircuitInput.qubits from
+    number/double to integer/int32; upstream adopted that fix in May 2026
+    (and extended it to NativeCircuitInput and JsonMultiCircuitInput), so
+    that action was removed.
 
 actions:
   - target: $.components.schemas.QisCircuitInput.required
@@ -17,7 +22,3 @@ actions:
         - circuit
         - gateset
         - qubits
-  - target: $.components.schemas.QisCircuitInput.properties.qubits
-    update:
-      type: integer
-      format: int32

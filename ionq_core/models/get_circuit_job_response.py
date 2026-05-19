@@ -12,6 +12,8 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.cost_model import check_cost_model
+from ..models.cost_model import CostModel
 from ..models.job_status import check_job_status
 from ..models.job_status import JobStatus
 from ..types import UNSET, Unset
@@ -64,6 +66,7 @@ class GetCircuitJobResponse:
             child_job_ids (list[str] | None):
             shots (int | Unset):
             noise (Noise | Unset):
+            cost_model (CostModel | Unset):
      """
 
     id: str
@@ -91,6 +94,7 @@ class GetCircuitJobResponse:
     child_job_ids: list[str] | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
+    cost_model: CostModel | Unset = UNSET
 
 
 
@@ -183,6 +187,11 @@ class GetCircuitJobResponse:
         if not isinstance(self.noise, Unset):
             noise = self.noise.to_dict()
 
+        cost_model: str | Unset = UNSET
+        if not isinstance(self.cost_model, Unset):
+            cost_model = self.cost_model
+
+
 
         field_dict: dict[str, Any] = {}
 
@@ -215,6 +224,8 @@ class GetCircuitJobResponse:
             field_dict["shots"] = shots
         if noise is not UNSET:
             field_dict["noise"] = noise
+        if cost_model is not UNSET:
+            field_dict["cost_model"] = cost_model
 
         return field_dict
 
@@ -416,6 +427,16 @@ class GetCircuitJobResponse:
 
 
 
+        _cost_model = d.pop("cost_model", UNSET)
+        cost_model: CostModel | Unset
+        if isinstance(_cost_model,  Unset):
+            cost_model = UNSET
+        else:
+            cost_model = check_cost_model(_cost_model)
+
+
+
+
         get_circuit_job_response = cls(
             id=id,
             status=status,
@@ -442,6 +463,7 @@ class GetCircuitJobResponse:
             child_job_ids=child_job_ids,
             shots=shots,
             noise=noise,
+            cost_model=cost_model,
         )
 
         return get_circuit_job_response

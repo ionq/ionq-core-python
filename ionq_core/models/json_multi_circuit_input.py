@@ -35,12 +35,12 @@ class JsonMultiCircuitInput:
         Attributes:
             gateset (JsonMultiCircuitInputGateset):
             circuits (list[NativeCircuit | QISCircuit]):
-            qubits (float | Unset):
+            qubits (int | Unset):
      """
 
     gateset: JsonMultiCircuitInputGateset
     circuits: list[NativeCircuit | QISCircuit]
-    qubits: float | Unset = UNSET
+    qubits: int | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 

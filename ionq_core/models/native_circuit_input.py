@@ -34,12 +34,12 @@ class NativeCircuitInput:
         Attributes:
             circuit (list[GateNativeGate]):
             gateset (NativeCircuitInputGateset):
-            qubits (float | Unset):
+            qubits (int | Unset):
      """
 
     circuit: list[GateNativeGate]
     gateset: NativeCircuitInputGateset
-    qubits: float | Unset = UNSET
+    qubits: int | Unset = UNSET
 
 
 

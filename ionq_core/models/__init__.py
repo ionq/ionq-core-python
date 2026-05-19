@@ -29,6 +29,7 @@ from .circuit_job_settings_error_mitigation import CircuitJobSettingsErrorMitiga
 from .circuit_job_settings_error_mitigation_debiasing_type_0 import CircuitJobSettingsErrorMitigationDebiasingType0
 from .circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling import CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling
 from .circuit_job_stats import CircuitJobStats
+from .cost_model import CostModel
 from .create_session_request import CreateSessionRequest
 from .error import Error
 from .failure import Failure
@@ -93,6 +94,14 @@ from .native_gate import NativeGate
 from .noise import Noise
 from .noise_model import NoiseModel
 from .number_map import NumberMap
+from .qctrl_qaoa_job_creation_payload import QctrlQaoaJobCreationPayload
+from .qctrl_qaoa_job_creation_payload_external_settings import QctrlQaoaJobCreationPayloadExternalSettings
+from .qctrl_qaoa_job_creation_payload_settings import QctrlQaoaJobCreationPayloadSettings
+from .qctrl_qaoa_job_creation_payload_settings_error_mitigation import QctrlQaoaJobCreationPayloadSettingsErrorMitigation
+from .qctrl_qaoa_job_creation_payload_type import QctrlQaoaJobCreationPayloadType
+from .qctrl_qaoa_job_input import QctrlQaoaJobInput
+from .qctrl_qaoa_job_input_problem import QctrlQaoaJobInputProblem
+from .qctrl_qaoa_job_input_problem_type import QctrlQaoaJobInputProblemType
 from .qis_circuit import QISCircuit
 from .qis_circuit_gateset import QISCircuitGateset
 from .qis_circuit_input import QisCircuitInput
@@ -141,6 +150,7 @@ __all__ = (
     "CircuitJobSettingsErrorMitigationDebiasingType0",
     "CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling",
     "CircuitJobStats",
+    "CostModel",
     "CreateSessionRequest",
     "Error",
     "Failure",
@@ -205,6 +215,14 @@ __all__ = (
     "Noise",
     "NoiseModel",
     "NumberMap",
+    "QctrlQaoaJobCreationPayload",
+    "QctrlQaoaJobCreationPayloadExternalSettings",
+    "QctrlQaoaJobCreationPayloadSettings",
+    "QctrlQaoaJobCreationPayloadSettingsErrorMitigation",
+    "QctrlQaoaJobCreationPayloadType",
+    "QctrlQaoaJobInput",
+    "QctrlQaoaJobInputProblem",
+    "QctrlQaoaJobInputProblemType",
     "QISCircuit",
     "QISCircuitGateset",
     "QisCircuitInput",

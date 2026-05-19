@@ -79,12 +79,12 @@ class JobFailedError(IonQError):
         super().__init__(f"Job {job_id} failed: {failure}")
 
 
-def _check_terminal(job: GetJobResponse, job_id: str, raise_on_failure: bool) -> bool:
+def _check_terminal(job: GetJobResponse, raise_on_failure: bool) -> bool:
     if job.status not in _TERMINAL:
         return False
     if raise_on_failure and job.status == "failed":
         failure = job.failure if not isinstance(job.failure, Unset) else None
-        raise JobFailedError(job_id, failure)
+        raise JobFailedError(job.id, failure)
     return True
 
 
@@ -128,7 +128,7 @@ def wait_for_job(
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
         logger.debug("Job %s status: %s", job_id, job.status)
-        if _check_terminal(job, job_id, raise_on_failure):
+        if _check_terminal(job, raise_on_failure):
             return job
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)
@@ -169,7 +169,7 @@ async def async_wait_for_job(
         if job is None:
             raise IonQError(f"Failed to fetch job {job_id}")
         logger.debug("Job %s status: %s", job_id, job.status)
-        if _check_terminal(job, job_id, raise_on_failure):
+        if _check_terminal(job, raise_on_failure):
             return job
         if time.monotonic() >= deadline:
             raise JobTimeoutError(job_id, timeout, job.status)

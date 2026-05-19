@@ -34,6 +34,8 @@ _AUTH_PREFIX = "apiKey"
 _AUTH_HEADER = "Authorization"
 
 
+# Factory named in PascalCase (deliberately, not a class) so call sites read
+# like construction. Returns the generated `AuthenticatedClient`.
 def IonQClient(
     *,
     api_key: str | None = None,
@@ -169,6 +171,12 @@ def IonQClient(
         httpx_args={"transport": sync_transport},
         **kwargs,
     )
+    # `set_async_httpx_client` bypasses `AuthenticatedClient`'s lazy auth-header
+    # injection (see generated `client.py::get_async_httpx_client`), so we merge
+    # `Authorization` in manually here. The `_verify_ssl` / `_follow_redirects`
+    # fields are private on the generated `AuthenticatedClient` but are the only
+    # way to mirror the caller's choices onto the async transport; do not add a
+    # public accessor in the hand-written layer — they belong to generated code.
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,

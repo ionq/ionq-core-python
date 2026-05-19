@@ -8,8 +8,6 @@ import pytest
 from ionq_core import AuthenticatedClient, IonQClient
 from ionq_core.api.default import delete_job
 
-_job_ids: list[str] = []
-
 
 @pytest.fixture(scope="session")
 def api_key() -> str:
@@ -24,21 +22,27 @@ def client(api_key: str) -> AuthenticatedClient:
     return IonQClient(api_key=api_key)
 
 
+@pytest.fixture(scope="session")
+def _tracked_jobs() -> list[str]:
+    """Session-scoped list of job IDs to delete in `cleanup_jobs`."""
+    return []
+
+
 @pytest.fixture
-def track_job():
+def track_job(_tracked_jobs: list[str]):
     """Register a job ID for cleanup after the session."""
 
     def _track(job_id: str) -> str:
-        _job_ids.append(job_id)
+        _tracked_jobs.append(job_id)
         return job_id
 
     return _track
 
 
 @pytest.fixture(scope="session", autouse=True)
-def cleanup_jobs(client: AuthenticatedClient):
+def cleanup_jobs(client: AuthenticatedClient, _tracked_jobs: list[str]):
     """Delete all jobs created during the test session."""
     yield
-    for job_id in _job_ids:
+    for job_id in _tracked_jobs:
         with contextlib.suppress(Exception):
             delete_job.sync_detailed(uuid=job_id, client=client)
