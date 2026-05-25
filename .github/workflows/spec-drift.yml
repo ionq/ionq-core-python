@@ -25,7 +25,18 @@ jobs:
       - name: Check for drift
         id: drift
         run: |
-          if ! diff -u --label vendored --label upstream <(python3 -m json.tool --sort-keys openapi.json) <(python3 -m json.tool --sort-keys /tmp/latest-spec.json) > /tmp/spec.diff; then
+          # Strip the "Last updated: <date>" line from the description before diffing
+          # so that date-only changes do not trigger a false positive.
+          strip_date() { python3 -c "
+          import json, re, sys
+          spec = json.load(sys.stdin)
+          if 'info' in spec and 'description' in spec['info']:
+              spec['info']['description'] = re.sub(r'\*Last updated:[^\n]*\*\n?', '', spec['info']['description'])
+          print(json.dumps(spec, sort_keys=True, indent=4))
+          "; }
+          if ! diff -u --label vendored --label upstream \
+              <(strip_date < openapi.json) \
+              <(strip_date < /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Open or update issue
