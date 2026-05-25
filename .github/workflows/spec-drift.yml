@@ -25,7 +25,7 @@ jobs:
       - name: Check for drift
         id: drift
         run: |
-          norm() { python3 -m json.tool --sort-keys "$1" | sed 's/\*Last updated:[^*]*\*//'; }
+          norm() { python3 -m json.tool --sort-keys "$1" | perl -pe 's/\*Last updated:[^*]*\*//'; }
           if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
           fi
