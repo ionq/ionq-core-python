@@ -25,7 +25,7 @@ jobs:
       - name: Check for drift
         id: drift
         run: |
-          norm() { jq -S '.info.description |= gsub("\\*Last updated:[^*]*\\*";"")' "$1"; }
+          norm() { jq -S 'del(.info.description)' "$1"; }
           if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
           fi
