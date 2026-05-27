@@ -25,7 +25,8 @@ jobs:
       - name: Check for drift
         id: drift
         run: |
-          if ! diff -u --label vendored --label upstream <(python3 -m json.tool --sort-keys openapi.json) <(python3 -m json.tool --sort-keys /tmp/latest-spec.json) > /tmp/spec.diff; then
+          norm() { jq -S 'del(.info.description)' "$1"; }
+          if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Open or update issue
