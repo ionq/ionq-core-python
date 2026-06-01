@@ -16,6 +16,9 @@ BACKEND_SAMPLE = {
     "characterization_id": "617a1f8b-59d4-435d-aa33-695433d7155e",
     "kw": 4902.81,
     "location": "College Park, MD, USA",
+    "supported_error_mitigations": ["debiasing"],
+    "supported_gates": ["x", "y", "z"],
+    "supported_native_gates": ["gpi", "gpi2", "ms"],
 }
 
 JOB_SAMPLE = {
@@ -79,6 +82,9 @@ class TestBackendModel:
         assert b.qubits == 25
         assert b.average_queue_time == 1181215
         assert b.characterization_id == "617a1f8b-59d4-435d-aa33-695433d7155e"
+        assert b.supported_error_mitigations == ["debiasing"]
+        assert b.supported_gates == ["x", "y", "z"]
+        assert b.supported_native_gates == ["gpi", "gpi2", "ms"]
 
     def test_round_trip(self):
         assert Backend.from_dict(BACKEND_SAMPLE).to_dict() == BACKEND_SAMPLE
