@@ -90,8 +90,6 @@ invalid-argument-type = "ignore"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
 xfail_strict = true
 filterwarnings = [
     "error",
@@ -99,8 +97,9 @@ filterwarnings = [
 ]
 markers = [
     "integration: marks tests that hit the real IonQ API (deselect with '-m \"not integration\"')",
+    "compatibility: marks tests that monitor API compatibility for downstream consumers (deselect with '-m \"not compatibility\"')",
 ]
-addopts = "-m 'not integration' --tb=short --cov=ionq_core --cov-fail-under=100"
+addopts = "-m 'not integration and not compatibility' --tb=short --cov=ionq_core --cov-fail-under=100"
 
 [tool.coverage.run]
 branch = true
