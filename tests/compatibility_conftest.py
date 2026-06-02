@@ -8,14 +8,15 @@ that warn on breaking changes without failing the test suite.
 import functools
 import json
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
 
 import pytest
 
 
 class CompatibilityWarning(UserWarning):
     """Warning category for API compatibility issues."""
+
     pass
 
 
@@ -45,38 +46,35 @@ def warn_team_on_fail(func: Callable) -> Callable:
     Returns:
         Wrapped function that warns instead of fails
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         # Extract test context from pytest markers
         # This is set by pytest_collection_modifyitems hook below
         test_obj = args[0] if args else None
-        version = getattr(test_obj, '_compatibility_version', 'unknown')
-        endpoint_user = getattr(test_obj, '_compatibility_endpoint_user', 'unknown')
+        version = getattr(test_obj, "_compatibility_version", "unknown")
+        endpoint_user = getattr(test_obj, "_compatibility_endpoint_user", "unknown")
 
         try:
             return func(*args, **kwargs)
         except AssertionError as e:
             # Format warning message for stdout
             warning_msg = (
-                f"\n{'='*70}\n"
+                f"\n{'=' * 70}\n"
                 f"API COMPATIBILITY WARNING\n"
-                f"{'='*70}\n"
+                f"{'=' * 70}\n"
                 f"Endpoint User: {endpoint_user}\n"
                 f"Version: {version}\n"
                 f"Test: {func.__name__}\n"
-                f"Issue: {str(e)}\n"
-                f"{'='*70}\n"
+                f"Issue: {e!s}\n"
+                f"{'=' * 70}\n"
             )
 
             # Print to stdout (visible in test output)
             print(warning_msg)
 
             # Also issue Python warning for test runners that capture warnings
-            warnings.warn(
-                f"[{endpoint_user} v{version}] {func.__name__}: {e}",
-                CompatibilityWarning,
-                stacklevel=2
-            )
+            warnings.warn(f"[{endpoint_user} v{version}] {func.__name__}: {e}", CompatibilityWarning, stacklevel=2)
 
             # Skip test instead of failing - we only want to warn
             pytest.skip(f"Compatibility issue detected: {e}")
@@ -120,6 +118,7 @@ def check_schema_compatibility(compatibility_baseline):
     Returns:
         Callable[[str, dict, int], None]: Schema checker function
     """
+
     def _check(endpoint: str, actual_response: dict, status_code: int = 200):
         """
         Compare actual response against baseline schema.
@@ -135,10 +134,7 @@ def check_schema_compatibility(compatibility_baseline):
         """
         baseline = compatibility_baseline["endpoints"].get(endpoint)
         if not baseline:
-            warnings.warn(
-                f"No baseline found for endpoint: {endpoint}",
-                CompatibilityWarning
-            )
+            warnings.warn(f"No baseline found for endpoint: {endpoint}", CompatibilityWarning, stacklevel=1)
             return
 
         schema = baseline["response_schema"]
@@ -146,16 +142,12 @@ def check_schema_compatibility(compatibility_baseline):
         # Check status code
         expected_status = schema.get("status_code")
         if expected_status is not None:
-            assert status_code == expected_status, (
-                f"Status code changed: expected {expected_status}, got {status_code}"
-            )
+            assert status_code == expected_status, f"Status code changed: expected {expected_status}, got {status_code}"
 
         # Check required fields exist
         required = schema.get("required_fields", [])
         for field in required:
-            assert field in actual_response, (
-                f"Required field '{field}' missing from response"
-            )
+            assert field in actual_response, f"Required field '{field}' missing from response"
 
         # Check critical fields (those qiskit-ionq actually uses)
         critical = baseline.get("critical_fields", [])
@@ -172,17 +164,13 @@ def check_schema_compatibility(compatibility_baseline):
                 # Handle array notation like "characterizations[]"
                 if part.endswith("[]"):
                     part = part[:-2]
-                    assert isinstance(current.get(part), list), (
-                        f"Field '{field_path}' should be a list"
-                    )
+                    assert isinstance(current.get(part), list), f"Field '{field_path}' should be a list"
                     if current[part]:  # Check first element if list non-empty
                         current = current[part][0]
                     else:
                         break  # Empty list, can't check nested fields
                 else:
-                    assert part in current, (
-                        f"Critical field '{field_path}' missing from response"
-                    )
+                    assert part in current, f"Critical field '{field_path}' missing from response"
                     current = current.get(part)
                     if current is None:
                         break  # Null value, can't check nested fields
@@ -208,15 +196,10 @@ def check_schema_compatibility(compatibility_baseline):
                 "null": type(None),
             }
 
-            type_matches = any(
-                isinstance(actual_value, type_map[t])
-                for t in allowed_types
-                if t in type_map
-            )
+            type_matches = any(isinstance(actual_value, type_map[t]) for t in allowed_types if t in type_map)
 
             assert type_matches, (
-                f"Field '{field}' type mismatch: expected {expected_type}, "
-                f"got {type(actual_value).__name__}"
+                f"Field '{field}' type mismatch: expected {expected_type}, got {type(actual_value).__name__}"
             )
 
     return _check
@@ -224,10 +207,7 @@ def check_schema_compatibility(compatibility_baseline):
 
 def pytest_configure(config):
     """Register compatibility marker with pytest."""
-    config.addinivalue_line(
-        "markers",
-        "compatibility(version, endpoint_user): mark test as API compatibility check"
-    )
+    config.addinivalue_line("markers", "compatibility(version, endpoint_user): mark test as API compatibility check")
 
 
 def pytest_collection_modifyitems(config, items):

@@ -10,6 +10,7 @@ Run with: pytest tests/test_compatibility_decorator.py -v -s
 """
 
 import pytest
+
 from .compatibility_conftest import warn_team_on_fail
 
 
@@ -27,7 +28,7 @@ class TestDecoratorBehavior:
     def test_failing_test_warns_and_skips(self):
         """Failing tests should print warning and skip."""
         # This assertion will fail
-        assert False, "This is a test breaking change"
+        assert not True, "This is a test breaking change"
 
     @warn_team_on_fail
     def test_missing_field_warns(self):

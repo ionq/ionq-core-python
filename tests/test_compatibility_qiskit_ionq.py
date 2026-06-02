@@ -9,7 +9,6 @@ Run with: pytest -m compatibility tests/test_compatibility_qiskit_ionq.py -v -s
 
 import pytest
 
-from ionq_core import IonQClient
 from ionq_core.api.backends import get_backend
 from ionq_core.api.characterizations import get_characterizations_for_backend
 from ionq_core.api.default import (
@@ -71,12 +70,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         return result.id
 
     @warn_team_on_fail
-    def test_job_submission_response_schema(
-        self,
-        client,
-        bell_circuit,
-        check_schema_compatibility
-    ):
+    def test_job_submission_response_schema(self, client, bell_circuit, check_schema_compatibility):
         """
         POST /jobs - Verify job submission response contains required fields.
 
@@ -93,11 +87,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         resp = create_job.sync_detailed(client=client, body=body)
 
         # Check against baseline
-        check_schema_compatibility(
-            "POST /jobs",
-            resp.parsed.to_dict(),
-            status_code=resp.status_code.value
-        )
+        check_schema_compatibility("POST /jobs", resp.parsed.to_dict(), status_code=resp.status_code.value)
 
         # Explicit critical field checks
         assert resp.parsed.id is not None, "Job ID is None"
@@ -105,12 +95,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert resp.status_code.value == 201, f"Expected status 201, got {resp.status_code.value}"
 
     @warn_team_on_fail
-    def test_job_retrieval_response_schema(
-        self,
-        client,
-        test_job_id,
-        check_schema_compatibility
-    ):
+    def test_job_retrieval_response_schema(self, client, test_job_id, check_schema_compatibility):
         """
         GET /jobs/{job_id} - Verify job retrieval response schema.
 
@@ -128,11 +113,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         job = get_job.sync(uuid=test_job_id, client=client)
         job_dict = job.to_dict()
 
-        check_schema_compatibility(
-            "GET /jobs/{job_id}",
-            job_dict,
-            status_code=200
-        )
+        check_schema_compatibility("GET /jobs/{job_id}", job_dict, status_code=200)
 
         # Critical fields for qiskit-ionq
         assert "id" in job_dict, "Missing 'id' field"
@@ -145,11 +126,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert "results" in job_dict or job_dict.get("results") is None
 
     @warn_team_on_fail
-    def test_completed_job_results_schema(
-        self,
-        client,
-        check_schema_compatibility
-    ):
+    def test_completed_job_results_schema(self, client, check_schema_compatibility):
         """
         GET /jobs/{job_id}/results/probabilities - Verify results format.
 
@@ -187,11 +164,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
             assert 0.0 <= value <= 1.0, f"Probability {value} out of range [0, 1]"
 
     @warn_team_on_fail
-    def test_backend_info_schema(
-        self,
-        client,
-        check_schema_compatibility
-    ):
+    def test_backend_info_schema(self, client, check_schema_compatibility):
         """
         GET /backends/{backend} - Verify backend info schema.
 
@@ -207,11 +180,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         backend = get_backend.sync("simulator", client=client)
         backend_dict = backend.to_dict()
 
-        check_schema_compatibility(
-            "GET /backends/{backend}",
-            backend_dict,
-            status_code=200
-        )
+        check_schema_compatibility("GET /backends/{backend}", backend_dict, status_code=200)
 
         # Critical field
         assert "qubits" in backend_dict, "Missing 'qubits' field"
@@ -219,11 +188,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert backend_dict["qubits"] > 0, f"'qubits' should be positive, got {backend_dict['qubits']}"
 
     @warn_team_on_fail
-    def test_characterization_schema(
-        self,
-        client,
-        check_schema_compatibility
-    ):
+    def test_characterization_schema(self, client, check_schema_compatibility):
         """
         GET /backends/{backend}/characterizations - Verify calibration data schema.
 
@@ -237,11 +202,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         - Removing 'qubits' or 'connectivity' would break topology info
         """
         try:
-            resp = get_characterizations_for_backend.sync(
-                "qpu.forte-1",
-                client=client,
-                limit=1
-            )
+            resp = get_characterizations_for_backend.sync("qpu.forte-1", client=client, limit=1)
         except Exception as e:
             pytest.skip(f"Characterizations endpoint not accessible: {e}")
 
@@ -257,11 +218,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert isinstance(char_dict["qubits"], int), "'qubits' should be int"
 
     @warn_team_on_fail
-    def test_compiled_circuit_schema(
-        self,
-        client,
-        test_job_id
-    ):
+    def test_compiled_circuit_schema(self, client, test_job_id):
         """
         GET /jobs/{job_id}/circuits/{lang} - Verify compiled circuit format.
 
@@ -278,11 +235,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
 
         try:
             # Try to get compiled circuit (may not be available immediately)
-            result = get_compiled_file.sync(
-                uuid=test_job_id,
-                lang="native",
-                client=client
-            )
+            result = get_compiled_file.sync(uuid=test_job_id, lang="native", client=client)
 
             if result:
                 assert isinstance(result, str), "Compiled circuit should be string"
@@ -299,11 +252,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
             pytest.skip(f"Compiled circuit not available: {e}")
 
     @warn_team_on_fail
-    def test_job_cancellation_schema(
-        self,
-        client,
-        bell_circuit
-    ):
+    def test_job_cancellation_schema(self, client, bell_circuit):
         """
         PUT /jobs/{job_id}/status/cancel - Verify cancellation response.
 
@@ -330,15 +279,11 @@ class TestQiskitIonQCompatibilityV1_0_3:
             # Clean up - delete the job
             try:
                 delete_job.sync(uuid=job_id, client=client)
-            except:
-                pass
+            except Exception as e:
+                print(f"Error occurred while deleting job: {e}")
 
     @warn_team_on_fail
-    def test_job_deletion_schema(
-        self,
-        client,
-        bell_circuit
-    ):
+    def test_job_deletion_schema(self, client, bell_circuit):
         """
         DELETE /jobs/{job_id} - Verify deletion response.
 
@@ -361,11 +306,7 @@ class TestQiskitIonQCompatibilityV1_0_3:
             assert "id" in delete_dict, "Missing 'id' in delete response"
 
     @warn_team_on_fail
-    def test_cost_estimation_schema(
-        self,
-        client,
-        check_schema_compatibility
-    ):
+    def test_cost_estimation_schema(self, client, check_schema_compatibility):
         """
         GET /jobs/estimate - Verify cost estimation response.
 
