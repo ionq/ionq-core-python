@@ -36,14 +36,10 @@ def get_git_info():
     """Get current git branch and commit."""
     try:
         branch = subprocess.check_output(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            text=True,
-            cwd=Path(__file__).parent.parent
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"], text=True, cwd=Path(__file__).parent.parent
         ).strip()
         commit = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            text=True,
-            cwd=Path(__file__).parent.parent
+            ["git", "rev-parse", "HEAD"], text=True, cwd=Path(__file__).parent.parent
         ).strip()
         return branch, commit
     except subprocess.CalledProcessError:
@@ -77,10 +73,7 @@ def capture_job_submission_baseline(client):
         "response_schema": {
             "status_code": resp.status_code.value,
             "required_fields": list(response_dict.keys()),
-            "field_types": {
-                k: type(v).__name__ if v is not None else "NoneType"
-                for k, v in response_dict.items()
-            }
+            "field_types": {k: type(v).__name__ if v is not None else "NoneType" for k, v in response_dict.items()},
         },
         "critical_fields": ["id", "status"],
         "notes": "qiskit-ionq requires 'id' to track job, 'status' for state machine",
@@ -105,10 +98,7 @@ def capture_job_retrieval_baseline(client, job_id):
                 "results": results_keys,
                 "metadata": metadata_keys,
             },
-            "field_types": {
-                k: type(v).__name__ if v is not None else "NoneType"
-                for k, v in job_dict.items()
-            }
+            "field_types": {k: type(v).__name__ if v is not None else "NoneType" for k, v in job_dict.items()},
         },
         "critical_fields": ["id", "status", "results", "metadata"],
         "notes": "qiskit-ionq parses metadata for circuit reconstruction",
@@ -125,10 +115,7 @@ def capture_backend_baseline(client):
         "response_schema": {
             "status_code": 200,
             "required_fields": list(backend_dict.keys()),
-            "field_types": {
-                k: type(v).__name__ if v is not None else "NoneType"
-                for k, v in backend_dict.items()
-            }
+            "field_types": {k: type(v).__name__ if v is not None else "NoneType" for k, v in backend_dict.items()},
         },
         "critical_fields": ["qubits"],
         "notes": "qiskit-ionq uses for get_n_qubits() helper",
@@ -146,14 +133,9 @@ def capture_characterization_baseline(client):
                 "response_schema": {
                     "status_code": 200,
                     "required_fields": ["characterizations"],
-                    "nested_fields": {
-                        "characterizations[]": list(char.keys())
-                    }
+                    "nested_fields": {"characterizations[]": list(char.keys())},
                 },
-                "critical_fields": [
-                    "characterizations[].qubits",
-                    "characterizations[].connectivity"
-                ],
+                "critical_fields": ["characterizations[].qubits", "characterizations[].connectivity"],
                 "notes": "qiskit-ionq uses for backend.calibration() method",
             }
     except Exception as e:
@@ -171,22 +153,11 @@ def capture_characterization_baseline(client):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Capture API baseline for compatibility testing"
-    )
+    parser = argparse.ArgumentParser(description="Capture API baseline for compatibility testing")
+    parser.add_argument("--version", required=True, help="Version to capture baseline for (e.g., 1.0.3)")
+    parser.add_argument("--endpoint-user", required=True, help="Endpoint user name (e.g., qiskit-ionq)")
     parser.add_argument(
-        "--version",
-        required=True,
-        help="Version to capture baseline for (e.g., 1.0.3)"
-    )
-    parser.add_argument(
-        "--endpoint-user",
-        required=True,
-        help="Endpoint user name (e.g., qiskit-ionq)"
-    )
-    parser.add_argument(
-        "--output",
-        help="Output file path (default: tests/compatibility_baselines/{endpoint_user}_v{version}.json)"
+        "--output", help="Output file path (default: tests/compatibility_baselines/{endpoint_user}_v{version}.json)"
     )
 
     args = parser.parse_args()
@@ -203,14 +174,14 @@ def main():
     # Get git info
     branch, commit = get_git_info()
 
-    print(f"\n{'='*70}")
-    print(f"Capturing API Baseline")
-    print(f"{'='*70}")
+    print(f"\n{'=' * 70}")
+    print("Capturing API Baseline")
+    print(f"{'=' * 70}")
     print(f"Endpoint User: {args.endpoint_user}")
     print(f"Version: {args.version}")
     print(f"Git Branch: {branch}")
     print(f"Git Commit: {commit[:8]}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     # Initialize baseline structure
     baseline = {
@@ -222,7 +193,7 @@ def main():
             "branch": branch,
             "commit": commit,
         },
-        "endpoints": {}
+        "endpoints": {},
     }
 
     test_job_id = None
@@ -235,9 +206,7 @@ def main():
 
         # 2. GET /jobs/{job_id}
         print("2. Capturing GET /jobs/{job_id}...")
-        baseline["endpoints"]["GET /jobs/{job_id}"] = capture_job_retrieval_baseline(
-            client, test_job_id
-        )
+        baseline["endpoints"]["GET /jobs/{job_id}"] = capture_job_retrieval_baseline(client, test_job_id)
 
         # 3. GET /backends/{backend}
         print("3. Capturing GET /backends/{backend}...")
@@ -245,9 +214,7 @@ def main():
 
         # 4. GET /backends/{backend}/characterizations
         print("4. Capturing GET /backends/{backend}/characterizations...")
-        baseline["endpoints"]["GET /backends/{backend}/characterizations"] = (
-            capture_characterization_baseline(client)
-        )
+        baseline["endpoints"]["GET /backends/{backend}/characterizations"] = capture_characterization_baseline(client)
 
         # 5. Add remaining endpoints with manual schemas (no live capture needed)
         print("5. Adding manual schemas for remaining endpoints...")
@@ -256,10 +223,10 @@ def main():
             "response_schema": {
                 "status_code": 200,
                 "response_type": "object",
-                "value_constraints": {"all_values": "float", "range": [0.0, 1.0]}
+                "value_constraints": {"all_values": "float", "range": [0.0, 1.0]},
             },
             "critical_fields": ["*"],
-            "notes": "qiskit-ionq expects dict[str, float] with keys as bitstrings"
+            "notes": "qiskit-ionq expects dict[str, float] with keys as bitstrings",
         }
 
         baseline["endpoints"]["GET /jobs/{job_id}/circuits/{lang}"] = {
@@ -268,28 +235,28 @@ def main():
                 "response_type": "string",
             },
             "critical_fields": None,
-            "notes": "qiskit-ionq.compiled_circuit() returns this directly"
+            "notes": "qiskit-ionq.compiled_circuit() returns this directly",
         }
 
         baseline["endpoints"]["PUT /jobs/{job_id}/status/cancel"] = {
             "response_schema": {"status_code": 200, "required_fields": ["id", "status"]},
             "critical_fields": ["status"],
-            "notes": "qiskit-ionq checks status after cancel"
+            "notes": "qiskit-ionq checks status after cancel",
         }
 
         baseline["endpoints"]["DELETE /jobs/{job_id}"] = {
             "response_schema": {"status_code": 200, "required_fields": ["id"]},
             "critical_fields": ["id"],
-            "notes": "qiskit-ionq verifies deletion by ID"
+            "notes": "qiskit-ionq verifies deletion by ID",
         }
 
         baseline["endpoints"]["GET /jobs/estimate"] = {
             "response_schema": {
                 "status_code": 200,
-                "required_fields": ["estimated_cost", "cost_unit", "estimated_execution_time"]
+                "required_fields": ["estimated_cost", "cost_unit", "estimated_execution_time"],
             },
             "critical_fields": ["estimated_cost", "estimated_execution_time"],
-            "notes": "qiskit-ionq displays cost estimates to users"
+            "notes": "qiskit-ionq displays cost estimates to users",
         }
 
     finally:
@@ -317,12 +284,12 @@ def main():
     with open(output_path, "w") as f:
         json.dump(baseline, f, indent=2)
 
-    print(f"\n{'='*70}")
-    print(f"✅ Baseline Saved")
-    print(f"{'='*70}")
+    print(f"\n{'=' * 70}")
+    print("✅ Baseline Saved")
+    print(f"{'=' * 70}")
     print(f"Location: {output_path}")
     print(f"Endpoints Captured: {len(baseline['endpoints'])}")
-    print(f"{'='*70}\n")
+    print(f"{'=' * 70}\n")
 
     return 0
 
