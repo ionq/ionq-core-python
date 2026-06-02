@@ -1,4 +1,4 @@
-name: Spec drift check
+name: Spec drift — auto regen PR
 
 on:
   schedule:
@@ -6,19 +6,21 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  issues: write
+  contents: write
+  pull-requests: write
 
 jobs:
-  check:
+  regen:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          persist-credentials: false
+        # persist-credentials required to push the regen branch
+      - uses: ./.github/actions/setup-uv
+      - run: uv sync --group regen
       - name: Fetch latest spec
         run: |
+          set -euo pipefail
           BASE_URL=$(jq -r '.servers[0].url' openapi.json)
           echo "BASE_URL=${BASE_URL}" >> "$GITHUB_ENV"
           curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
@@ -26,27 +28,58 @@ jobs:
         id: drift
         run: |
           norm() { jq -S 'del(.info.description)' "$1"; }
-          if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
+          if ! diff -u --label vendored --label upstream \
+               <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Open or update issue
+      - name: Regenerate client
+        if: steps.drift.outputs.drifted == 'true'
+        run: |
+          set -euo pipefail
+          cp /tmp/latest-spec.json openapi.json
+          if [[ -f openapi-overlay.yaml ]]; then
+            uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+          else
+            cp openapi.json /tmp/patched-spec.json
+          fi
+          uv run openapi-python-client generate \
+            --path /tmp/patched-spec.json \
+            --meta none \
+            --config openapi-python-client-config.yaml \
+            --custom-template-path custom-templates \
+            --output-path ionq_core \
+            --overwrite
+      - name: Open or update PR
         if: steps.drift.outputs.drifted == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
+          BRANCH="spec-drift/auto-regen"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add openapi.json ionq_core/
+          git commit -m "Regenerate client for updated OpenAPI spec"
+          git push origin "$BRANCH" --force
+
           {
-            echo "The spec at ${BASE_URL}/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client."
-            printf '\n<details><summary>Diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
+            echo "The spec at \`${BASE_URL}/api-docs\` has diverged from the vendored \`openapi.json\`. This PR fetches the new spec and regenerates the client."
+            printf '\n<details><summary>Spec diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
             head -c 60000 /tmp/spec.diff
             [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'
             printf '```\n</details>\n'
           } > /tmp/body.md
-          existing=$(gh issue list --label spec-drift --state open --json number --jq '.[0].number // empty')
+
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
           if [[ -z "$existing" ]]; then
-            gh issue create \
-              --title "OpenAPI spec has changed upstream" \
+            gh pr create \
+              --title "Regenerate client for updated OpenAPI spec" \
               --body-file /tmp/body.md \
+              --head "$BRANCH" \
+              --base main \
+              --reviewer ionq/developer-tools \
               --label spec-drift
           else
-            gh issue edit "$existing" --body-file /tmp/body.md
+            gh pr edit "$existing" --body-file /tmp/body.md
           fi
