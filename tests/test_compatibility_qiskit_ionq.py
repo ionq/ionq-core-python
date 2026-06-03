@@ -24,10 +24,9 @@ from ionq_core.api.default import (
 from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
 
 # Import compatibility fixtures
-from .compatibility_conftest import warn_team_on_fail
+from .compatibility_conftest import warn_team_instead_of_fail
 
 
-@pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
 class TestQiskitIonQCompatibilityV1_0_3:
     """
     Compatibility tests for qiskit-ionq v1.0.3.
@@ -36,8 +35,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
     that qiskit-ionq relies on. Breaking changes trigger warnings
     but do not fail the test suite.
 
-    Each test is marked with @warn_team_on_fail which converts assertion
-    failures to warnings instead of test failures.
+    Each test is marked with @warn_team_instead_of_fail(team_name="devtools")
+    which converts assertion failures to warnings instead of test failures.
     """
 
     @pytest.fixture(scope="class")
@@ -69,7 +68,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
         result = create_job.sync(client=client, body=body)
         return result.id
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_job_submission_response_schema(self, client, bell_circuit, check_schema_compatibility):
         """
         POST /jobs - Verify job submission response contains required fields.
@@ -94,7 +94,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert resp.parsed.status is not None, "Job status is None"
         assert resp.status_code.value == 201, f"Expected status 201, got {resp.status_code.value}"
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_job_retrieval_response_schema(self, client, test_job_id, check_schema_compatibility):
         """
         GET /jobs/{job_id} - Verify job retrieval response schema.
@@ -125,7 +126,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert "metadata" in job_dict or job_dict.get("metadata") is None
         assert "results" in job_dict or job_dict.get("results") is None
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_completed_job_results_schema(self, client, check_schema_compatibility):
         """
         GET /jobs/{job_id}/results/probabilities - Verify results format.
@@ -163,7 +165,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
             assert isinstance(value, (int, float)), f"Value for {key} should be numeric"
             assert 0.0 <= value <= 1.0, f"Probability {value} out of range [0, 1]"
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_backend_info_schema(self, client, check_schema_compatibility):
         """
         GET /backends/{backend} - Verify backend info schema.
@@ -187,7 +190,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert isinstance(backend_dict["qubits"], int), f"'qubits' should be int, got {type(backend_dict['qubits'])}"
         assert backend_dict["qubits"] > 0, f"'qubits' should be positive, got {backend_dict['qubits']}"
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_characterization_schema(self, client, check_schema_compatibility):
         """
         GET /backends/{backend}/characterizations - Verify calibration data schema.
@@ -217,7 +221,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
         assert "connectivity" in char_dict or char_dict.get("connectivity") is None
         assert isinstance(char_dict["qubits"], int), "'qubits' should be int"
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_compiled_circuit_schema(self, client, test_job_id):
         """
         GET /jobs/{job_id}/circuits/{lang} - Verify compiled circuit format.
@@ -251,7 +256,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
             # Compiled circuit might not be available for all jobs
             pytest.skip(f"Compiled circuit not available: {e}")
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_job_cancellation_schema(self, client, bell_circuit):
         """
         PUT /jobs/{job_id}/status/cancel - Verify cancellation response.
@@ -282,7 +288,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
             except Exception as e:
                 print(f"Error occurred while deleting job: {e}")
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_job_deletion_schema(self, client, bell_circuit):
         """
         DELETE /jobs/{job_id} - Verify deletion response.
@@ -305,7 +312,8 @@ class TestQiskitIonQCompatibilityV1_0_3:
             delete_dict = delete_result.to_dict()
             assert "id" in delete_dict, "Missing 'id' in delete response"
 
-    @warn_team_on_fail
+    @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
+    @warn_team_instead_of_fail(team_name="devtools")
     def test_cost_estimation_schema(self, client, check_schema_compatibility):
         """
         GET /jobs/estimate - Verify cost estimation response.

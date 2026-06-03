@@ -20,19 +20,18 @@ class CompatibilityWarning(UserWarning):
     pass
 
 
-def warn_team_on_fail(func: Callable) -> Callable:
+def warn_team_instead_of_fail(team_name: str) -> Callable:
     """
-    Decorator that catches AssertionErrors and converts them to warnings.
+    Decorator factory that catches AssertionErrors and converts them to warnings.
 
     Allows compatibility tests to detect breaking changes without failing
-    the test suite. Prints warning with version and endpoint_user context.
+    the test suite. Prints warning with version, endpoint_user, and team context.
 
     Usage:
         @pytest.mark.compatibility(version="1.0.3", endpoint_user="qiskit-ionq")
-        class TestCompatibility:
-            @warn_team_on_fail
-            def test_response_schema(self, ...):
-                assert "required_field" in response
+        @warn_team_instead_of_fail(team_name="devtools")
+        def test_response_schema(self, ...):
+            assert "required_field" in response
 
     The decorator will:
     1. Try to run the test normally
@@ -41,45 +40,53 @@ def warn_team_on_fail(func: Callable) -> Callable:
     4. Skip the test (mark as passed) instead of failing
 
     Args:
-        func: Test function to wrap
+        team_name: Name of the team to notify on failure
 
     Returns:
-        Wrapped function that warns instead of fails
+        Decorator function that wraps test functions
     """
 
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        # Extract test context from pytest markers
-        # This is set by pytest_collection_modifyitems hook below
-        test_obj = args[0] if args else None
-        version = getattr(test_obj, "_compatibility_version", "unknown")
-        endpoint_user = getattr(test_obj, "_compatibility_endpoint_user", "unknown")
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # Extract test context from pytest markers
+            # This is set by pytest_collection_modifyitems hook below
+            test_obj = args[0] if args else None
+            version = getattr(test_obj, "_compatibility_version", "unknown")
+            endpoint_user = getattr(test_obj, "_compatibility_endpoint_user", "unknown")
 
-        try:
-            return func(*args, **kwargs)
-        except AssertionError as e:
-            # Format warning message for stdout
-            warning_msg = (
-                f"\n{'=' * 70}\n"
-                f"API COMPATIBILITY WARNING\n"
-                f"{'=' * 70}\n"
-                f"Endpoint User: {endpoint_user}\n"
-                f"Version: {version}\n"
-                f"Test: {func.__name__}\n"
-                f"Issue: {e!s}\n"
-                f"{'=' * 70}\n"
-            )
+            try:
+                return func(*args, **kwargs)
+            except AssertionError as e:
+                # Format warning message for stdout
+                warning_msg = (
+                    f"\n{'=' * 70}\n"
+                    f"API COMPATIBILITY WARNING\n"
+                    f"{'=' * 70}\n"
+                    f"Team: {team_name}\n"
+                    f"Endpoint User: {endpoint_user}\n"
+                    f"Version: {version}\n"
+                    f"Test: {func.__name__}\n"
+                    f"Issue: {e!s}\n"
+                    f"{'=' * 70}\n"
+                )
 
-            # Print to stdout (visible in test output)
-            print(warning_msg)
+                # Print to stdout (visible in test output)
+                print(warning_msg)
 
-            # Also issue Python warning for test runners that capture warnings
-            warnings.warn(f"[{endpoint_user} v{version}] {func.__name__}: {e}", CompatibilityWarning, stacklevel=2)
+                # Also issue Python warning for test runners that capture warnings
+                warnings.warn(
+                    f"[{team_name}] [{endpoint_user} v{version}] {func.__name__}: {e}",
+                    CompatibilityWarning,
+                    stacklevel=2,
+                )
 
-            # Skip test instead of failing - we only want to warn
-            pytest.skip(f"Compatibility issue detected: {e}")
+                # Skip test instead of failing - we only want to warn
+                pytest.skip(f"Compatibility issue detected: {e}")
 
-    return wrapper
+        return wrapper
+
+    return decorator
 
 
 @pytest.fixture(scope="session")
