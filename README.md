@@ -65,6 +65,10 @@ Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, 
 
 For options (`api_key`, `base_url`, `max_retries`, `timeout`, `extension`), error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
 
+## Examples
+
+See [`examples/`](examples/) for direct API examples, including a Hamiltonian Energy Quantum Function workload with client-side parameter optimization.
+
 ## Versioning
 
 This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independent of the upstream REST API version - pass an explicit `base_url` to `IonQClient` to pin against a different API. Print the installed version with:
