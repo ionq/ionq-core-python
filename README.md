@@ -63,6 +63,10 @@ print(probs.additional_properties)
 
 Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, `asyncio`, and `asyncio_detailed`. The `sync` and `asyncio` variants return the parsed body; the `_detailed` variants return a `Response[T]` with the status code, headers, and parsed body.
 
+## Examples
+
+See [examples/](examples/README.md) for sync and async downstream-SDK integration examples using the extension API.
+
 For options (`api_key`, `base_url`, `max_retries`, `timeout`, `extension`), error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
 
 ## Versioning
