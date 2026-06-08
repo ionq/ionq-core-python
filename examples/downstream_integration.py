@@ -15,7 +15,9 @@ waits for it to finish, and prints the measured probabilities. See
 """
 
 import logging
+
 import httpx
+
 from ionq_core import (
     APIError,
     AuthenticatedClient,
