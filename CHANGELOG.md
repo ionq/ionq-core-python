@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
-- `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `CostModel` (`"quantum_compute_time"` or `"execution_time"`).
+- `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `CostModel` (`"quantum_compute_time"`, `"execution_time"`, or `"2QGE_operations"`).
 - `examples/` directory with runnable sync and async downstream-SDK integration scripts demonstrating the extension API (`user_agent_token`, `default_headers`, event hooks, and `error_mapper`), runnable against the free `simulator`.
 
 ### Changed
