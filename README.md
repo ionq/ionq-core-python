@@ -65,6 +65,15 @@ Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, 
 
 For options (`api_key`, `base_url`, `max_retries`, `timeout`, `extension`), error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
 
+## Examples
+
+Runnable, copy-pasteable scripts live in [`examples/`](examples/) and execute end-to-end against the free `simulator`:
+
+- [`downstream_integration.py`](examples/downstream_integration.py): downstream-SDK integration via the extension API (sync).
+- [`downstream_integration_async.py`](examples/downstream_integration_async.py): the same flow on the async path.
+
+See [`examples/README.md`](examples/README.md) for setup.
+
 ## Versioning
 
 This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independent of the upstream REST API version - pass an explicit `base_url` to `IonQClient` to pin against a different API. Print the installed version with:
