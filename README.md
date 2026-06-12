@@ -61,6 +61,8 @@ probs = get_job_probabilities.sync(uuid=job.id, client=client)
 print(probs.additional_properties)
 ```
 
+See the [examples/](examples/README.md) directory for more advanced use cases, including a hybrid parameter optimization workflow using Quantum Functions.
+
 Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, `asyncio`, and `asyncio_detailed`. The `sync` and `asyncio` variants return the parsed body; the `_detailed` variants return a `Response[T]` with the status code, headers, and parsed body.
 
 For options (`api_key`, `base_url`, `max_retries`, `timeout`, `extension`), error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
