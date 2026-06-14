@@ -1,7 +1,7 @@
 overlay: 1.0.0
 info:
   title: ionq-core-python local OpenAPI fixes
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Patches applied to openapi.json before client generation. The upstream
     spec marks QisCircuitInput.qubits as optional, but the simulator
@@ -13,6 +13,9 @@ info:
     (and extended it to NativeCircuitInput and JsonMultiCircuitInput), so
     that action was removed.
 
+    CostModel is extended with live API values (``QCT``, ``2QGE_operations``)
+    that the platform returns but the vendored spec has not yet adopted.
+
 actions:
   - target: $.components.schemas.QisCircuitInput.required
     remove: true
@@ -22,3 +25,12 @@ actions:
         - circuit
         - gateset
         - qubits
+  - target: $.components.schemas.CostModel.enum
+    remove: true
+  - target: $.components.schemas.CostModel
+    update:
+      enum:
+        - quantum_compute_time
+        - execution_time
+        - QCT
+        - 2QGE_operations
