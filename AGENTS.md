@@ -101,6 +101,7 @@ Auth is `apiKey`, **not** `Bearer`. `IonQClient` sets `prefix="apiKey"`; the wir
 - Mock HTTP with `httpx_mock` from `pytest-httpx`. Don't introduce `responses`, `requests-mock`, or VCR.
 - Integration tests are marked `pytest.mark.integration` and live in `tests/integration/`. Use the `track_job` fixture so the autouse `cleanup_jobs` fixture deletes anything you create.
 - `gates.py` is intentionally NumPy-free (`cmath`, `math`, nested tuples). Keep it that way.
+- `results.py` is intentionally NumPy-free. Keep it that way.
 
 ## Drift sentinels — single edits that fan out
 
