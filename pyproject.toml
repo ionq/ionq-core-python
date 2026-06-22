@@ -47,7 +47,7 @@ dev = [
 ]
 regen = [
     "oas-patch==0.6.0",
-    "openapi-python-client==0.28.4",
+    "openapi-python-client==0.29.0",
 ]
 
 [build-system]
