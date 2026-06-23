@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `ionq_core.results` module with pure-Python helpers over the probability mappings returned by the results endpoints: `probabilities_to_counts` (largest-remainder integer counts), `relabel_to_bitstrings` (integer keys to zero-padded bitstrings), `marginal` (marginal over a subset of qubits), and `expectation_z` (all-qubit Pauli-Z expectation). NumPy-free, re-exported from `ionq_core`.
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
 - `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `CostModel` (`"quantum_compute_time"` or `"execution_time"`).
 
