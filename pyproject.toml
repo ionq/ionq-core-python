@@ -87,10 +87,7 @@ include = ["ionq_core/models/**", "ionq_core/api/**"]
 [tool.ty.overrides.rules]
 invalid-argument-type = "ignore"
 
-# openapi-python-client 0.29.0 emits `return value` (not `cast(Enum, value)`) in the
-# generated enum `check_*` helpers; ty cannot narrow `str` to the Literal through the
-# `value in <set>` guard. Scoped to models/** (api/** has no such helpers) so endpoint
-# return types stay checked. Drop this if a future generator restores the cast.
+# TODO: drop this if a future generator restores the cast
 [[tool.ty.overrides]]
 include = ["ionq_core/models/**"]
 [tool.ty.overrides.rules]
