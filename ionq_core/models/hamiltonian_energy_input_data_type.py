@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 HamiltonianEnergyInputDataType = Literal['hamiltonian-energy']
 
@@ -10,5 +10,5 @@ HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES: set[HamiltonianEnergyInputDataType] =
 
 def check_hamiltonian_energy_input_data_type(value: str) -> HamiltonianEnergyInputDataType:
     if value in HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES:
-        return cast(HamiltonianEnergyInputDataType, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {HAMILTONIAN_ENERGY_INPUT_DATA_TYPE_VALUES!r}")

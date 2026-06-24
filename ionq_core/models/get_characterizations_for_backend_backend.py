@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 GetCharacterizationsForBackendBackend = Literal['qpu.aria-1', 'qpu.aria-2', 'qpu.forte-1', 'qpu.forte-enterprise-1', 'qpu.forte-enterprise-2', 'qpu.forte-enterprise-3']
 
@@ -10,5 +10,5 @@ GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES: set[GetCharacterizationsForBac
 
 def check_get_characterizations_for_backend_backend(value: str) -> GetCharacterizationsForBackendBackend:
     if value in GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES:
-        return cast(GetCharacterizationsForBackendBackend, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {GET_CHARACTERIZATIONS_FOR_BACKEND_BACKEND_VALUES!r}")

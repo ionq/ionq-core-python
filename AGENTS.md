@@ -75,14 +75,14 @@ Every endpoint module exposes four callables: `sync`, `sync_detailed`, `asyncio`
 
 ```python
 from ionq_core import IonQClient
-from ionq_core.api.default import create_job, get_job, get_compiled_file, get_jobs
+from ionq_core.api.default import create_job, get_job, get_variant_probabilities, get_jobs
 from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
 
-client = IonQClient()                                          # reads IONQ_API_KEY
-get_job.sync(uuid, client=client)                              # one path param
-get_compiled_file.sync(uuid, lang, client=client)              # multiple path params
-get_jobs.sync(client=client, status="completed", limit=10)     # query only
-create_job.sync(client=client, body=payload)                   # body only
+client = IonQClient()                                            # reads IONQ_API_KEY
+get_job.sync(uuid, client=client)                                # one path param
+get_variant_probabilities.sync(uuid, variant_id, client=client)  # multiple path params
+get_jobs.sync(client=client, status="completed", limit=10)       # query only
+create_job.sync(client=client, body=payload)                     # body only
 ```
 
 Use `next_=` (trailing underscore) for the cursor pagination kwarg — Python keyword collision. The `iter_jobs` / `aiter_jobs` / `iter_session_jobs` / `aiter_session_jobs` helpers handle paging for you.
