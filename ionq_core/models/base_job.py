@@ -12,8 +12,8 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.cost_model import check_cost_model
-from ..models.cost_model import CostModel
+from ..models.api_cost_model import ApiCostModel
+from ..models.api_cost_model import check_api_cost_model
 from ..models.job_status import check_job_status
 from ..models.job_status import JobStatus
 from ..types import UNSET, Unset
@@ -42,7 +42,7 @@ class BaseJob:
             type_ (str):
             backend (str):
             dry_run (bool):
-            submitter_id (str): The id of the user who submitted the job
+            submitter_id (str): The id of the user who submitted the job.
             project_id (None | str):
             parent_job_id (None | str):
             session_id (None | str):
@@ -60,9 +60,10 @@ class BaseJob:
             settings (JsonObject):
             stats (JsonObject):
             results (JsonObject | None):
-            shots (int | Unset):
+            shots (int | Unset): `shots` are not included with ideal simulator backend.
             noise (Noise | Unset):
-            cost_model (CostModel | Unset):
+            cost_model (ApiCostModel | Unset): The billing model used for this job. `QCT` for jobs billed on quantum
+                compute time, `2QGE_operations` for jobs billed on two-qubit gate operations.
      """
 
     id: str
@@ -89,7 +90,7 @@ class BaseJob:
     results: JsonObject | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
-    cost_model: CostModel | Unset = UNSET
+    cost_model: ApiCostModel | Unset = UNSET
 
 
 
@@ -392,11 +393,11 @@ class BaseJob:
 
 
         _cost_model = d.pop("cost_model", UNSET)
-        cost_model: CostModel | Unset
+        cost_model: ApiCostModel | Unset
         if isinstance(_cost_model,  Unset):
             cost_model = UNSET
         else:
-            cost_model = check_cost_model(_cost_model)
+            cost_model = check_api_cost_model(_cost_model)
 
 
 

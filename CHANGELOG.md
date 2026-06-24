@@ -9,11 +9,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
-- `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `CostModel` (`"quantum_compute_time"` or `"execution_time"`).
+- `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `ApiCostModel` (`"QCT"` or `"2QGE_operations"`).
+- `clone_job` endpoint (`POST /jobs/{UUID}/clone`) and its `CloneJobPayload` model for resubmitting an existing job with optional overrides.
+- `get_job_artifact` endpoint (`GET /jobs/{UUID}/artifacts/{artifactId}`) for downloading job artifacts by id. The response body is opaque, so only the `sync_detailed` / `asyncio_detailed` callables are generated; read the bytes off `Response.content`.
+- `Backend` now exposes `supported_gates`, `supported_native_gates`, and `supported_error_mitigations`.
+- `estimate_job_cost` response gained `estimated_quantum_compute_time_us`, and its `rate_information` gained `qct_cost_cents` and `rate_type` (`"qct"` or `"2qge"`). Its `cost_1q_gate`, `cost_2q_gate`, and `job_cost_minimum` rate fields are now nullable.
 
 ### Changed
 
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
+
+### Removed
+
+- `get_compiled_file` endpoint (`GET /jobs/{UUID}/circuits/{lang}`) and its `GetCompiledFileLang` enum, removed upstream in favor of `get_job_artifact`. Compiled circuits are now fetched as artifacts by id rather than by `lang` (`"native"` / `"qasm3"`).
+- `CostModel` model, replaced by `ApiCostModel`.
 
 ## [0.1.1] - 2026-04-30
 

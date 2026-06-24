@@ -42,7 +42,7 @@ class CircuitJobCreationPayload:
             input_ (NativeCircuitInput | QisCircuitInput):
             name (str | Unset):
             metadata (JobMetadata | Unset):
-            shots (int | Unset):  Default: 100.
+            shots (int | Unset): `shots` is ignored by ideal simulator backend. Default: 100.
             session_id (str | Unset):
             settings (CircuitJobCreationPayloadSettings | Unset):
             dry_run (bool | Unset):
