@@ -25,7 +25,6 @@ dependencies = [
     "httpx>=0.27,<0.29",
     "httpx-retries>=0.5",
     "attrs>=24.2",
-    "python-dateutil>=2.9",
 ]
 
 [project.urls]
@@ -87,6 +86,15 @@ python-version = "3.11"
 include = ["ionq_core/models/**", "ionq_core/api/**"]
 [tool.ty.overrides.rules]
 invalid-argument-type = "ignore"
+
+# openapi-python-client 0.29.0 emits `return value` (not `cast(Enum, value)`) in the
+# generated enum `check_*` helpers; ty cannot narrow `str` to the Literal through the
+# `value in <set>` guard. Scoped to models/** (api/** has no such helpers) so endpoint
+# return types stay checked. Drop this if a future generator restores the cast.
+[[tool.ty.overrides]]
+include = ["ionq_core/models/**"]
+[tool.ty.overrides.rules]
+invalid-return-type = "ignore"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

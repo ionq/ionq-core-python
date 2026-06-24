@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 QuantumFunctionJobCreationPayloadType = Literal['quantum-function']
 
@@ -10,5 +10,5 @@ QUANTUM_FUNCTION_JOB_CREATION_PAYLOAD_TYPE_VALUES: set[QuantumFunctionJobCreatio
 
 def check_quantum_function_job_creation_payload_type(value: str) -> QuantumFunctionJobCreationPayloadType:
     if value in QUANTUM_FUNCTION_JOB_CREATION_PAYLOAD_TYPE_VALUES:
-        return cast(QuantumFunctionJobCreationPayloadType, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {QUANTUM_FUNCTION_JOB_CREATION_PAYLOAD_TYPE_VALUES!r}")
