@@ -12,6 +12,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
@@ -37,6 +38,7 @@ class GetJobEstimateResponse:
             estimated_cost (float):
             estimated_execution_time (float):
             current_predicted_queue_time (float):
+            estimated_quantum_compute_time_us (float | Unset):
      """
 
     input_values: GetJobEstimateQueryParams
@@ -46,6 +48,7 @@ class GetJobEstimateResponse:
     estimated_cost: float
     estimated_execution_time: float
     current_predicted_queue_time: float
+    estimated_quantum_compute_time_us: float | Unset = UNSET
 
 
 
@@ -68,6 +71,8 @@ class GetJobEstimateResponse:
 
         current_predicted_queue_time = self.current_predicted_queue_time
 
+        estimated_quantum_compute_time_us = self.estimated_quantum_compute_time_us
+
 
         field_dict: dict[str, Any] = {}
 
@@ -80,6 +85,8 @@ class GetJobEstimateResponse:
             "estimated_execution_time": estimated_execution_time,
             "current_predicted_queue_time": current_predicted_queue_time,
         })
+        if estimated_quantum_compute_time_us is not UNSET:
+            field_dict["estimated_quantum_compute_time_us"] = estimated_quantum_compute_time_us
 
         return field_dict
 
@@ -110,6 +117,8 @@ class GetJobEstimateResponse:
 
         current_predicted_queue_time = d.pop("current_predicted_queue_time")
 
+        estimated_quantum_compute_time_us = d.pop("estimated_quantum_compute_time_us", UNSET)
+
         get_job_estimate_response = cls(
             input_values=input_values,
             estimated_at=estimated_at,
@@ -118,6 +127,7 @@ class GetJobEstimateResponse:
             estimated_cost=estimated_cost,
             estimated_execution_time=estimated_execution_time,
             current_predicted_queue_time=current_predicted_queue_time,
+            estimated_quantum_compute_time_us=estimated_quantum_compute_time_us,
         )
 
         return get_job_estimate_response

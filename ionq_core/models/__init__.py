@@ -7,6 +7,7 @@
 from .add_job_results_payload import AddJobResultsPayload
 from .add_job_results_response import AddJobResultsResponse
 from .ansatz import Ansatz
+from .api_cost_model import ApiCostModel
 from .backend import Backend
 from .bad_request_error import BadRequestError
 from .base_job import BaseJob
@@ -29,7 +30,10 @@ from .circuit_job_settings_error_mitigation import CircuitJobSettingsErrorMitiga
 from .circuit_job_settings_error_mitigation_debiasing_type_0 import CircuitJobSettingsErrorMitigationDebiasingType0
 from .circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling import CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling
 from .circuit_job_stats import CircuitJobStats
-from .cost_model import CostModel
+from .clone_job_payload import CloneJobPayload
+from .clone_job_payload_settings import CloneJobPayloadSettings
+from .clone_job_payload_settings_compilation import CloneJobPayloadSettingsCompilation
+from .clone_job_payload_settings_error_mitigation import CloneJobPayloadSettingsErrorMitigation
 from .create_session_request import CreateSessionRequest
 from .error import Error
 from .failure import Failure
@@ -43,13 +47,13 @@ from .get_characterization_backend import GetCharacterizationBackend
 from .get_characterizations_for_backend_backend import GetCharacterizationsForBackendBackend
 from .get_characterizations_for_backend_response_200 import GetCharacterizationsForBackendResponse200
 from .get_circuit_job_response import GetCircuitJobResponse
-from .get_compiled_file_lang import GetCompiledFileLang
 from .get_job_cost_response import GetJobCostResponse
 from .get_job_cost_response_cost import GetJobCostResponseCost
 from .get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
 from .get_job_estimate_query_params import GetJobEstimateQueryParams
 from .get_job_estimate_response import GetJobEstimateResponse
 from .get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
+from .get_job_estimate_response_rate_information_rate_type import GetJobEstimateResponseRateInformationRateType
 from .get_job_response import GetJobResponse
 from .get_jobs_query_params import GetJobsQueryParams
 from .get_jobs_response import GetJobsResponse
@@ -94,6 +98,10 @@ from .native_gate import NativeGate
 from .noise import Noise
 from .noise_model import NoiseModel
 from .number_map import NumberMap
+from .partial_base_child_job_creation_payload import PartialBaseChildJobCreationPayload
+from .partial_base_child_job_creation_payload_settings import PartialBaseChildJobCreationPayloadSettings
+from .partial_base_child_job_creation_payload_settings_compilation import PartialBaseChildJobCreationPayloadSettingsCompilation
+from .partial_base_child_job_creation_payload_settings_error_mitigation import PartialBaseChildJobCreationPayloadSettingsErrorMitigation
 from .qctrl_qaoa_job_creation_payload import QctrlQaoaJobCreationPayload
 from .qctrl_qaoa_job_creation_payload_external_settings import QctrlQaoaJobCreationPayloadExternalSettings
 from .qctrl_qaoa_job_creation_payload_settings import QctrlQaoaJobCreationPayloadSettings
@@ -128,6 +136,7 @@ __all__ = (
     "AddJobResultsPayload",
     "AddJobResultsResponse",
     "Ansatz",
+    "ApiCostModel",
     "Backend",
     "BadRequestError",
     "BaseJob",
@@ -150,7 +159,10 @@ __all__ = (
     "CircuitJobSettingsErrorMitigationDebiasingType0",
     "CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling",
     "CircuitJobStats",
-    "CostModel",
+    "CloneJobPayload",
+    "CloneJobPayloadSettings",
+    "CloneJobPayloadSettingsCompilation",
+    "CloneJobPayloadSettingsErrorMitigation",
     "CreateSessionRequest",
     "Error",
     "Failure",
@@ -164,13 +176,13 @@ __all__ = (
     "GetCharacterizationsForBackendBackend",
     "GetCharacterizationsForBackendResponse200",
     "GetCircuitJobResponse",
-    "GetCompiledFileLang",
     "GetJobCostResponse",
     "GetJobCostResponseCost",
     "GetJobCostResponseEstimatedCost",
     "GetJobEstimateQueryParams",
     "GetJobEstimateResponse",
     "GetJobEstimateResponseRateInformation",
+    "GetJobEstimateResponseRateInformationRateType",
     "GetJobResponse",
     "GetJobsQueryParams",
     "GetJobsResponse",
@@ -215,6 +227,10 @@ __all__ = (
     "Noise",
     "NoiseModel",
     "NumberMap",
+    "PartialBaseChildJobCreationPayload",
+    "PartialBaseChildJobCreationPayloadSettings",
+    "PartialBaseChildJobCreationPayloadSettingsCompilation",
+    "PartialBaseChildJobCreationPayloadSettingsErrorMitigation",
     "QctrlQaoaJobCreationPayload",
     "QctrlQaoaJobCreationPayloadExternalSettings",
     "QctrlQaoaJobCreationPayloadSettings",

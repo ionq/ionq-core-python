@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 JSONMultiCircuitJobType = Literal['ionq.multi-circuit.v1']
 
@@ -10,5 +10,5 @@ JSON_MULTI_CIRCUIT_JOB_TYPE_VALUES: set[JSONMultiCircuitJobType] = { 'ionq.multi
 
 def check_json_multi_circuit_job_type(value: str) -> JSONMultiCircuitJobType:
     if value in JSON_MULTI_CIRCUIT_JOB_TYPE_VALUES:
-        return cast(JSONMultiCircuitJobType, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {JSON_MULTI_CIRCUIT_JOB_TYPE_VALUES!r}")
