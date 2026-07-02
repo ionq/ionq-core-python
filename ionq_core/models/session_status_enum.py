@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 SessionStatusEnum = Literal['created', 'ended', 'started']
 
@@ -10,5 +10,5 @@ SESSION_STATUS_ENUM_VALUES: set[SessionStatusEnum] = { 'created', 'ended', 'star
 
 def check_session_status_enum(value: str) -> SessionStatusEnum:
     if value in SESSION_STATUS_ENUM_VALUES:
-        return cast(SessionStatusEnum, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {SESSION_STATUS_ENUM_VALUES!r}")

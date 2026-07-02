@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 JobCanceledResponseStatus = Literal['canceled']
 
@@ -10,5 +10,5 @@ JOB_CANCELED_RESPONSE_STATUS_VALUES: set[JobCanceledResponseStatus] = { 'cancele
 
 def check_job_canceled_response_status(value: str) -> JobCanceledResponseStatus:
     if value in JOB_CANCELED_RESPONSE_STATUS_VALUES:
-        return cast(JobCanceledResponseStatus, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {JOB_CANCELED_RESPONSE_STATUS_VALUES!r}")

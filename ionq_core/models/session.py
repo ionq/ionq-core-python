@@ -15,7 +15,6 @@ from ..types import UNSET, Unset
 from ..models.session_status_enum import check_session_status_enum
 from ..models.session_status_enum import SessionStatusEnum
 from ..types import UNSET, Unset
-from dateutil.parser import isoparse
 from typing import cast
 import datetime
 
@@ -134,7 +133,7 @@ class Session:
         d = dict(src_dict)
         id = d.pop("id")
 
-        created_at = isoparse(d.pop("created_at"))
+        created_at = datetime.datetime.fromisoformat(d.pop("created_at"))
 
 
 
@@ -171,7 +170,7 @@ class Session:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                ended_at_type_0 = isoparse(data)
+                ended_at_type_0 = datetime.datetime.fromisoformat(data)
 
 
 
@@ -204,7 +203,7 @@ class Session:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                started_at_type_0 = isoparse(data)
+                started_at_type_0 = datetime.datetime.fromisoformat(data)
 
 
 

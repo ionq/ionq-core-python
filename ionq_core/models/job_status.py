@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 JobStatus = Literal['canceled', 'completed', 'failed', 'ready', 'started', 'submitted']
 
@@ -10,5 +10,5 @@ JOB_STATUS_VALUES: set[JobStatus] = { 'canceled', 'completed', 'failed', 'ready'
 
 def check_job_status(value: str) -> JobStatus:
     if value in JOB_STATUS_VALUES:
-        return cast(JobStatus, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {JOB_STATUS_VALUES!r}")

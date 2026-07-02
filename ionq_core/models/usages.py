@@ -17,7 +17,6 @@ from ..models.group_by import GroupBy
 from ..models.modality import check_modality
 from ..models.modality import Modality
 from ..types import UNSET, Unset
-from dateutil.parser import isoparse
 from typing import cast
 from uuid import UUID
 import datetime
@@ -178,7 +177,7 @@ class Usages:
         if isinstance(_usage_from,  Unset):
             usage_from = UNSET
         else:
-            usage_from = isoparse(_usage_from)
+            usage_from = datetime.datetime.fromisoformat(_usage_from)
 
 
 
@@ -188,7 +187,7 @@ class Usages:
         if isinstance(_usage_to,  Unset):
             usage_to = UNSET
         else:
-            usage_to = isoparse(_usage_to)
+            usage_to = datetime.datetime.fromisoformat(_usage_to)
 
 
 

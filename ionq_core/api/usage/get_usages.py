@@ -17,7 +17,6 @@ from ...models.group_by import GroupBy
 from ...models.modality import check_modality
 from ...models.modality import Modality
 from ...models.usages import Usages
-from dateutil.parser import isoparse
 from typing import cast
 from uuid import UUID
 import datetime

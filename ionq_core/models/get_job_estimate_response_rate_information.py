@@ -12,6 +12,9 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.get_job_estimate_response_rate_information_rate_type import check_get_job_estimate_response_rate_information_rate_type
+from ..models.get_job_estimate_response_rate_information_rate_type import GetJobEstimateResponseRateInformationRateType
+from typing import cast
 
 
 
@@ -26,15 +29,19 @@ T = TypeVar("T", bound="GetJobEstimateResponseRateInformation")
 class GetJobEstimateResponseRateInformation:
     """ 
         Attributes:
-            job_cost_minimum (float):
-            cost_2q_gate (float):
-            cost_1q_gate (float):
+            qct_cost_cents (float | None):
+            rate_type (GetJobEstimateResponseRateInformationRateType):
+            job_cost_minimum (float | None):
+            cost_2q_gate (float | None):
+            cost_1q_gate (float | None):
             organization (str):
      """
 
-    job_cost_minimum: float
-    cost_2q_gate: float
-    cost_1q_gate: float
+    qct_cost_cents: float | None
+    rate_type: GetJobEstimateResponseRateInformationRateType
+    job_cost_minimum: float | None
+    cost_2q_gate: float | None
+    cost_1q_gate: float | None
     organization: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -43,10 +50,18 @@ class GetJobEstimateResponseRateInformation:
 
 
     def to_dict(self) -> dict[str, Any]:
+        qct_cost_cents: float | None
+        qct_cost_cents = self.qct_cost_cents
+
+        rate_type: str = self.rate_type
+
+        job_cost_minimum: float | None
         job_cost_minimum = self.job_cost_minimum
 
+        cost_2q_gate: float | None
         cost_2q_gate = self.cost_2q_gate
 
+        cost_1q_gate: float | None
         cost_1q_gate = self.cost_1q_gate
 
         organization = self.organization
@@ -55,6 +70,8 @@ class GetJobEstimateResponseRateInformation:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "qct_cost_cents": qct_cost_cents,
+            "rate_type": rate_type,
             "job_cost_minimum": job_cost_minimum,
             "cost_2q_gate": cost_2q_gate,
             "cost_1q_gate": cost_1q_gate,
@@ -68,15 +85,48 @@ class GetJobEstimateResponseRateInformation:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        job_cost_minimum = d.pop("job_cost_minimum")
+        def _parse_qct_cost_cents(data: object) -> float | None:
+            if data is None:
+                return data
+            return cast(float | None, data)
 
-        cost_2q_gate = d.pop("cost_2q_gate")
+        qct_cost_cents = _parse_qct_cost_cents(d.pop("qct_cost_cents"))
 
-        cost_1q_gate = d.pop("cost_1q_gate")
+
+        rate_type = check_get_job_estimate_response_rate_information_rate_type(d.pop("rate_type"))
+
+
+
+
+        def _parse_job_cost_minimum(data: object) -> float | None:
+            if data is None:
+                return data
+            return cast(float | None, data)
+
+        job_cost_minimum = _parse_job_cost_minimum(d.pop("job_cost_minimum"))
+
+
+        def _parse_cost_2q_gate(data: object) -> float | None:
+            if data is None:
+                return data
+            return cast(float | None, data)
+
+        cost_2q_gate = _parse_cost_2q_gate(d.pop("cost_2q_gate"))
+
+
+        def _parse_cost_1q_gate(data: object) -> float | None:
+            if data is None:
+                return data
+            return cast(float | None, data)
+
+        cost_1q_gate = _parse_cost_1q_gate(d.pop("cost_1q_gate"))
+
 
         organization = d.pop("organization")
 
         get_job_estimate_response_rate_information = cls(
+            qct_cost_cents=qct_cost_cents,
+            rate_type=rate_type,
             job_cost_minimum=job_cost_minimum,
             cost_2q_gate=cost_2q_gate,
             cost_1q_gate=cost_1q_gate,
