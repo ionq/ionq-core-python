@@ -19,20 +19,18 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="QctrlQaoaJobCreationPayloadExternalSettings")
+T = TypeVar("T", bound="PartialBaseChildJobCreationPayloadSettingsErrorMitigation")
 
 
 
 @_attrs_define
-class QctrlQaoaJobCreationPayloadExternalSettings:
+class PartialBaseChildJobCreationPayloadSettingsErrorMitigation:
     """ 
         Attributes:
-            api_credentials (str): API Key for your Q-CTRL account
-            external_organization (str | Unset): Optional unique slug for your target Q-CTRL organization
+            debiasing (bool | Unset):
      """
 
-    api_credentials: str
-    external_organization: str | Unset = UNSET
+    debiasing: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -40,18 +38,15 @@ class QctrlQaoaJobCreationPayloadExternalSettings:
 
 
     def to_dict(self) -> dict[str, Any]:
-        api_credentials = self.api_credentials
-
-        external_organization = self.external_organization
+        debiasing = self.debiasing
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "api_credentials": api_credentials,
         })
-        if external_organization is not UNSET:
-            field_dict["external_organization"] = external_organization
+        if debiasing is not UNSET:
+            field_dict["debiasing"] = debiasing
 
         return field_dict
 
@@ -60,18 +55,15 @@ class QctrlQaoaJobCreationPayloadExternalSettings:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        api_credentials = d.pop("api_credentials")
+        debiasing = d.pop("debiasing", UNSET)
 
-        external_organization = d.pop("external_organization", UNSET)
-
-        qctrl_qaoa_job_creation_payload_external_settings = cls(
-            api_credentials=api_credentials,
-            external_organization=external_organization,
+        partial_base_child_job_creation_payload_settings_error_mitigation = cls(
+            debiasing=debiasing,
         )
 
 
-        qctrl_qaoa_job_creation_payload_external_settings.additional_properties = d
-        return qctrl_qaoa_job_creation_payload_external_settings
+        partial_base_child_job_creation_payload_settings_error_mitigation.additional_properties = d
+        return partial_base_child_job_creation_payload_settings_error_mitigation
 
     @property
     def additional_keys(self) -> list[str]:

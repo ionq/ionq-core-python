@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 GroupBy = Literal['job', 'project', 'user']
 
@@ -10,5 +10,5 @@ GROUP_BY_VALUES: set[GroupBy] = { 'job', 'project', 'user',  }
 
 def check_group_by(value: str) -> GroupBy:
     if value in GROUP_BY_VALUES:
-        return cast(GroupBy, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {GROUP_BY_VALUES!r}")
