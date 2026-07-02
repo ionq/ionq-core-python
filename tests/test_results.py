@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 IonQ, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 import pytest
 
 from ionq_core.results import (
