@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `get_job_artifact` endpoint (`GET /jobs/{UUID}/artifacts/{artifactId}`) for downloading job artifacts by id. The response body is opaque, so only the `sync_detailed` / `asyncio_detailed` callables are generated; read the bytes off `Response.content`.
 - `Backend` now exposes `supported_gates`, `supported_native_gates`, and `supported_error_mitigations`.
 - `estimate_job_cost` response gained `estimated_quantum_compute_time_us`, and its `rate_information` gained `qct_cost_cents` and `rate_type` (`"qct"` or `"2qge"`). Its `cost_1q_gate`, `cost_2q_gate`, and `job_cost_minimum` rate fields are now nullable.
+- `examples/` script `hamiltonian_energy_vqe.py`: a runnable Hamiltonian-energy quantum-function (VQE) workload built from the typed models, polled with `wait_for_job`, energy read from the raw job `results`, and minimized with a dependency-free SPSA optimizer against the free `simulator`.
 
 ### Changed
 
