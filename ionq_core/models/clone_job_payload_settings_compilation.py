@@ -19,20 +19,20 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="QctrlQaoaJobCreationPayloadExternalSettings")
+T = TypeVar("T", bound="CloneJobPayloadSettingsCompilation")
 
 
 
 @_attrs_define
-class QctrlQaoaJobCreationPayloadExternalSettings:
+class CloneJobPayloadSettingsCompilation:
     """ 
         Attributes:
-            api_credentials (str): API Key for your Q-CTRL account
-            external_organization (str | Unset): Optional unique slug for your target Q-CTRL organization
+            opt (float | Unset):
+            precision (str | Unset):
      """
 
-    api_credentials: str
-    external_organization: str | Unset = UNSET
+    opt: float | Unset = UNSET
+    precision: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -40,18 +40,19 @@ class QctrlQaoaJobCreationPayloadExternalSettings:
 
 
     def to_dict(self) -> dict[str, Any]:
-        api_credentials = self.api_credentials
+        opt = self.opt
 
-        external_organization = self.external_organization
+        precision = self.precision
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "api_credentials": api_credentials,
         })
-        if external_organization is not UNSET:
-            field_dict["external_organization"] = external_organization
+        if opt is not UNSET:
+            field_dict["opt"] = opt
+        if precision is not UNSET:
+            field_dict["precision"] = precision
 
         return field_dict
 
@@ -60,18 +61,18 @@ class QctrlQaoaJobCreationPayloadExternalSettings:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        api_credentials = d.pop("api_credentials")
+        opt = d.pop("opt", UNSET)
 
-        external_organization = d.pop("external_organization", UNSET)
+        precision = d.pop("precision", UNSET)
 
-        qctrl_qaoa_job_creation_payload_external_settings = cls(
-            api_credentials=api_credentials,
-            external_organization=external_organization,
+        clone_job_payload_settings_compilation = cls(
+            opt=opt,
+            precision=precision,
         )
 
 
-        qctrl_qaoa_job_creation_payload_external_settings.additional_properties = d
-        return qctrl_qaoa_job_creation_payload_external_settings
+        clone_job_payload_settings_compilation.additional_properties = d
+        return clone_job_payload_settings_compilation
 
     @property
     def additional_keys(self) -> list[str]:

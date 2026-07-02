@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 QctrlQaoaJobCreationPayloadType = Literal['qctrl.qaoa.v1']
 
@@ -10,5 +10,5 @@ QCTRL_QAOA_JOB_CREATION_PAYLOAD_TYPE_VALUES: set[QctrlQaoaJobCreationPayloadType
 
 def check_qctrl_qaoa_job_creation_payload_type(value: str) -> QctrlQaoaJobCreationPayloadType:
     if value in QCTRL_QAOA_JOB_CREATION_PAYLOAD_TYPE_VALUES:
-        return cast(QctrlQaoaJobCreationPayloadType, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {QCTRL_QAOA_JOB_CREATION_PAYLOAD_TYPE_VALUES!r}")

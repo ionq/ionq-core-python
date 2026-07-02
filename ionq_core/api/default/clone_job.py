@@ -12,45 +12,46 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.get_compiled_file_lang import check_get_compiled_file_lang
-from ...models.get_compiled_file_lang import GetCompiledFileLang
+from ...models.clone_job_payload import CloneJobPayload
+from ...models.job_creation_response import JobCreationResponse
 from typing import cast
 
 
 
 def _get_kwargs(
     uuid: str,
-    lang: GetCompiledFileLang,
+    *,
+    body: CloneJobPayload,
 
 ) -> dict[str, Any]:
-    
+    headers: dict[str, Any] = {}
+
 
     
 
     
 
     _kwargs: dict[str, Any] = {
-        "method": "get",
-        "url": "/jobs/{uuid}/circuits/{lang}".format(uuid=quote(str(uuid), safe=""),lang=quote(str(lang), safe=""),),
+        "method": "post",
+        "url": "/jobs/{uuid}/clone".format(uuid=quote(str(uuid), safe=""),),
     }
 
+    _kwargs["json"] = body.to_dict()
 
+    headers["Content-Type"] = "application/json"
+
+    _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | str | None:
-    if response.status_code == 200:
-        response_200 = cast(str, response.json())
-        return response_200
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | JobCreationResponse | None:
+    if response.status_code == 201:
+        response_201 = JobCreationResponse.from_dict(response.json())
 
-    if response.status_code == 403:
-        response_403 = cast(Any, None)
-        return response_403
 
-    if response.status_code == 404:
-        response_404 = cast(Any, None)
-        return response_404
+
+        return response_201
 
     if response.status_code == 429:
         response_429 = cast(Any, None)
@@ -74,7 +75,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | str]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | JobCreationResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -85,28 +86,28 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     uuid: str,
-    lang: GetCompiledFileLang,
     *,
     client: AuthenticatedClient,
+    body: CloneJobPayload,
 
-) -> Response[Any | str]:
+) -> Response[Any | JobCreationResponse]:
     """ 
     Args:
         uuid (str):
-        lang (GetCompiledFileLang):
+        body (CloneJobPayload): Make all properties in T optional
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | str]
+        Response[Any | JobCreationResponse]
      """
 
 
     kwargs = _get_kwargs(
         uuid=uuid,
-lang=lang,
+body=body,
 
     )
 
@@ -118,56 +119,56 @@ lang=lang,
 
 def sync(
     uuid: str,
-    lang: GetCompiledFileLang,
     *,
     client: AuthenticatedClient,
+    body: CloneJobPayload,
 
-) -> Any | str | None:
+) -> Any | JobCreationResponse | None:
     """ 
     Args:
         uuid (str):
-        lang (GetCompiledFileLang):
+        body (CloneJobPayload): Make all properties in T optional
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | str
+        Any | JobCreationResponse
      """
 
 
     return sync_detailed(
         uuid=uuid,
-lang=lang,
 client=client,
+body=body,
 
     ).parsed
 
 async def asyncio_detailed(
     uuid: str,
-    lang: GetCompiledFileLang,
     *,
     client: AuthenticatedClient,
+    body: CloneJobPayload,
 
-) -> Response[Any | str]:
+) -> Response[Any | JobCreationResponse]:
     """ 
     Args:
         uuid (str):
-        lang (GetCompiledFileLang):
+        body (CloneJobPayload): Make all properties in T optional
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | str]
+        Response[Any | JobCreationResponse]
      """
 
 
     kwargs = _get_kwargs(
         uuid=uuid,
-lang=lang,
+body=body,
 
     )
 
@@ -179,28 +180,28 @@ lang=lang,
 
 async def asyncio(
     uuid: str,
-    lang: GetCompiledFileLang,
     *,
     client: AuthenticatedClient,
+    body: CloneJobPayload,
 
-) -> Any | str | None:
+) -> Any | JobCreationResponse | None:
     """ 
     Args:
         uuid (str):
-        lang (GetCompiledFileLang):
+        body (CloneJobPayload): Make all properties in T optional
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | str
+        Any | JobCreationResponse
      """
 
 
     return (await asyncio_detailed(
         uuid=uuid,
-lang=lang,
 client=client,
+body=body,
 
     )).parsed

@@ -1,11 +1,12 @@
 import pytest
 
 from ionq_core.api.backends import get_backends
-from ionq_core.api.default import create_job, get_compiled_file, get_jobs
+from ionq_core.api.default import clone_job, create_job, get_job_artifact, get_jobs
 from ionq_core.api.whoami import get_whoami
 from ionq_core.errors import UnexpectedStatus
 from ionq_core.models.backend import Backend
 from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
+from ionq_core.models.clone_job_payload import CloneJobPayload
 from ionq_core.models.get_jobs_response import GetJobsResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.whoami import Whoami
@@ -121,28 +122,37 @@ class TestCreateJob:
         assert result.status == "submitted"
 
 
-class TestGetCompiledFile:
-    def test_sync(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json="OPENQASM 3.0;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];")
-        result = get_compiled_file.sync(uuid="job-123", lang="qasm3", client=auth_client)
-        assert isinstance(result, str)
-        assert "OPENQASM" in result
-
+class TestGetJobArtifact:
     def test_sync_detailed(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json="compiled-native-circuit")
-        resp = get_compiled_file.sync_detailed(uuid="job-123", lang="native", client=auth_client)
+        httpx_mock.add_response(content=b"OPENQASM 3.0;\nqubit[2] q;\nh q[0];\ncx q[0], q[1];")
+        resp = get_job_artifact.sync_detailed(uuid="job-123", artifact_id="art-1", client=auth_client)
         assert resp.status_code.value == 200
-        assert resp.parsed == "compiled-native-circuit"
+        assert resp.parsed is None
+        assert b"OPENQASM" in resp.content
 
-    async def test_asyncio(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json="OPENQASM 3.0;\nh q[0];")
-        result = await get_compiled_file.asyncio(uuid="job-123", lang="qasm3", client=auth_client)
-        assert isinstance(result, str)
+    async def test_asyncio_detailed(self, httpx_mock, auth_client):
+        httpx_mock.add_response(content=b"compiled-native-circuit")
+        resp = await get_job_artifact.asyncio_detailed(uuid="job-123", artifact_id="art-1", client=auth_client)
+        assert resp.status_code.value == 200
+        assert resp.content == b"compiled-native-circuit"
 
     def test_not_found(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=404)
-        result = get_compiled_file.sync(uuid="nonexistent", lang="native", client=auth_client)
-        assert result is None
+        resp = get_job_artifact.sync_detailed(uuid="nonexistent", artifact_id="art-1", client=auth_client)
+        assert resp.status_code.value == 404
+        assert resp.parsed is None
+
+
+class TestCloneJob:
+    def test_sync(self, httpx_mock, auth_client):
+        httpx_mock.add_response(
+            status_code=201, json={"id": "cloned-job-id", "status": "submitted", "session_id": None}
+        )
+        body = CloneJobPayload.from_dict({"backend": "simulator", "shots": 100})
+        result = clone_job.sync(uuid="job-123", client=auth_client, body=body)
+        assert isinstance(result, JobCreationResponse)
+        assert result.id == "cloned-job-id"
+        assert result.status == "submitted"
 
 
 class TestUnexpectedStatus:
