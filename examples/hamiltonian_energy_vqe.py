@@ -12,7 +12,7 @@ Hamiltonian
 
 Ansatz
     Hardware-efficient OpenQASM 3 circuit: Ry/Rz on each qubit, CNOT, Ry/Rz
-    again (eight parameters), matching the Hosted Hybrid guide pattern.
+    again (eight parameters); see https://docs.ionq.com/guides/hosted-hybrid-service.
 
 Optimizer
     Hand-rolled SPSA (no scipy). Two energy evaluations per iteration; tracks
@@ -26,13 +26,11 @@ raw job JSON (the typed ``CircuitJobResult`` model omits it).
 from __future__ import annotations
 
 import json
-import logging
 import math
 import random
-import sys
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from ionq_core import IonQClient, wait_for_job
 from ionq_core.api.default import create_job, get_job
@@ -44,9 +42,7 @@ from ionq_core.models.hamiltonian_pauli_term import HamiltonianPauliTerm
 from ionq_core.models.quantum_function_job_creation_payload import QuantumFunctionJobCreationPayload
 
 if TYPE_CHECKING:
-    from ionq_core.client import AuthenticatedClient
-
-logger = logging.getLogger(__name__)
+    from ionq_core import AuthenticatedClient
 
 # H2 (STO-3G, r = 0.735 Å). Submit only non-identity Pauli terms; II is a constant offset.
 H2_HAMILTONIAN: tuple[tuple[str, float], ...] = (
@@ -59,7 +55,7 @@ H2_EXACT_GROUND_HA = -1.1372813
 H2_IDENTITY_OFFSET_HA = -0.011280524
 
 # Ry/Rz layer, CNOT, Ry/Rz layer — scalar inputs (Qiskit qasm3 style).
-H2_ANSAZ_QASM = """\
+H2_ANSATZ_QASM = """\
 OPENQASM 3.0;
 include "stdgates.inc";
 input float[64] theta0;
@@ -100,7 +96,7 @@ class Problem:
 
 def build_problem() -> Problem:
     terms = tuple(HamiltonianPauliTerm(pauli_string=s, coefficient=c) for s, c in H2_HAMILTONIAN)
-    return Problem(hamiltonian=terms, ansatz=Ansatz(data=H2_ANSAZ_QASM))
+    return Problem(hamiltonian=terms, ansatz=Ansatz(data=H2_ANSATZ_QASM))
 
 
 def initial_params(*, seed: int = 42) -> list[float]:
@@ -108,28 +104,17 @@ def initial_params(*, seed: int = 42) -> list[float]:
     return [rng.uniform(0.0, 2.0 * math.pi) for _ in range(NUM_PARAMS)]
 
 
-def _energy_from_block(block: Mapping[str, Any]) -> float | None:
-    value = block.get("value")
-    if value is None:
-        return None
-    return float(value)
-
-
 def _energy_from_job(client: AuthenticatedClient, job_id: str) -> float:
-    # Quantum-function jobs put energy in results.value; the typed CircuitJobResult model drops it.
+    # Quantum-function jobs return the energy as results.value (alongside a
+    # results.variance shot-noise estimate, unused here); the typed
+    # CircuitJobResult model drops both, so read the raw JSON body.
     resp = get_job.sync_detailed(uuid=job_id, client=client)
-    if resp.status_code.value != 200:
-        raise RuntimeError(f"get_job {job_id} returned HTTP {resp.status_code.value}")
-    body = json.loads(resp.content)
-    for section in ("results", "output"):
-        block = body.get(section)
-        if isinstance(block, dict):
-            energy = _energy_from_block(block)
-            if energy is not None:
-                return energy
-    results = body.get("results")
-    output = body.get("output")
-    raise ValueError(f"completed job {job_id} missing results/output value; results={results!r}, output={output!r}")
+    if resp.status_code != 200:
+        raise RuntimeError(f"get_job {job_id} returned HTTP {resp.status_code}")
+    results = json.loads(resp.content).get("results")
+    if not isinstance(results, dict) or results.get("value") is None:
+        raise ValueError(f"job {job_id} completed without an energy result: {results!r}")
+    return float(results["value"])
 
 
 def evaluate_energy(
@@ -158,9 +143,7 @@ def evaluate_energy(
     if created is None:
         raise RuntimeError("create_job returned None")
     wait_for_job(client, created.id, timeout=JOB_TIMEOUT_S)
-    energy = _energy_from_job(client, created.id)
-    logger.info("job=%s params=%s energy=%.6f", created.id, [round(p, 4) for p in params], energy)
-    return created.id, energy
+    return created.id, _energy_from_job(client, created.id)
 
 
 def spsa_minimize(
@@ -207,9 +190,7 @@ def spsa_minimize(
     return best_params, best_val
 
 
-def main() -> int:
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    client = IonQClient(additional_user_agent="ionq-core-example/hamiltonian-energy-vqe")
+def main() -> None:
     problem = build_problem()
     params0 = initial_params()
 
@@ -224,14 +205,17 @@ def main() -> int:
 
     eval_count = 0
 
-    def energy_fn(p: list[float]) -> float:
-        nonlocal eval_count
-        eval_count += 1
-        job_id, energy = evaluate_energy(client, problem, p)
-        print(f"  [eval {eval_count:>2}] job={job_id} energy={energy:+.6f} params={[round(x, 4) for x in p]}")
-        return energy
+    with IonQClient(additional_user_agent="ionq-core-example/hamiltonian-energy-vqe") as client:
 
-    optimal_params, optimal_energy = spsa_minimize(energy_fn, params0)
+        def energy_fn(p: list[float]) -> float:
+            nonlocal eval_count
+            eval_count += 1
+            job_id, energy = evaluate_energy(client, problem, p)
+            print(f"  [eval {eval_count:>2}] job={job_id} energy={energy:+.6f} params={[round(x, 4) for x in p]}")
+            return energy
+
+        optimal_params, optimal_energy = spsa_minimize(energy_fn, params0)
+
     shifted_energy = optimal_energy + H2_IDENTITY_OFFSET_HA
     print()
     print(f"Optimization complete ({eval_count} energy evaluations)")
@@ -239,8 +223,7 @@ def main() -> int:
     print(f"Shifted by II offset ({H2_IDENTITY_OFFSET_HA:+.6f} Ha): {shifted_energy:+.8f} Ha")
     print(f"Exact ground state reference: {H2_EXACT_GROUND_HA:+.8f} Ha")
     print(f"Best params: {[round(p, 6) for p in optimal_params]}")
-    return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
