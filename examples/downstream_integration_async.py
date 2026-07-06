@@ -50,9 +50,9 @@ class DownstreamRateLimitError(DownstreamSDKError):
 def map_error(exc: Exception) -> Exception:
     """Translate ``ionq-core`` exceptions into SDK-defined error types.
 
-    The mapper is synchronous on both client paths: ``ionq-core`` invokes it
-    synchronously even inside the async transport, so the same function serves
-    the sync and async examples.
+    Passed to ``ionq-core`` via ``ClientExtension.error_mapper``. The mapper is
+    always a plain function: ``ionq-core`` invokes it synchronously even inside
+    the async transport, so no async variant is needed.
     """
     if isinstance(exc, RateLimitError):
         return DownstreamRateLimitError(f"IonQ rate limit hit: {exc.message}", retry_after=exc.retry_after)

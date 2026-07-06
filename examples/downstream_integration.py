@@ -20,7 +20,6 @@ import httpx
 
 from ionq_core import (
     APIError,
-    AuthenticatedClient,
     ClientExtension,
     EventHook,
     IonQClient,
@@ -91,20 +90,15 @@ BELL_STATE = CircuitJobCreationPayload.from_dict(
 )
 
 
-def build_client() -> AuthenticatedClient:
-    """Construct an IonQ client configured the way a downstream SDK would."""
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     extension = ClientExtension(
         user_agent_token="downstream-sdk/1.0.0",
         default_headers={"X-Downstream-SDK": "example"},
         event_hooks=(LoggingHook(),),
         error_mapper=map_error,
     )
-    return IonQClient(extension=extension)  # reads IONQ_API_KEY from the environment
-
-
-def main() -> None:
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-    with build_client() as client:
+    with IonQClient(extension=extension) as client:  # reads IONQ_API_KEY from the environment
         try:
             job = create_job.sync(client=client, body=BELL_STATE)
             if job is None:
