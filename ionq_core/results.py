@@ -9,11 +9,10 @@ returned by IonQ's results endpoints.
 Qubit ordering:
     IonQ probability results map integer state keys (as strings) to
     probabilities.  Throughout this module, qubit i corresponds to
-    bit 2^i in the integer key -- i.e. qubit 0 is the least significant bit(LSB).
+    bit 2^i in the integer key -- i.e. qubit 0 is the least significant bit (LSB).
 
     For example, given a 3-qubit circuit the integer key ``4``
     (binary ``100``) encodes qubit 0 = 0, qubit 1 = 0, qubit 2 = 1.
-
 
 Example:
     ```python
@@ -50,6 +49,9 @@ def probabilities_to_counts(probabilities: Mapping[str, float], shots: int) -> d
     Returns:
         Mapping from the same keys to integer counts.
 
+    Raises:
+        ValueError: If ``shots`` is negative.
+
     Examples:
         ```python
         >>> probabilities_to_counts({"0": 0.4, "3": 0.6}, 100)   # counts with 100 shots
@@ -57,7 +59,7 @@ def probabilities_to_counts(probabilities: Mapping[str, float], shots: int) -> d
         ```
     """
     if shots < 0:
-        raise ValueError("Number of shots must be non-negative.")
+        raise ValueError("Number of shots must be non-negative")
     result = {}
     remainders = []
     remaining_shots = shots
@@ -72,46 +74,37 @@ def probabilities_to_counts(probabilities: Mapping[str, float], shots: int) -> d
     return result
 
 
-def relabel_to_bitstrings(
-    probabilities: Mapping[str, float], num_qubits: int, little_endian: bool = False
-) -> dict[str, float]:
+def relabel_to_bitstrings(probabilities: Mapping[str, float], num_qubits: int) -> dict[str, float]:
     """Convert integer state keys to zero-padded bitstrings.
 
-    By default the most-significant bit is on the left, producing
-    bitstrings in ``q(n-1) ... q1 q0`` order.
-    Set ``little_endian=True`` to reverse the string so that qubit 0 is
-    on the left (``q0 q1 ... q(n-1)``).
+    The most-significant bit is on the left, producing bitstrings in
+    ``q(n-1) ... q1 q0`` order (qubit 0 rightmost).
 
     Args:
         probabilities: Mapping from integer state keys (as strings) to probabilities.
         num_qubits: Number of qubits used to pad the bitstring.
-        little_endian: If ``True``, reverse the bitstring so that qubit 0 appears
-            on the left (index 0).  The default ``False`` puts qubit 0 on the
-            right (standard binary / MSB-first order).
 
     Returns:
         Mapping from bitstrings to probabilities.
 
+    Raises:
+        ValueError: If ``num_qubits`` is not positive, or a state key does not
+            fit in ``num_qubits`` qubits.
+
     Examples:
         ```python
-        >>> relabel_to_bitstrings({"0": 0.25, "1":0.25, "2":0.25, "3":0.25}, 2)   # default: MSB-first
+        >>> relabel_to_bitstrings({"0": 0.25, "1":0.25, "2":0.25, "3":0.25}, 2)
         {'00': 0.25, '01': 0.25, '10': 0.25, '11': 0.25}
         >>> relabel_to_bitstrings({"0": 0.25, "1":0.25, "2":0.25, "3":0.25}, 3)   # example with 3 qubits
         {'000': 0.25, '001': 0.25, '010': 0.25, '011': 0.25}
-        >>> relabel_to_bitstrings({"0": 0.25, "1":0.25, "2":0.25, "3":0.25}, 2, little_endian=True)   # LSB-first
-        {'00': 0.25, '10': 0.25, '01': 0.25, '11': 0.25}
         ```
     """
     if num_qubits <= 0:
-        raise ValueError("Number of qubits must be positive.")
-    if _max_qubits(probabilities) >= (1 << num_qubits):
-        raise ValueError(f"State {_max_qubits(probabilities)} is out of range for {num_qubits} qubits.")
+        raise ValueError("Number of qubits must be positive")
+    _check_states_in_range(probabilities, num_qubits)
     result = {}
     for state, probability in probabilities.items():
-        bitstring = format(int(state), f"0{num_qubits}b")
-        if little_endian:
-            bitstring = bitstring[::-1]
-        result[bitstring] = probability
+        result[format(int(state), f"0{num_qubits}b")] = probability
     return result
 
 
@@ -132,6 +125,11 @@ def marginal(probabilities: Mapping[str, float], qubits: Sequence[int], num_qubi
     Returns:
         Mapping from integer state keys (as strings) to marginal probabilities.
 
+    Raises:
+        ValueError: If ``qubits`` is empty, has duplicate or negative indices,
+            or indexes past ``num_qubits``; if ``num_qubits`` is not positive;
+            or if a state key does not fit in ``num_qubits`` qubits.
+
     Examples:
         ```python
         >>> marginal({"0": 0.1, "1":0.2, "2":0.3, "3":0.4}, [0], 2)   # keep qubit 0 (bit 2^0)
@@ -143,17 +141,16 @@ def marginal(probabilities: Mapping[str, float], qubits: Sequence[int], num_qubi
         ```
     """
     if not qubits:
-        raise ValueError("Qubits sequence cannot be empty.")
+        raise ValueError("Qubits sequence cannot be empty")
     if min(qubits) < 0:
-        raise ValueError("Qubit indices must be non-negative.")
-    if num_qubits < 0:
-        raise ValueError("Number of qubits must be positive.")
-    if _max_qubits(probabilities) >= (1 << num_qubits):
-        raise ValueError(f"State {_max_qubits(probabilities)} is out of range for {num_qubits} qubits.")
+        raise ValueError("Qubit indices must be non-negative")
+    if num_qubits <= 0:
+        raise ValueError("Number of qubits must be positive")
+    _check_states_in_range(probabilities, num_qubits)
     if max(qubits) >= num_qubits:
-        raise ValueError("Qubit indices must be less than the number of qubits.")
+        raise ValueError("Qubit indices must be less than the number of qubits")
     if len(set(qubits)) != len(qubits):
-        raise ValueError("Qubits sequence must be non-duplicated")
+        raise ValueError("Qubit indices must be unique")
     result = defaultdict(float)
     for state_string, probability in probabilities.items():
         state = int(state_string)
@@ -166,7 +163,7 @@ def marginal(probabilities: Mapping[str, float], qubits: Sequence[int], num_qubi
 
 
 def expectation_z(probabilities: Mapping[str, float], num_qubits: int) -> float:
-    """Calculate the expectation value of the Z-basis (Z^(⊗n)) observable.
+    """Calculate the expectation value of the all-qubit parity observable (Z on every qubit).
 
     Each computational basis state contributes +1 when the total number of
     qubits in |1> is even, and -1 when odd.  This is independent of qubit
@@ -179,24 +176,29 @@ def expectation_z(probabilities: Mapping[str, float], num_qubits: int) -> float:
     Returns:
         Expectation value observed in the computational basis (Z basis).
 
+    Raises:
+        ValueError: If ``num_qubits`` is not positive, or a state key does not
+            fit in ``num_qubits`` qubits.
+
     Examples:
         ```python
         >>> expectation_z({"0": 0.1, "1":0.2, "2":0.3, "3":0.4}, 2)   # even-parity states: 0,3; odd-parity: 1,2
-        0
+        0.0
         ```
     """
-    if num_qubits < 0:
-        raise ValueError("Number of qubits must be positive.")
-    if _max_qubits(probabilities) >= (1 << num_qubits):
-        raise ValueError(f"State {_max_qubits(probabilities)} is out of range for {num_qubits} qubits.")
-    result = 0
+    if num_qubits <= 0:
+        raise ValueError("Number of qubits must be positive")
+    _check_states_in_range(probabilities, num_qubits)
+    result = 0.0
     for state, probability in probabilities.items():
         result += (1 - 2 * (int(state).bit_count() & 1)) * probability
     return result
 
 
-def _max_qubits(probabilities: Mapping[str, float]) -> int:
-    """Validate that `num_qubits` is mathematically sufficient to represent all states."""
+def _check_states_in_range(probabilities: Mapping[str, float], num_qubits: int) -> None:
+    """Raise if any integer state key does not fit in ``num_qubits`` qubits."""
     if not probabilities:
-        return -1
-    return max(int(state) for state in probabilities)
+        return
+    max_state = max(int(state) for state in probabilities)
+    if max_state >= (1 << num_qubits):
+        raise ValueError(f"State {max_state} is out of range for {num_qubits} qubits")
