@@ -3,9 +3,17 @@ from urllib.parse import urlparse
 import pytest
 
 from ionq_core import AuthenticatedClient, Client
+from ionq_core._transport import DualTransport, ErrorRaisingTransport
 from ionq_core.ionq_client import DEFAULT_BASE_URL
 
 BASE_URL = "https://test.invalid" + urlparse(DEFAULT_BASE_URL).path
+
+
+def socket_transports(transport: ErrorRaisingTransport):
+    """The innermost (sync, async) transport pair that actually opens connections."""
+    dual = transport._transport._sync_transport._sync_transport
+    assert isinstance(dual, DualTransport)
+    return dual._sync_transport, dual._async_transport
 
 
 def make_job_json(job_id, status="completed", **overrides):

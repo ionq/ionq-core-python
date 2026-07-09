@@ -1,3 +1,4 @@
+import ssl
 import warnings
 
 import httpx
@@ -5,6 +6,11 @@ import pytest
 
 from ionq_core import IonQClient, __version__
 from ionq_core._transport import ErrorRaisingTransport
+from tests.conftest import socket_transports
+
+
+def _socket_transports(client):
+    return socket_transports(client.get_httpx_client()._transport)
 
 
 class TestIonQClient:
@@ -77,6 +83,15 @@ class TestIonQClient:
         c = IonQClient(api_key="super-secret-key")
         assert "super-secret-key" not in repr(c)
 
+    def test_token_not_in_repr_after_sync_client_created(self):
+        c = IonQClient(api_key="super-secret-key")
+        c.get_httpx_client()
+        assert "super-secret-key" not in repr(c)
+
+    def test_token_not_in_repr_after_async_client_created(self, auth_client):
+        auth_client.get_async_httpx_client()
+        assert "test-api-key" not in repr(auth_client)
+
     def test_http_base_url_warns(self):
         with pytest.warns(UserWarning, match="does not use HTTPS"):
             IonQClient(api_key="key", base_url="http://api.ionq.co/v0.4")
@@ -89,6 +104,24 @@ class TestIonQClient:
     def test_verify_ssl_false_warns(self):
         with pytest.warns(UserWarning, match="verify_ssl=False"):
             IonQClient(api_key="key", verify_ssl=False)
+
+    def test_verify_ssl_context_reaches_socket_transports(self):
+        ctx = ssl.create_default_context()
+        sync_t, async_t = _socket_transports(IonQClient(api_key="key", verify_ssl=ctx))
+        assert sync_t._pool._ssl_context is ctx
+        assert async_t._pool._ssl_context is ctx
+
+    def test_verify_ssl_false_disables_verification(self):
+        with pytest.warns(UserWarning, match="verify_ssl=False"):
+            c = IonQClient(api_key="key", verify_ssl=False)
+        sync_t, async_t = _socket_transports(c)
+        assert sync_t._pool._ssl_context.verify_mode == ssl.CERT_NONE
+        assert async_t._pool._ssl_context.verify_mode == ssl.CERT_NONE
+
+    def test_verify_ssl_default_verifies(self):
+        sync_t, async_t = _socket_transports(IonQClient(api_key="key"))
+        assert sync_t._pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
+        assert async_t._pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
 
     def test_async_client_inherits_follow_redirects(self):
         ac = IonQClient(api_key="key", follow_redirects=True).get_async_httpx_client()

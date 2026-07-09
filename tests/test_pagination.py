@@ -94,3 +94,47 @@ class TestAiterSessionJobs:
         httpx_mock.add_response(json=_jobs_page(["j2"]))
         jobs = [j async for j in aiter_session_jobs(auth_client, "sess-1")]
         assert [j.id for j in jobs] == ["j1", "j2"]
+
+
+class TestPaginationBounds:
+    def test_sync_repeated_cursor_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="loop"))
+        httpx_mock.add_response(json=_jobs_page(["j2"], next_cursor="loop"))
+        with pytest.raises(IonQError, match="repeated pagination cursor"):
+            list(iter_jobs(auth_client))
+
+    async def test_async_repeated_cursor_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="loop"))
+        httpx_mock.add_response(json=_jobs_page(["j2"], next_cursor="loop"))
+        with pytest.raises(IonQError, match="repeated pagination cursor"):
+            async for _ in aiter_jobs(auth_client):
+                pass
+
+    def test_sync_max_pages_exceeded_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="max_pages=1"):
+            list(iter_jobs(auth_client, max_pages=1))
+
+    async def test_async_max_pages_exceeded_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="max_pages=1"):
+            async for _ in aiter_jobs(auth_client, max_pages=1):
+                pass
+
+    def test_sync_max_pages_none_disables_cap(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        httpx_mock.add_response(json=_jobs_page(["j2"], next_cursor="c2"))
+        httpx_mock.add_response(json=_jobs_page(["j3"]))
+        jobs = list(iter_jobs(auth_client, max_pages=None))
+        assert [j.id for j in jobs] == ["j1", "j2", "j3"]
+
+    def test_session_jobs_max_pages_threaded(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="max_pages=1"):
+            list(iter_session_jobs(auth_client, "sess-1", max_pages=1))
+
+    async def test_async_session_jobs_max_pages_threaded(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="max_pages=1"):
+            async for _ in aiter_session_jobs(auth_client, "sess-1", max_pages=1):
+                pass

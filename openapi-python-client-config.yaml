@@ -4,6 +4,12 @@ literal_enums: true
 
 post_hooks:
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
+  # get_httpx_client()/get_async_httpx_client() copy "Authorization: <prefix> <token>"
+  # into _headers, so the headers dict must stay out of __repr__ too.
+  - "perl -pi -e 's/(alias=\"headers\")\\)/$1, repr=False)/' client.py"
+  # ruff format excludes client.py (see pyproject), so normalize its EOF here to
+  # keep pre-commit's end-of-file-fixer and the generated-code check agreeing.
+  - "perl -0777 -pi -e 's/\\n+\\z/\\n/' client.py"
   - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/' $(find . -name '*.py')"
   - "ruff check . --fix-only"
   - "ruff format ."

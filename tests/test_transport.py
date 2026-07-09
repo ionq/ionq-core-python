@@ -1,7 +1,18 @@
+import ssl
+
 import httpx
 import pytest
+from httpx_retries import Retry, RetryTransport
 
-from ionq_core._transport import ErrorRaisingTransport, build_transport
+from ionq_core._transport import (
+    PRE_SEND_EXCEPTIONS,
+    RETRYABLE_STATUS_CODES,
+    DualTransport,
+    ErrorRaisingTransport,
+    NonIdempotentRetry,
+    _retry_stack,
+    build_transport,
+)
 from ionq_core.exceptions import (
     APIConnectionError,
     APITimeoutError,
@@ -11,7 +22,7 @@ from ionq_core.exceptions import (
     RateLimitError,
     ServerError,
 )
-from tests.conftest import BASE_URL
+from tests.conftest import BASE_URL, socket_transports
 
 _URL = f"{BASE_URL}/backends"
 
@@ -48,14 +59,141 @@ def _wrap(responses):
     return ErrorRaisingTransport(fake), fake
 
 
+def _stack(responses, max_retries=2):
+    fake = FakeTransport(responses)
+    return _retry_stack(fake, max_retries, RETRYABLE_STATUS_CODES), fake
+
+
+@pytest.fixture
+def no_retry_sleep(monkeypatch):
+    async def _asleep(self, response):
+        return None
+
+    monkeypatch.setattr(Retry, "sleep", lambda self, response: None)
+    monkeypatch.setattr(Retry, "asleep", _asleep)
+
+
 class TestBuildTransport:
     def test_returns_error_raising(self):
         assert isinstance(build_transport(), ErrorRaisingTransport)
 
-    def test_retries_post_requests(self):
-        transport = build_transport()
-        retry = transport._transport.retry
-        assert "POST" in retry.allowed_methods
+    def test_post_policy_is_pre_send_only(self):
+        outer = build_transport()._transport
+        assert isinstance(outer, RetryTransport)
+        assert isinstance(outer.retry, NonIdempotentRetry)
+        assert outer.retry.allowed_methods == frozenset({"POST"})
+        assert not outer.retry.is_retryable_status_code(503)
+        assert outer.retry.retryable_exceptions == PRE_SEND_EXCEPTIONS
+
+    def test_idempotent_policy_excludes_post(self):
+        inner = build_transport()._transport._sync_transport
+        assert isinstance(inner, RetryTransport)
+        assert "POST" not in inner.retry.allowed_methods
+        assert inner.retry.status_forcelist == RETRYABLE_STATUS_CODES
+        assert inner.retry.is_retryable_status_code(503)
+
+    def test_verify_context_reaches_socket_transports(self):
+        ctx = ssl.create_default_context()
+        sync_t, async_t = socket_transports(build_transport(verify=ctx))
+        assert sync_t._pool._ssl_context is ctx
+        assert async_t._pool._ssl_context is ctx
+
+    def test_verify_default_enforces_verification(self):
+        sync_t, async_t = socket_transports(build_transport())
+        assert sync_t._pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
+        assert async_t._pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
+
+    def test_close_full_stack(self):
+        build_transport().close()
+
+    async def test_aclose_full_stack(self):
+        await build_transport().aclose()
+
+
+@pytest.mark.usefixtures("no_retry_sleep")
+class TestRetryPolicySync:
+    def test_post_not_resent_after_retryable_status(self):
+        stack, fake = _stack([_resp(503), _resp(200)])
+        assert stack.handle_request(_req("POST")).status_code == 503
+        assert fake.call_count == 1
+
+    def test_post_not_resent_after_429(self):
+        stack, fake = _stack([_resp(429, headers={"retry-after": "0"}), _resp(200)])
+        assert stack.handle_request(_req("POST")).status_code == 429
+        assert fake.call_count == 1
+
+    def test_get_retried_on_retryable_status(self):
+        stack, fake = _stack([_resp(503), _resp(200)])
+        assert stack.handle_request(_req("GET")).status_code == 200
+        assert fake.call_count == 2
+
+    def test_get_retried_on_read_timeout(self):
+        stack, fake = _stack([httpx.ReadTimeout("timed out"), _resp(200)])
+        assert stack.handle_request(_req("GET")).status_code == 200
+        assert fake.call_count == 2
+
+    def test_get_returns_last_response_when_exhausted(self):
+        stack, fake = _stack([_resp(503), _resp(503), _resp(503)])
+        assert stack.handle_request(_req("GET")).status_code == 503
+        assert fake.call_count == 3
+
+    @pytest.mark.parametrize(
+        "exc",
+        [httpx.ConnectError("refused"), httpx.ConnectTimeout("connect"), httpx.PoolTimeout("pool")],
+        ids=["connect-error", "connect-timeout", "pool-timeout"],
+    )
+    def test_post_retried_on_pre_send_failure(self, exc):
+        stack, fake = _stack([exc, _resp(200)])
+        assert stack.handle_request(_req("POST")).status_code == 200
+        assert fake.call_count == 2
+
+    def test_post_not_retried_on_read_timeout(self):
+        stack, fake = _stack([httpx.ReadTimeout("timed out"), _resp(200)])
+        with pytest.raises(httpx.ReadTimeout):
+            stack.handle_request(_req("POST"))
+        assert fake.call_count == 1
+
+    def test_post_not_retried_on_remote_protocol_error(self):
+        stack, fake = _stack([httpx.RemoteProtocolError("server disconnected"), _resp(200)])
+        with pytest.raises(httpx.RemoteProtocolError):
+            stack.handle_request(_req("POST"))
+        assert fake.call_count == 1
+
+    def test_post_zero_retries(self):
+        stack, fake = _stack([httpx.ConnectError("refused")], max_retries=0)
+        with pytest.raises(httpx.ConnectError):
+            stack.handle_request(_req("POST"))
+        assert fake.call_count == 1
+
+
+@pytest.mark.usefixtures("no_retry_sleep")
+class TestRetryPolicyAsync:
+    async def test_post_not_resent_after_retryable_status(self):
+        stack, fake = _stack([_resp(503), _resp(200)])
+        assert (await stack.handle_async_request(_req("POST"))).status_code == 503
+        assert fake.call_count == 1
+
+    async def test_post_retried_on_connect_error(self):
+        stack, fake = _stack([httpx.ConnectError("refused"), _resp(200)])
+        assert (await stack.handle_async_request(_req("POST"))).status_code == 200
+        assert fake.call_count == 2
+
+    async def test_get_retried_on_retryable_status(self):
+        stack, fake = _stack([_resp(503), _resp(200)])
+        assert (await stack.handle_async_request(_req("GET"))).status_code == 200
+        assert fake.call_count == 2
+
+
+class TestDualTransport:
+    def test_sync_requests_use_sync_transport(self):
+        dual = DualTransport(FakeTransport([_resp(200)]), FakeTransport([_resp(201)]))
+        assert dual.handle_request(_req()).status_code == 200
+        dual.close()
+
+    async def test_async_requests_use_async_transport(self):
+        dual = DualTransport(FakeTransport([_resp(200)]), FakeTransport([_resp(201)]))
+        assert (await dual.handle_async_request(_req())).status_code == 201
+        await dual.aclose()
 
 
 class TestErrorRaisingTransportSync:

@@ -57,7 +57,10 @@ def IonQClient(
             environment variable.
         base_url: API base URL. Defaults to the IonQ production API.
         max_retries: Maximum retry attempts for transient errors (429, 5xx).
-            Defaults to 2. Set to 0 to disable retries.
+            Defaults to 2. Set to 0 to disable retries. POST requests are
+            retried only on connection failures raised before the request is
+            sent, never after a response is received, so a retry cannot
+            duplicate a job or session.
         timeout: Request timeout as an ``httpx.Timeout`` instance. Defaults to
             60 seconds with a 10-second connect timeout.
         additional_user_agent: Extra token appended to the User-Agent header,
@@ -140,6 +143,7 @@ def IonQClient(
     sync_transport = async_transport = build_transport(
         effective_retries,
         ext.retryable_status_codes or RETRYABLE_STATUS_CODES,
+        verify=kwargs.get("verify_ssl", True),
     )
 
     if ext.event_hooks or ext.error_mapper:
@@ -173,17 +177,18 @@ def IonQClient(
     )
     # `set_async_httpx_client` bypasses `AuthenticatedClient`'s lazy auth-header
     # injection (see generated `client.py::get_async_httpx_client`), so we merge
-    # `Authorization` in manually here. The `_verify_ssl` / `_follow_redirects`
-    # fields are private on the generated `AuthenticatedClient` but are the only
-    # way to mirror the caller's choices onto the async transport; do not add a
-    # public accessor in the hand-written layer — they belong to generated code.
+    # `Authorization` in manually here. TLS verification travels inside
+    # `async_transport` (httpx ignores `verify=` once a transport is supplied).
+    # The `_follow_redirects` field is private on the generated
+    # `AuthenticatedClient` but is the only way to mirror the caller's choice
+    # onto the async client; do not add a public accessor in the hand-written
+    # layer — it belongs to generated code.
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,
             headers={**headers, _AUTH_HEADER: f"{_AUTH_PREFIX} {key}"},
             timeout=effective_timeout,
             transport=async_transport,
-            verify=client._verify_ssl,
             follow_redirects=client._follow_redirects,
         )
     )

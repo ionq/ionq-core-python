@@ -112,8 +112,10 @@ class ClientExtension:
         event_hooks: Sync `EventHook` instances invoked on every request.
         async_event_hooks: Async `AsyncEventHook` instances invoked on
             every async request.
-        retryable_status_codes: HTTP status codes that should trigger a retry.
-            Overrides the default set (429, 500, 502, 503, 520-529).
+        retryable_status_codes: HTTP status codes that should trigger a retry
+            of an idempotent request (POST is never retried after a response
+            is received). Overrides the default set (429, 500, 502, 503,
+            520-529).
         max_retries: Maximum retry attempts. Overrides the default of 2.
         timeout: Request timeout. Overrides the default of 60 seconds.
         transport_wrapper: Callable that wraps the sync transport, useful for

@@ -36,32 +36,63 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("ionq_core")
 
+DEFAULT_MAX_PAGES: int = 10_000
+"""Default page cap for the pagination helpers.
 
-def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> Iterator[Job]:
+The ``next`` cursor is entirely server-controlled, so without a cap a
+misbehaving server that always returns a cursor could force the client to
+fetch pages forever. Pass ``max_pages=None`` to opt out.
+"""
+
+
+def _next_cursor(response: Any, label: str, sent_cursor: Any, pages: int, max_pages: int | None) -> None | str:
+    """Validate the cursor of a fetched page and return it (``None`` = done)."""
+    cursor = response.next_
+    if cursor is None:
+        return None
+    if cursor == sent_cursor:
+        raise IonQError(f"Server repeated pagination cursor {cursor!r} while fetching {label}")
+    if max_pages is not None and pages >= max_pages:
+        raise IonQError(
+            f"{label} pagination exceeded max_pages={max_pages}; pass a larger max_pages (or None to disable the cap)"
+        )
+    logger.debug("Fetching next page of %s (cursor=%s)", label, cursor)
+    return cursor
+
+
+def _paginate(
+    fetch: Callable[..., Any], label: str, *args: Any, max_pages: int | None = DEFAULT_MAX_PAGES, **kwargs: Any
+) -> Iterator[Job]:
     kwargs["next_"] = UNSET
+    pages = 0
     while True:
         response = fetch(*args, **kwargs)
         if response is None:
             raise IonQError(f"Failed to fetch {label}")
+        pages += 1
         yield from response.jobs
-        if response.next_ is None:
+        cursor = _next_cursor(response, label, kwargs["next_"], pages, max_pages)
+        if cursor is None:
             return
-        kwargs["next_"] = response.next_
-        logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
+        kwargs["next_"] = cursor
 
 
-async def _apaginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> AsyncIterator[Job]:
+async def _apaginate(
+    fetch: Callable[..., Any], label: str, *args: Any, max_pages: int | None = DEFAULT_MAX_PAGES, **kwargs: Any
+) -> AsyncIterator[Job]:
     kwargs["next_"] = UNSET
+    pages = 0
     while True:
         response = await fetch(*args, **kwargs)
         if response is None:
             raise IonQError(f"Failed to fetch {label}")
+        pages += 1
         for job in response.jobs:
             yield job
-        if response.next_ is None:
+        cursor = _next_cursor(response, label, kwargs["next_"], pages, max_pages)
+        if cursor is None:
             return
-        kwargs["next_"] = response.next_
-        logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
+        kwargs["next_"] = cursor
 
 
 def iter_jobs(
@@ -72,6 +103,7 @@ def iter_jobs(
     session_id: str | Unset = UNSET,
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
+    max_pages: int | None = DEFAULT_MAX_PAGES,
 ) -> Iterator[Job]:
     """Iterate over all jobs, automatically following pagination cursors.
 
@@ -83,16 +115,22 @@ def iter_jobs(
         submitter_id: Filter by submitter user ID.
         limit: Maximum number of jobs per page (server default applies
             if unset).
+        max_pages: Maximum number of pages to fetch before raising, as a
+            guard against a server that never stops returning cursors.
+            Defaults to `DEFAULT_MAX_PAGES` (10,000); pass ``None`` to
+            disable the cap.
 
     Yields:
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, repeats a
+            pagination cursor, or exceeds ``max_pages``.
     """
     return _paginate(
         get_jobs.sync,
         "jobs",
+        max_pages=max_pages,
         client=client,
         status=status,
         target=target,
@@ -110,6 +148,7 @@ def aiter_jobs(
     session_id: str | Unset = UNSET,
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
+    max_pages: int | None = DEFAULT_MAX_PAGES,
 ) -> AsyncIterator[Job]:
     """Async version of `iter_jobs`.
 
@@ -120,16 +159,21 @@ def aiter_jobs(
         session_id: Filter by session ID.
         submitter_id: Filter by submitter user ID.
         limit: Maximum number of jobs per page.
+        max_pages: Maximum number of pages to fetch before raising.
+            Defaults to `DEFAULT_MAX_PAGES` (10,000); ``None`` disables
+            the cap.
 
     Yields:
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, repeats a
+            pagination cursor, or exceeds ``max_pages``.
     """
     return _apaginate(
         get_jobs.asyncio,
         "jobs",
+        max_pages=max_pages,
         client=client,
         status=status,
         target=target,
@@ -147,6 +191,7 @@ def iter_session_jobs(
     target: str | Unset = UNSET,
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
+    max_pages: int | None = DEFAULT_MAX_PAGES,
 ) -> Iterator[Job]:
     """Iterate over all jobs in a specific session.
 
@@ -159,17 +204,22 @@ def iter_session_jobs(
         target: Filter by backend target name.
         submitter_id: Filter by submitter user ID.
         limit: Maximum number of jobs per page.
+        max_pages: Maximum number of pages to fetch before raising.
+            Defaults to `DEFAULT_MAX_PAGES` (10,000); ``None`` disables
+            the cap.
 
     Yields:
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, repeats a
+            pagination cursor, or exceeds ``max_pages``.
     """
     return _paginate(
         get_session_jobs.sync,
         "session jobs",
         session_id,
+        max_pages=max_pages,
         client=client,
         status=status,
         target=target,
@@ -186,6 +236,7 @@ def aiter_session_jobs(
     target: str | Unset = UNSET,
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
+    max_pages: int | None = DEFAULT_MAX_PAGES,
 ) -> AsyncIterator[Job]:
     """Async version of `iter_session_jobs`.
 
@@ -196,17 +247,22 @@ def aiter_session_jobs(
         target: Filter by backend target name.
         submitter_id: Filter by submitter user ID.
         limit: Maximum number of jobs per page.
+        max_pages: Maximum number of pages to fetch before raising.
+            Defaults to `DEFAULT_MAX_PAGES` (10,000); ``None`` disables
+            the cap.
 
     Yields:
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, repeats a
+            pagination cursor, or exceeds ``max_pages``.
     """
     return _apaginate(
         get_session_jobs.asyncio,
         "session jobs",
         session_id,
+        max_pages=max_pages,
         client=client,
         status=status,
         target=target,

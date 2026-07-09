@@ -26,6 +26,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `CostModel` model, replaced by `ApiCostModel`.
 - The `python-dateutil` runtime dependency, no longer needed now that generated code uses `datetime.fromisoformat`.
 
+### Security
+
+- `verify_ssl` passed to `IonQClient` now reaches the transports that actually open connections. Previously the injected retry transport caused httpx to silently ignore it, so a custom `ssl.SSLContext` (e.g. certificate pinning or a private CA) fell back to the system trust store without warning.
+- POST requests (`create_job`, `clone_job`, `create_session`, `end_session`) are no longer re-sent after a retryable HTTP status (429/5xx) or a mid-request network failure, either of which could silently duplicate a billable job or session. POSTs now retry only on connection failures raised before the request is sent (connection refused/timeout, pool timeout); idempotent methods retry as before.
+- `repr()` of `Client` and `AuthenticatedClient` no longer includes the default-headers dict, which contains the `Authorization: apiKey <token>` credential once the underlying httpx client has been created.
+- `iter_jobs`, `aiter_jobs`, `iter_session_jobs`, and `aiter_session_jobs` now raise `IonQError` if the server repeats a pagination cursor or the page count exceeds the new `max_pages` argument (default 10,000; pass `None` to disable), so a misbehaving server can no longer force an unbounded fetch loop.
+
 ## [0.1.1] - 2026-04-30
 
 ### Changed
