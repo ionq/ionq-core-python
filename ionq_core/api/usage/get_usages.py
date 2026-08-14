@@ -18,13 +18,12 @@ from ...models.modality import check_modality
 from ...models.modality import Modality
 from ...models.usages import Usages
 from typing import cast
-from uuid import UUID
 import datetime
 
 
 
 def _get_kwargs(
-    organization_id: UUID,
+    organization_id: str,
     *,
     start_date: datetime.date,
     end_date: datetime.date,
@@ -89,7 +88,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -103,7 +102,7 @@ def sync_detailed(
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -134,7 +133,7 @@ modality=modality,
     return _build_response(client=client, response=response)
 
 def sync(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -148,7 +147,7 @@ def sync(
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -174,7 +173,7 @@ modality=modality,
     ).parsed
 
 async def asyncio_detailed(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -188,7 +187,7 @@ async def asyncio_detailed(
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -219,7 +218,7 @@ modality=modality,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -233,7 +232,7 @@ async def asyncio(
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.

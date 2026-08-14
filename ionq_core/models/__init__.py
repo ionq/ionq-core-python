@@ -50,10 +50,10 @@ from .get_circuit_job_response import GetCircuitJobResponse
 from .get_job_cost_response import GetJobCostResponse
 from .get_job_cost_response_cost import GetJobCostResponseCost
 from .get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
+from .get_job_estimate_context import GetJobEstimateContext
 from .get_job_estimate_query_params import GetJobEstimateQueryParams
 from .get_job_estimate_response import GetJobEstimateResponse
-from .get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
-from .get_job_estimate_response_rate_information_rate_type import GetJobEstimateResponseRateInformationRateType
+from .get_job_estimate_response_rate_card import GetJobEstimateResponseRateCard
 from .get_job_response import GetJobResponse
 from .get_jobs_query_params import GetJobsQueryParams
 from .get_jobs_response import GetJobsResponse
@@ -120,6 +120,8 @@ from .quantum_function_job_creation_payload import QuantumFunctionJobCreationPay
 from .quantum_function_job_creation_payload_settings import QuantumFunctionJobCreationPayloadSettings
 from .quantum_function_job_creation_payload_settings_error_mitigation import QuantumFunctionJobCreationPayloadSettingsErrorMitigation
 from .quantum_function_job_creation_payload_type import QuantumFunctionJobCreationPayloadType
+from .rate_card_entry import RateCardEntry
+from .rate_card_entry_unit import RateCardEntryUnit
 from .registers import Registers
 from .request_validation import RequestValidation
 from .session import Session
@@ -179,10 +181,10 @@ __all__ = (
     "GetJobCostResponse",
     "GetJobCostResponseCost",
     "GetJobCostResponseEstimatedCost",
+    "GetJobEstimateContext",
     "GetJobEstimateQueryParams",
     "GetJobEstimateResponse",
-    "GetJobEstimateResponseRateInformation",
-    "GetJobEstimateResponseRateInformationRateType",
+    "GetJobEstimateResponseRateCard",
     "GetJobResponse",
     "GetJobsQueryParams",
     "GetJobsResponse",
@@ -249,6 +251,8 @@ __all__ = (
     "QuantumFunctionJobCreationPayloadSettings",
     "QuantumFunctionJobCreationPayloadSettingsErrorMitigation",
     "QuantumFunctionJobCreationPayloadType",
+    "RateCardEntry",
+    "RateCardEntryUnit",
     "Registers",
     "RequestValidation",
     "Session",

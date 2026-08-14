@@ -32,14 +32,14 @@ class Usage:
 
         Attributes:
             amount (float): The amount as a cost in USD Example: 1614.23.
-            from_ (datetime.date): Date for this group's usage Example: 2023-07-01.
+            from_ (datetime.datetime): Date for this group's usage Example: 2023-07-01.
             group_usages (list[GroupUsage]): The top 5 usage groups in order of cost amount descending
             job_count (int): The count of jobs for this group on the given from date Example: 10.
             time_us (float): The QPU time in microseconds Example: 5143166.13413.
      """
 
     amount: float
-    from_: datetime.date
+    from_: datetime.datetime
     group_usages: list[GroupUsage]
     job_count: int
     time_us: float
@@ -87,7 +87,7 @@ class Usage:
         d = dict(src_dict)
         amount = d.pop("amount")
 
-        from_ = datetime.date.fromisoformat(d.pop("from"))
+        from_ = datetime.datetime.fromisoformat(d.pop("from"))
 
 
 

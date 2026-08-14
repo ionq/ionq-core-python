@@ -15,6 +15,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Backend` now exposes `supported_gates`, `supported_native_gates`, and `supported_error_mitigations`.
 - `estimate_job_cost` response gained `estimated_quantum_compute_time_us`, and its `rate_information` gained `qct_cost_cents` and `rate_type` (`"qct"` or `"2qge"`). Its `cost_1q_gate`, `cost_2q_gate`, and `job_cost_minimum` rate fields are now nullable.
 
+### Fixed
+
+- `estimate_job_cost` no longer raises `KeyError` parsing a successful estimate: `GetJobEstimateResponse` now matches the shape the API actually serves (`estimate_context`, `rate_card`, `estimated_unit`, `estimated_total_cost`) via the OpenAPI overlay, replacing the stale `input_values` / `rate_information` / `cost_unit` / `estimated_cost` shape. Adds the `GetJobEstimateContext`, `RateCardEntry`, and `GetJobEstimateResponseRateCard` models; removes `GetJobEstimateResponseRateInformation`.
+- `get_usages` no longer raises `ValueError: badly formed hexadecimal UUID string`: organization ids are not UUIDs, so the `organization_id` path parameter and the `Usages.organization` response field are now plain `str` (previously `UUID`) via the OpenAPI overlay.
+- `get_usages` no longer raises `ValueError: Invalid isoformat string` parsing `usage_data`: the API returns RFC 3339 date-times for `Usage.from`, so the field is now `datetime.datetime` (previously `datetime.date`) via the OpenAPI overlay.
+
 ### Changed
 
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
