@@ -105,7 +105,7 @@ def test_submit_and_poll(client, track_job):
 
 
 @pytest.fixture(scope="session")
-def completed_job_id(self, client):
+def completed_job_id(client):
     resp = get_jobs.sync(client=client, status="completed", limit=1)
     assert resp is not None and resp.jobs, "No completed jobs found"
     return resp.jobs[0].id
