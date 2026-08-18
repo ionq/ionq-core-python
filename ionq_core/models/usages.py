@@ -18,6 +18,7 @@ from ..models.modality import check_modality
 from ..models.modality import Modality
 from ..types import UNSET, Unset
 from typing import cast
+from uuid import UUID
 import datetime
 
 if TYPE_CHECKING:
@@ -41,7 +42,7 @@ class Usages:
             amount_total (float | Unset): The total cost amount for the given timeframe, in units given by usage_unit
                 Example: 151.31.
             job_count (int | Unset): The total number of jobs run in the timeframe Example: 514.
-            organization (str | Unset): UUID of an organization. Example: 71d164e-6ebe-4126-8839-f1529bb01a00.
+            organization (UUID | Unset): UUID of an organization. Example: 71d164e-6ebe-4126-8839-f1529bb01a00.
             time_us_total (float | Unset): The total QPU time usage for the given timeframe, in microseconds Example:
                 1566154.312523.
             usage_data (list[Usage] | Unset): The breakdown of usage by group type in date order most to least recent
@@ -54,7 +55,7 @@ class Usages:
     modality: Modality
     amount_total: float | Unset = UNSET
     job_count: int | Unset = UNSET
-    organization: str | Unset = UNSET
+    organization: UUID | Unset = UNSET
     time_us_total: float | Unset = UNSET
     usage_data: list[Usage] | Unset = UNSET
     usage_from: datetime.datetime | Unset = UNSET
@@ -76,7 +77,9 @@ class Usages:
 
         job_count = self.job_count
 
-        organization = self.organization
+        organization: str | Unset = UNSET
+        if not isinstance(self.organization, Unset):
+            organization = str(self.organization)
 
         time_us_total = self.time_us_total
 
@@ -145,7 +148,15 @@ class Usages:
 
         job_count = d.pop("job_count", UNSET)
 
-        organization = d.pop("organization", UNSET)
+        _organization = d.pop("organization", UNSET)
+        organization: UUID | Unset
+        if isinstance(_organization,  Unset):
+            organization = UNSET
+        else:
+            organization = UUID(_organization)
+
+
+
 
         time_us_total = d.pop("time_us_total", UNSET)
 
