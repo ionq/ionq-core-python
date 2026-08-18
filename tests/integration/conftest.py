@@ -7,6 +7,7 @@ import pytest
 
 from ionq_core import AuthenticatedClient, IonQClient
 from ionq_core.api.default import delete_job
+from ionq_core.ionq_client import DEFAULT_BASE_URL
 
 
 @pytest.fixture(scope="session")
@@ -18,8 +19,16 @@ def api_key() -> str:
 
 
 @pytest.fixture(scope="session")
-def client(api_key: str) -> AuthenticatedClient:
-    return IonQClient(api_key=api_key)
+def base_url() -> str:
+    key = os.environ.get("IONQ_API_URL")
+    if not key:
+        return DEFAULT_BASE_URL
+    return key
+
+
+@pytest.fixture(scope="session")
+def client(api_key: str, base_url: str) -> AuthenticatedClient:
+    return IonQClient(api_key=api_key, base_url=base_url)
 
 
 @pytest.fixture(scope="session")
