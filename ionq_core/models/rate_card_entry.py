@@ -28,7 +28,7 @@ T = TypeVar("T", bound="RateCardEntry")
 
 @_attrs_define
 class RateCardEntry:
-    """
+    """ 
         Attributes:
             sku (str):
             unit (RateCardEntryUnit):
@@ -110,3 +110,4 @@ class RateCardEntry:
         )
 
         return rate_card_entry
+

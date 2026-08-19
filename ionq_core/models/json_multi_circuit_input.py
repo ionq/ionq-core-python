@@ -31,7 +31,7 @@ T = TypeVar("T", bound="JsonMultiCircuitInput")
 
 @_attrs_define
 class JsonMultiCircuitInput:
-    """
+    """ 
         Attributes:
             gateset (JsonMultiCircuitInputGateset):
             circuits (list[NativeCircuit | QISCircuit]): Every circuit in the job. Passing a singular `input.circuit`

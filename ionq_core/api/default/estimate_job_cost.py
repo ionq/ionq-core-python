@@ -29,9 +29,9 @@ def _get_kwargs(
     error_mitigation: bool | Unset = False,
 
 ) -> dict[str, Any]:
+    
 
-
-
+    
 
     params: dict[str, Any] = {}
 
@@ -115,7 +115,7 @@ def sync_detailed(
     error_mitigation: bool | Unset = False,
 
 ) -> Response[Any | GetJobEstimateResponse]:
-    """
+    """ 
     Args:
         backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
@@ -163,7 +163,7 @@ def sync(
     error_mitigation: bool | Unset = False,
 
 ) -> Any | GetJobEstimateResponse | None:
-    """
+    """ 
     Args:
         backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
@@ -206,7 +206,7 @@ async def asyncio_detailed(
     error_mitigation: bool | Unset = False,
 
 ) -> Response[Any | GetJobEstimateResponse]:
-    """
+    """ 
     Args:
         backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.
@@ -254,7 +254,7 @@ async def asyncio(
     error_mitigation: bool | Unset = False,
 
 ) -> Any | GetJobEstimateResponse | None:
-    """
+    """ 
     Args:
         backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
         type_ (str | Unset):  Default: 'ionq.circuit.v1'.

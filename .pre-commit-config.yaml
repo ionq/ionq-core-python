@@ -2,8 +2,12 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
+      # Generated files (see .gitattributes) must stay byte-identical to raw
+      # generator output for the generated.yml staleness check.
       - id: trailing-whitespace
+        exclude: &generated ^(ionq_core/(api|models)/|ionq_core/(__init__|client|errors|types)\.py$|openapi\.json$)
       - id: end-of-file-fixer
+        exclude: *generated
       - id: check-yaml
       - id: check-added-large-files
 

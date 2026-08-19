@@ -73,3 +73,4 @@ class QuantumFunctionJobResults:
         )
 
         return quantum_function_job_results
+

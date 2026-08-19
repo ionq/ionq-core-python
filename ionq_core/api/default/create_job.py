@@ -29,16 +29,16 @@ def _get_kwargs(
     headers: dict[str, Any] = {}
 
 
+    
 
-
-
+    
 
     _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/jobs",
     }
 
-
+    
     if isinstance(body, CircuitJobCreationPayload):
         _kwargs["json"] = body.to_dict()
     elif isinstance(body, JSONMultiCircuitJob):

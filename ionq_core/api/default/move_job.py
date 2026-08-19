@@ -27,9 +27,9 @@ def _get_kwargs(
     headers: dict[str, Any] = {}
 
 
+    
 
-
-
+    
 
     _kwargs: dict[str, Any] = {
         "method": "post",
@@ -91,7 +91,7 @@ def sync_detailed(
     body: CloneJobPayload,
 
 ) -> Response[Any | JobCreationResponse]:
-    """
+    """ 
     Args:
         uuid (str):
         body (CloneJobPayload): Make all properties in T optional
@@ -124,7 +124,7 @@ def sync(
     body: CloneJobPayload,
 
 ) -> Any | JobCreationResponse | None:
-    """
+    """ 
     Args:
         uuid (str):
         body (CloneJobPayload): Make all properties in T optional
@@ -152,7 +152,7 @@ async def asyncio_detailed(
     body: CloneJobPayload,
 
 ) -> Response[Any | JobCreationResponse]:
-    """
+    """ 
     Args:
         uuid (str):
         body (CloneJobPayload): Make all properties in T optional
@@ -185,7 +185,7 @@ async def asyncio(
     body: CloneJobPayload,
 
 ) -> Any | JobCreationResponse | None:
-    """
+    """ 
     Args:
         uuid (str):
         body (CloneJobPayload): Make all properties in T optional

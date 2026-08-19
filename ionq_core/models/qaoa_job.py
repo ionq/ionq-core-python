@@ -480,3 +480,4 @@ class QaoaJob:
         )
 
         return qaoa_job
+

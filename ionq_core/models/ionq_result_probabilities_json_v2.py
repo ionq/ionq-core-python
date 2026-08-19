@@ -73,3 +73,4 @@ class IonqResultProbabilitiesJsonV2:
         )
 
         return ionq_result_probabilities_json_v2
+

@@ -25,7 +25,7 @@ T = TypeVar("T", bound="JSONMultiCircuitJobSettingsCompilation")
 
 @_attrs_define
 class JSONMultiCircuitJobSettingsCompilation:
-    """
+    """ 
         Attributes:
             gate_basis (str | Unset):
             precision (str | Unset):

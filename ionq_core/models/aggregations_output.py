@@ -28,7 +28,7 @@ T = TypeVar("T", bound="AggregationsOutput")
 
 @_attrs_define
 class AggregationsOutput:
-    """
+    """ 
         Attributes:
             average (AggregationArtifactDescriptor | Unset):
             voting (AggregationArtifactDescriptor | Unset):
@@ -133,3 +133,4 @@ class AggregationsOutput:
         )
 
         return aggregations_output
+

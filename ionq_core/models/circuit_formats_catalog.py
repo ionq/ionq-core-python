@@ -97,3 +97,4 @@ class CircuitFormatsCatalog:
         )
 
         return circuit_formats_catalog
+

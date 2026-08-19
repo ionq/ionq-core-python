@@ -78,3 +78,4 @@ class QuantumFunctionJobSettings:
         )
 
         return quantum_function_job_settings
+

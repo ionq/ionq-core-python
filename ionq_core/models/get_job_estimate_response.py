@@ -29,7 +29,7 @@ T = TypeVar("T", bound="GetJobEstimateResponse")
 
 @_attrs_define
 class GetJobEstimateResponse:
-    """
+    """ 
         Attributes:
             estimate_context (GetJobEstimateContext):
             estimated_at (str):
@@ -134,3 +134,4 @@ class GetJobEstimateResponse:
         )
 
         return get_job_estimate_response
+

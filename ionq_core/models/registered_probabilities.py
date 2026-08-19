@@ -68,3 +68,4 @@ class RegisteredProbabilities:
         )
 
         return registered_probabilities
+

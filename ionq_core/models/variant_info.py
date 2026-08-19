@@ -28,7 +28,7 @@ T = TypeVar("T", bound="VariantInfo")
 
 @_attrs_define
 class VariantInfo:
-    """
+    """ 
         Attributes:
             variant_id (str):
             qubit_map (list[float] | None):
@@ -124,3 +124,4 @@ class VariantInfo:
         )
 
         return variant_info
+

@@ -25,7 +25,7 @@ T = TypeVar("T", bound="Noise")
 
 @_attrs_define
 class Noise:
-    """
+    """ 
         Attributes:
             model (str): Available options: `ideal`, `harmony`, `harmony-1`, `harmony-2`, `aria-1`, `aria-2`, `forte-1`,
                 `forte-enterprise-1`
@@ -70,3 +70,4 @@ class Noise:
         )
 
         return noise
+

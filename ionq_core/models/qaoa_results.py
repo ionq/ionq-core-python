@@ -82,3 +82,4 @@ class QaoaResults:
         )
 
         return qaoa_results
+

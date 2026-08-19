@@ -25,7 +25,7 @@ T = TypeVar("T", bound="ErrorMitigationOutputSymmetryVerificationType0")
 
 @_attrs_define
 class ErrorMitigationOutputSymmetryVerificationType0:
-    """
+    """ 
         Attributes:
             num_allowed_states (float | Unset):
             applied (bool | Unset):

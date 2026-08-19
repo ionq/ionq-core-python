@@ -72,3 +72,4 @@ class IonqResultHistogramJsonV2:
         )
 
         return ionq_result_histogram_json_v2
+

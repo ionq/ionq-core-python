@@ -27,7 +27,7 @@ T = TypeVar("T", bound="AggregationArtifactDescriptor")
 
 @_attrs_define
 class AggregationArtifactDescriptor:
-    """
+    """ 
         Attributes:
             id (str):
             format_ (ResultFormatHistogramV2):
@@ -81,3 +81,4 @@ class AggregationArtifactDescriptor:
         )
 
         return aggregation_artifact_descriptor
+

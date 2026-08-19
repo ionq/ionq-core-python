@@ -23,11 +23,11 @@ def _get_kwargs(
     format_: Formats,
 
 ) -> dict[str, Any]:
+    
 
+    
 
-
-
-
+    
 
     _kwargs: dict[str, Any] = {
         "method": "get",

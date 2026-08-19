@@ -25,7 +25,7 @@ T = TypeVar("T", bound="CircuitJobCreationPayloadSettingsCompilation")
 
 @_attrs_define
 class CircuitJobCreationPayloadSettingsCompilation:
-    """
+    """ 
         Attributes:
             gate_basis (str | Unset):
             precision (str | Unset):

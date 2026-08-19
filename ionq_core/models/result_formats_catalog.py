@@ -171,3 +171,4 @@ class ResultFormatsCatalog:
         )
 
         return result_formats_catalog
+

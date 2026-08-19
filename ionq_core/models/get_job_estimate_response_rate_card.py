@@ -27,7 +27,7 @@ T = TypeVar("T", bound="GetJobEstimateResponseRateCard")
 
 @_attrs_define
 class GetJobEstimateResponseRateCard:
-    """
+    """ 
         Attributes:
             rates (list[RateCardEntry]):
             id (str):

@@ -29,7 +29,7 @@ T = TypeVar("T", bound="CircuitJobSettings")
 
 @_attrs_define
 class CircuitJobSettings:
-    """
+    """ 
         Attributes:
             compilation (CircuitJobCompilationSettings | Unset):
             error_mitigation (CircuitJobErrorMitigationSettings | Unset):
@@ -98,3 +98,4 @@ class CircuitJobSettings:
         )
 
         return circuit_job_settings
+

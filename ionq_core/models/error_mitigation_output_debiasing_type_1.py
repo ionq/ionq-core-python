@@ -28,7 +28,7 @@ T = TypeVar("T", bound="ErrorMitigationOutputDebiasingType1")
 
 @_attrs_define
 class ErrorMitigationOutputDebiasingType1:
-    """
+    """ 
         Attributes:
             variants (list[VariantInfo] | Unset):
             aggregation_method (str | Unset):

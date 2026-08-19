@@ -77,3 +77,4 @@ class ArtifactDescriptor:
         )
 
         return artifact_descriptor
+

@@ -68,3 +68,4 @@ class RegisteredHistogram:
         )
 
         return registered_histogram
+

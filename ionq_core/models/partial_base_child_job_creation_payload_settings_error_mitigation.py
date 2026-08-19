@@ -25,7 +25,7 @@ T = TypeVar("T", bound="PartialBaseChildJobCreationPayloadSettingsErrorMitigatio
 
 @_attrs_define
 class PartialBaseChildJobCreationPayloadSettingsErrorMitigation:
-    """
+    """ 
         Attributes:
             symmetry_verification (bool | Unset):
             debiasing (bool | Unset):

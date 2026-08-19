@@ -26,7 +26,7 @@ T = TypeVar("T", bound="GetJobEstimateContext")
 
 @_attrs_define
 class GetJobEstimateContext:
-    """
+    """ 
         Attributes:
             backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
             organization (None | str):
@@ -145,3 +145,4 @@ class GetJobEstimateContext:
         )
 
         return get_job_estimate_context
+

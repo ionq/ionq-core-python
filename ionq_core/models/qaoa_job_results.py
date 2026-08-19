@@ -77,3 +77,4 @@ class QaoaJobResults:
         )
 
         return qaoa_job_results
+

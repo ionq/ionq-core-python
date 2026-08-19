@@ -30,7 +30,7 @@ T = TypeVar("T", bound="ErrorMitigationOutput")
 
 @_attrs_define
 class ErrorMitigationOutput:
-    """
+    """ 
         Attributes:
             symmetry_verification (ErrorMitigationOutputSymmetryVerificationType0 | None | Unset):
             aggregations (AggregationsOutput | Unset):
@@ -146,3 +146,4 @@ class ErrorMitigationOutput:
         )
 
         return error_mitigation_output
+

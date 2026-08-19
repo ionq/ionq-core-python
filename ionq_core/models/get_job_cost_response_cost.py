@@ -24,7 +24,7 @@ T = TypeVar("T", bound="GetJobCostResponseCost")
 
 @_attrs_define
 class GetJobCostResponseCost:
-    """
+    """ 
         Attributes:
             value (float):  Example: 24.83.
             unit (str): The currency code the cost is denominated in. `credit` is used instead for organizations billed in

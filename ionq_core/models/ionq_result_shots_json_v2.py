@@ -82,3 +82,4 @@ class IonqResultShotsJsonV2:
         )
 
         return ionq_result_shots_json_v2
+

@@ -25,7 +25,7 @@ T = TypeVar("T", bound="CloneJobPayloadSettingsCompilation")
 
 @_attrs_define
 class CloneJobPayloadSettingsCompilation:
-    """
+    """ 
         Attributes:
             gate_basis (str | Unset):
             precision (str | Unset):

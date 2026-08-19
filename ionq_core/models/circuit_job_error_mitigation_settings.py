@@ -25,7 +25,7 @@ T = TypeVar("T", bound="CircuitJobErrorMitigationSettings")
 
 @_attrs_define
 class CircuitJobErrorMitigationSettings:
-    """
+    """ 
         Attributes:
             debiasing (bool | Unset):
             symmetry_verification (bool | Unset):
@@ -70,3 +70,4 @@ class CircuitJobErrorMitigationSettings:
         )
 
         return circuit_job_error_mitigation_settings
+

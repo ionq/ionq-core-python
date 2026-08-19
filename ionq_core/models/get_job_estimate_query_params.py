@@ -25,7 +25,7 @@ T = TypeVar("T", bound="GetJobEstimateQueryParams")
 
 @_attrs_define
 class GetJobEstimateQueryParams:
-    """
+    """ 
         Attributes:
             backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
             type_ (str | Unset):  Default: 'ionq.circuit.v1'.
@@ -114,3 +114,4 @@ class GetJobEstimateQueryParams:
         )
 
         return get_job_estimate_query_params
+

@@ -24,11 +24,11 @@ def _get_kwargs(
     uuid: str,
 
 ) -> dict[str, Any]:
+    
 
+    
 
-
-
-
+    
 
     _kwargs: dict[str, Any] = {
         "method": "get",
@@ -122,7 +122,7 @@ def sync_detailed(
     client: AuthenticatedClient,
 
 ) -> Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]:
-    """
+    """ 
     Args:
         uuid (str):
 
@@ -152,7 +152,7 @@ def sync(
     client: AuthenticatedClient,
 
 ) -> Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob | None:
-    """
+    """ 
     Args:
         uuid (str):
 
@@ -177,7 +177,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
 
 ) -> Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]:
-    """
+    """ 
     Args:
         uuid (str):
 
@@ -207,7 +207,7 @@ async def asyncio(
     client: AuthenticatedClient,
 
 ) -> Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob | None:
-    """
+    """ 
     Args:
         uuid (str):
 

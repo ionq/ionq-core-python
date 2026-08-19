@@ -29,7 +29,7 @@ T = TypeVar("T", bound="QisCircuitInput")
 
 @_attrs_define
 class QisCircuitInput:
-    """
+    """ 
         Attributes:
             qubits (int):
             circuit (list[GateQisGate]): The single circuit to run. To submit multiple circuits, set `type` to
@@ -99,3 +99,4 @@ class QisCircuitInput:
         )
 
         return qis_circuit_input
+

@@ -28,7 +28,7 @@ T = TypeVar("T", bound="CompilationOutput")
 
 @_attrs_define
 class CompilationOutput:
-    """
+    """ 
         Attributes:
             compiled_circuits (CompiledCircuits | Unset): Map of compiled-circuit artifacts keyed by circuit format
                 identifier
@@ -79,3 +79,4 @@ class CompilationOutput:
         )
 
         return compilation_output
+

@@ -29,7 +29,7 @@ T = TypeVar("T", bound="CircuitJobOutput")
 
 @_attrs_define
 class CircuitJobOutput:
-    """
+    """ 
         Attributes:
             compilation (CompilationOutput | Unset):
             error_mitigation (ErrorMitigationOutput | Unset):

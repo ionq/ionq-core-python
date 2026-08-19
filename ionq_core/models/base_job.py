@@ -35,7 +35,7 @@ T = TypeVar("T", bound="BaseJob")
 
 @_attrs_define
 class BaseJob:
-    """
+    """ 
         Attributes:
             id (str):
             status (JobStatus):
@@ -432,3 +432,4 @@ class BaseJob:
         )
 
         return base_job
+

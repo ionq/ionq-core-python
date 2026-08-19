@@ -68,3 +68,4 @@ class ShotResult:
         )
 
         return shot_result
+
