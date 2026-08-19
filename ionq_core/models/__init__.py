@@ -40,7 +40,7 @@ from .compiled_circuits import CompiledCircuits
 from .create_session_request import CreateSessionRequest
 from .error import Error
 from .error_mitigation_output import ErrorMitigationOutput
-from .error_mitigation_output_debiasing import ErrorMitigationOutputDebiasing
+from .error_mitigation_output_debiasing_type_1 import ErrorMitigationOutputDebiasingType1
 from .error_mitigation_output_symmetry_verification_type_0 import ErrorMitigationOutputSymmetryVerificationType0
 from .failure import Failure
 from .failure_code import FailureCode
@@ -213,7 +213,7 @@ __all__ = (
     "CreateSessionRequest",
     "Error",
     "ErrorMitigationOutput",
-    "ErrorMitigationOutputDebiasing",
+    "ErrorMitigationOutputDebiasingType1",
     "ErrorMitigationOutputSymmetryVerificationType0",
     "Failure",
     "FailureCode",

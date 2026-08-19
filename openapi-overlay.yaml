@@ -28,6 +28,14 @@ info:
     raised "Invalid isoformat string"; we widen the format to date-time
     locally (datetime.fromisoformat also accepts plain dates).
 
+    ErrorMitigationOutput.debiasing declares an object (variants /
+    aggregation_method), but the API serves a boolean `false` when debiasing
+    is off (and the object when it is on), so parsing any completed job
+    raised TypeError: 'bool' object is not iterable inside the GetJobResponse
+    union - which surfaced as the misleading "Unexpected value
+    'ionq.circuit.v1'" error from the union's last variant. We widen the
+    property to anyOf boolean/object locally.
+
     Previously this overlay also coerced QisCircuitInput.qubits from
     number/double to integer/int32; upstream adopted that fix in May 2026
     (and extended it to NativeCircuitInput and JsonMultiCircuitInput), so
@@ -172,6 +180,21 @@ actions:
           - current_predicted_queue_time
         type: object
         additionalProperties: false
+  - target: $.components.schemas.ErrorMitigationOutput.properties.debiasing
+    remove: true
+  - target: $.components.schemas.ErrorMitigationOutput.properties
+    update:
+      debiasing:
+        anyOf:
+          - type: boolean
+          - type: object
+            properties:
+              variants:
+                items:
+                  $ref: "#/components/schemas/VariantInfo"
+                type: array
+              aggregation_method:
+                type: string
   - target: $.components.schemas.organization_id.format
     remove: true
   - target: $.components.parameters.organization_id.schema.format
