@@ -25,11 +25,13 @@ T = TypeVar("T", bound="CloneJobPayloadSettingsErrorMitigation")
 
 @_attrs_define
 class CloneJobPayloadSettingsErrorMitigation:
-    """ 
+    """
         Attributes:
+            symmetry_verification (bool | Unset):
             debiasing (bool | Unset):
      """
 
+    symmetry_verification: bool | Unset = UNSET
     debiasing: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -38,6 +40,8 @@ class CloneJobPayloadSettingsErrorMitigation:
 
 
     def to_dict(self) -> dict[str, Any]:
+        symmetry_verification = self.symmetry_verification
+
         debiasing = self.debiasing
 
 
@@ -45,6 +49,8 @@ class CloneJobPayloadSettingsErrorMitigation:
         field_dict.update(self.additional_properties)
         field_dict.update({
         })
+        if symmetry_verification is not UNSET:
+            field_dict["symmetry_verification"] = symmetry_verification
         if debiasing is not UNSET:
             field_dict["debiasing"] = debiasing
 
@@ -55,9 +61,12 @@ class CloneJobPayloadSettingsErrorMitigation:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
+        symmetry_verification = d.pop("symmetry_verification", UNSET)
+
         debiasing = d.pop("debiasing", UNSET)
 
         clone_job_payload_settings_error_mitigation = cls(
+            symmetry_verification=symmetry_verification,
             debiasing=debiasing,
         )
 

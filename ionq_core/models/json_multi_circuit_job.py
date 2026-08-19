@@ -34,7 +34,8 @@ T = TypeVar("T", bound="JSONMultiCircuitJob")
 @_attrs_define
 class JSONMultiCircuitJob:
     """ Submit multiple circuits in a single job. Each circuit inherits the parent `input.gateset` unless overridden by
-    `circuits[].gateset`.
+    `circuits[].gateset`. You can submit up to 5,000 circuits in a single multi-circuit job, totalling at most 150,000
+    gates across them.
 
         Example:
             {'type': 'ionq.multi-circuit.v1', 'backend': 'simulator', 'shots': 500, 'input': {'gateset': 'native', 'qubits':
@@ -43,8 +44,7 @@ class JSONMultiCircuitJob:
                 'targets': [0, 1], 'phases': [0, 0.25]}, {'gate': 'gpi2', 'target': 0, 'phase': 0.75}]}]}}
 
         Attributes:
-            backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
-                enterprise-1`
+            backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
             type_ (JSONMultiCircuitJobType):
             input_ (JsonMultiCircuitInput):
             name (str | Unset):
@@ -200,4 +200,3 @@ class JSONMultiCircuitJob:
         )
 
         return json_multi_circuit_job
-

@@ -31,10 +31,13 @@ T = TypeVar("T", bound="JsonMultiCircuitInput")
 
 @_attrs_define
 class JsonMultiCircuitInput:
-    """ 
+    """
         Attributes:
             gateset (JsonMultiCircuitInputGateset):
-            circuits (list[NativeCircuit | QISCircuit]):
+            circuits (list[NativeCircuit | QISCircuit]): Every circuit in the job. Passing a singular `input.circuit`
+                alongside
+                this field is rejected rather than ignored. A single job accepts up to
+                5,000 circuits and 150,000 gates in total across them.
             qubits (int | Unset):
      """
 

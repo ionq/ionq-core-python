@@ -35,7 +35,7 @@ T = TypeVar("T", bound="BaseJob")
 
 @_attrs_define
 class BaseJob:
-    """ 
+    """
         Attributes:
             id (str):
             status (JobStatus):
@@ -59,7 +59,8 @@ class BaseJob:
             output (JsonObject):
             settings (JsonObject):
             stats (JsonObject):
-            results (JsonObject | None):
+            results (JsonObject | None): Job-type-specific results. The concrete shape is determined by the job type — see
+                the per-job-type tabs above.
             shots (int | Unset): `shots` are not included with ideal simulator backend.
             noise (Noise | Unset):
             cost_model (ApiCostModel | Unset): The billing model used for this job. `QCT` for jobs billed on quantum
@@ -431,4 +432,3 @@ class BaseJob:
         )
 
         return base_job
-

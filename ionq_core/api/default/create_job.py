@@ -29,16 +29,16 @@ def _get_kwargs(
     headers: dict[str, Any] = {}
 
 
-    
 
-    
+
+
 
     _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/jobs",
     }
 
-    
+
     if isinstance(body, CircuitJobCreationPayload):
         _kwargs["json"] = body.to_dict()
     elif isinstance(body, JSONMultiCircuitJob):
@@ -63,6 +63,14 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
         return response_201
+
+    if response.status_code == 400:
+        response_400 = cast(Any, None)
+        return response_400
+
+    if response.status_code == 413:
+        response_413 = cast(Any, None)
+        return response_413
 
     if response.status_code == 429:
         response_429 = cast(Any, None)

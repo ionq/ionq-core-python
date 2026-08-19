@@ -17,7 +17,7 @@ from typing import cast
 
 if TYPE_CHECKING:
   from ..models.circuit_job_compilation_settings import CircuitJobCompilationSettings
-  from ..models.circuit_job_settings_error_mitigation import CircuitJobSettingsErrorMitigation
+  from ..models.circuit_job_error_mitigation_settings import CircuitJobErrorMitigationSettings
 
 
 
@@ -29,14 +29,14 @@ T = TypeVar("T", bound="CircuitJobSettings")
 
 @_attrs_define
 class CircuitJobSettings:
-    """ 
+    """
         Attributes:
             compilation (CircuitJobCompilationSettings | Unset):
-            error_mitigation (CircuitJobSettingsErrorMitigation | Unset):
+            error_mitigation (CircuitJobErrorMitigationSettings | Unset):
      """
 
     compilation: CircuitJobCompilationSettings | Unset = UNSET
-    error_mitigation: CircuitJobSettingsErrorMitigation | Unset = UNSET
+    error_mitigation: CircuitJobErrorMitigationSettings | Unset = UNSET
 
 
 
@@ -44,7 +44,7 @@ class CircuitJobSettings:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.circuit_job_compilation_settings import CircuitJobCompilationSettings
-        from ..models.circuit_job_settings_error_mitigation import CircuitJobSettingsErrorMitigation
+        from ..models.circuit_job_error_mitigation_settings import CircuitJobErrorMitigationSettings
         compilation: dict[str, Any] | Unset = UNSET
         if not isinstance(self.compilation, Unset):
             compilation = self.compilation.to_dict()
@@ -70,7 +70,7 @@ class CircuitJobSettings:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.circuit_job_compilation_settings import CircuitJobCompilationSettings
-        from ..models.circuit_job_settings_error_mitigation import CircuitJobSettingsErrorMitigation
+        from ..models.circuit_job_error_mitigation_settings import CircuitJobErrorMitigationSettings
         d = dict(src_dict)
         _compilation = d.pop("compilation", UNSET)
         compilation: CircuitJobCompilationSettings | Unset
@@ -83,11 +83,11 @@ class CircuitJobSettings:
 
 
         _error_mitigation = d.pop("error_mitigation", UNSET)
-        error_mitigation: CircuitJobSettingsErrorMitigation | Unset
+        error_mitigation: CircuitJobErrorMitigationSettings | Unset
         if isinstance(_error_mitigation,  Unset):
             error_mitigation = UNSET
         else:
-            error_mitigation = CircuitJobSettingsErrorMitigation.from_dict(_error_mitigation)
+            error_mitigation = CircuitJobErrorMitigationSettings.from_dict(_error_mitigation)
 
 
 
@@ -98,4 +98,3 @@ class CircuitJobSettings:
         )
 
         return circuit_job_settings
-

@@ -25,14 +25,16 @@ T = TypeVar("T", bound="JSONMultiCircuitJobSettingsCompilation")
 
 @_attrs_define
 class JSONMultiCircuitJobSettingsCompilation:
-    """ 
+    """
         Attributes:
-            opt (float | Unset):
+            gate_basis (str | Unset):
             precision (str | Unset):
+            opt (float | Unset):
      """
 
-    opt: float | Unset = UNSET
+    gate_basis: str | Unset = UNSET
     precision: str | Unset = UNSET
+    opt: float | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -40,19 +42,23 @@ class JSONMultiCircuitJobSettingsCompilation:
 
 
     def to_dict(self) -> dict[str, Any]:
-        opt = self.opt
+        gate_basis = self.gate_basis
 
         precision = self.precision
+
+        opt = self.opt
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
         })
-        if opt is not UNSET:
-            field_dict["opt"] = opt
+        if gate_basis is not UNSET:
+            field_dict["gate_basis"] = gate_basis
         if precision is not UNSET:
             field_dict["precision"] = precision
+        if opt is not UNSET:
+            field_dict["opt"] = opt
 
         return field_dict
 
@@ -61,13 +67,16 @@ class JSONMultiCircuitJobSettingsCompilation:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        opt = d.pop("opt", UNSET)
+        gate_basis = d.pop("gate_basis", UNSET)
 
         precision = d.pop("precision", UNSET)
 
+        opt = d.pop("opt", UNSET)
+
         json_multi_circuit_job_settings_compilation = cls(
-            opt=opt,
+            gate_basis=gate_basis,
             precision=precision,
+            opt=opt,
         )
 
 

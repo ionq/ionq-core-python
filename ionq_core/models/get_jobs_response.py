@@ -27,9 +27,11 @@ T = TypeVar("T", bound="GetJobsResponse")
 
 @_attrs_define
 class GetJobsResponse:
-    """ 
+    """
         Attributes:
-            jobs (list[BaseJob]):
+            jobs (list[BaseJob]): List of jobs. Common fields are shown below; each entry's full per-type shape (with
+                `settings`, `stats`, `output`, `results` documented by job type) is available on the [Get Job](/api-
+                reference/v0.4/jobs/get-job) page.
             next_ (None | str):
      """
 
@@ -92,4 +94,3 @@ class GetJobsResponse:
         )
 
         return get_jobs_response
-

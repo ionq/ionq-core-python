@@ -16,8 +16,8 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.get_job_estimate_query_params import GetJobEstimateQueryParams
-  from ..models.get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
+  from ..models.get_job_estimate_context import GetJobEstimateContext
+  from ..models.get_job_estimate_response_rate_card import GetJobEstimateResponseRateCard
 
 
 
@@ -29,43 +29,46 @@ T = TypeVar("T", bound="GetJobEstimateResponse")
 
 @_attrs_define
 class GetJobEstimateResponse:
-    """ 
+    """
         Attributes:
-            input_values (GetJobEstimateQueryParams):
+            estimate_context (GetJobEstimateContext):
             estimated_at (str):
-            cost_unit (str):
-            rate_information (GetJobEstimateResponseRateInformation):
-            estimated_cost (float):
-            estimated_execution_time (float):
-            current_predicted_queue_time (float):
-            estimated_quantum_compute_time_us (float | Unset):
+            estimated_unit (str):
+            rate_card (GetJobEstimateResponseRateCard):
+            estimated_total_cost (float):
+            estimated_execution_time (int): Predicted job execution time, in milliseconds. Example: 96250.
+            current_predicted_queue_time (int): Predicted time this job will wait in the queue before running, in
+                milliseconds. Example: 397577.
+            estimated_quantum_compute_time_us (int | Unset): Predicted quantum compute time, in microseconds. Only present
+                for
+                compute_second priced backends.
      """
 
-    input_values: GetJobEstimateQueryParams
+    estimate_context: GetJobEstimateContext
     estimated_at: str
-    cost_unit: str
-    rate_information: GetJobEstimateResponseRateInformation
-    estimated_cost: float
-    estimated_execution_time: float
-    current_predicted_queue_time: float
-    estimated_quantum_compute_time_us: float | Unset = UNSET
+    estimated_unit: str
+    rate_card: GetJobEstimateResponseRateCard
+    estimated_total_cost: float
+    estimated_execution_time: int
+    current_predicted_queue_time: int
+    estimated_quantum_compute_time_us: int | Unset = UNSET
 
 
 
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.get_job_estimate_query_params import GetJobEstimateQueryParams
-        from ..models.get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
-        input_values = self.input_values.to_dict()
+        from ..models.get_job_estimate_context import GetJobEstimateContext
+        from ..models.get_job_estimate_response_rate_card import GetJobEstimateResponseRateCard
+        estimate_context = self.estimate_context.to_dict()
 
         estimated_at = self.estimated_at
 
-        cost_unit = self.cost_unit
+        estimated_unit = self.estimated_unit
 
-        rate_information = self.rate_information.to_dict()
+        rate_card = self.rate_card.to_dict()
 
-        estimated_cost = self.estimated_cost
+        estimated_total_cost = self.estimated_total_cost
 
         estimated_execution_time = self.estimated_execution_time
 
@@ -77,11 +80,11 @@ class GetJobEstimateResponse:
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
-            "input_values": input_values,
+            "estimate_context": estimate_context,
             "estimated_at": estimated_at,
-            "cost_unit": cost_unit,
-            "rate_information": rate_information,
-            "estimated_cost": estimated_cost,
+            "estimated_unit": estimated_unit,
+            "rate_card": rate_card,
+            "estimated_total_cost": estimated_total_cost,
             "estimated_execution_time": estimated_execution_time,
             "current_predicted_queue_time": current_predicted_queue_time,
         })
@@ -94,24 +97,24 @@ class GetJobEstimateResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.get_job_estimate_query_params import GetJobEstimateQueryParams
-        from ..models.get_job_estimate_response_rate_information import GetJobEstimateResponseRateInformation
+        from ..models.get_job_estimate_context import GetJobEstimateContext
+        from ..models.get_job_estimate_response_rate_card import GetJobEstimateResponseRateCard
         d = dict(src_dict)
-        input_values = GetJobEstimateQueryParams.from_dict(d.pop("input_values"))
+        estimate_context = GetJobEstimateContext.from_dict(d.pop("estimate_context"))
 
 
 
 
         estimated_at = d.pop("estimated_at")
 
-        cost_unit = d.pop("cost_unit")
+        estimated_unit = d.pop("estimated_unit")
 
-        rate_information = GetJobEstimateResponseRateInformation.from_dict(d.pop("rate_information"))
-
-
+        rate_card = GetJobEstimateResponseRateCard.from_dict(d.pop("rate_card"))
 
 
-        estimated_cost = d.pop("estimated_cost")
+
+
+        estimated_total_cost = d.pop("estimated_total_cost")
 
         estimated_execution_time = d.pop("estimated_execution_time")
 
@@ -120,15 +123,14 @@ class GetJobEstimateResponse:
         estimated_quantum_compute_time_us = d.pop("estimated_quantum_compute_time_us", UNSET)
 
         get_job_estimate_response = cls(
-            input_values=input_values,
+            estimate_context=estimate_context,
             estimated_at=estimated_at,
-            cost_unit=cost_unit,
-            rate_information=rate_information,
-            estimated_cost=estimated_cost,
+            estimated_unit=estimated_unit,
+            rate_card=rate_card,
+            estimated_total_cost=estimated_total_cost,
             estimated_execution_time=estimated_execution_time,
             current_predicted_queue_time=current_predicted_queue_time,
             estimated_quantum_compute_time_us=estimated_quantum_compute_time_us,
         )
 
         return get_job_estimate_response
-

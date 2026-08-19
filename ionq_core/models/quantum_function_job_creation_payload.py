@@ -33,10 +33,9 @@ T = TypeVar("T", bound="QuantumFunctionJobCreationPayload")
 
 @_attrs_define
 class QuantumFunctionJobCreationPayload:
-    """ 
+    """
         Attributes:
-            backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
-                enterprise-1`
+            backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
             type_ (QuantumFunctionJobCreationPayloadType):
             input_ (GenericQuantumFunctionInput | HamiltonianEnergyInput):
             name (str | Unset):
