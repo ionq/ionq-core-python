@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write
 
 jobs:
   regen:
@@ -15,7 +16,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        # persist-credentials required to push the regen branch
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup-uv
       - run: uv sync --group regen
       - name: Fetch latest spec
@@ -49,20 +51,10 @@ jobs:
             --custom-template-path custom-templates \
             --output-path ionq_core \
             --overwrite
-      - name: Open or update PR
+      - name: Compose PR body
         if: steps.drift.outputs.drifted == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          BRANCH="spec-drift/auto-regen"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B "$BRANCH"
-          git add openapi.json ionq_core/
-          git commit -m "Regenerate client for updated OpenAPI spec"
-          git push origin "$BRANCH" --force
-
           {
             echo "The spec at \`${BASE_URL}/api-docs\` has diverged from the vendored \`openapi.json\`. This PR fetches the new spec and regenerates the client."
             printf '\n<details><summary>Spec diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
@@ -70,16 +62,31 @@ jobs:
             [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'
             printf '```\n</details>\n'
           } > /tmp/body.md
-
-          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
-          if [[ -z "$existing" ]]; then
-            gh pr create \
-              --title "Regenerate client for updated OpenAPI spec" \
-              --body-file /tmp/body.md \
-              --head "$BRANCH" \
-              --base main \
-              --reviewer ionq/developer-tools \
-              --label spec-drift
-          else
-            gh pr edit "$existing" --body-file /tmp/body.md
-          fi
+      # Pushes and PR creation made with GITHUB_TOKEN never fire pull_request
+      # events, so the required checks are dispatched explicitly below —
+      # workflow_dispatch is exempt from that suppression. Team review comes
+      # from CODEOWNERS (GITHUB_TOKEN cannot request team reviewers itself).
+      - name: Open or update PR
+        if: steps.drift.outputs.drifted == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: spec-drift/auto-regen
+          base: main
+          add-paths: |
+            openapi.json
+            ionq_core/
+          commit-message: Regenerate client for updated OpenAPI spec
+          title: Regenerate client for updated OpenAPI spec
+          body-path: /tmp/body.md
+          labels: spec-drift
+      - name: Trigger required checks
+        if: steps.pr.outputs.pull-request-operation == 'created' || steps.pr.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # CodeQL runs via GitHub's default setup and has no dispatchable
+          # workflow file — confirm it reports on regen PRs.
+          gh workflow run ci.yml --ref spec-drift/auto-regen
+          gh workflow run generated.yml --ref spec-drift/auto-regen

@@ -2,6 +2,9 @@ name: Generated code check
 
 on:
   pull_request:
+  # Dispatched by spec-drift.yml on auto-regen branches, whose GITHUB_TOKEN
+  # pushes cannot fire pull_request events.
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
