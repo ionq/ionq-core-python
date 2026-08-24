@@ -20,10 +20,7 @@ def api_key() -> str:
 
 @pytest.fixture(scope="session")
 def base_url() -> str:
-    key = os.environ.get("IONQ_API_URL")
-    if not key:
-        return DEFAULT_BASE_URL
-    return key
+    return os.environ.get("IONQ_API_URL", DEFAULT_BASE_URL)
 
 
 @pytest.fixture(scope="session")
