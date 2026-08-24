@@ -12,7 +12,6 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from dateutil.parser import isoparse
 from typing import cast
 import datetime
 
@@ -88,7 +87,7 @@ class Usage:
         d = dict(src_dict)
         amount = d.pop("amount")
 
-        from_ = isoparse(d.pop("from")).date()
+        from_ = datetime.date.fromisoformat(d.pop("from"))
 
 
 

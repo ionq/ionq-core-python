@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # @generated
 
-from typing import Literal, cast
+from typing import Literal
 
 JobsDeletedResponseStatus = Literal['deleted']
 
@@ -10,5 +10,5 @@ JOBS_DELETED_RESPONSE_STATUS_VALUES: set[JobsDeletedResponseStatus] = { 'deleted
 
 def check_jobs_deleted_response_status(value: str) -> JobsDeletedResponseStatus:
     if value in JOBS_DELETED_RESPONSE_STATUS_VALUES:
-        return cast(JobsDeletedResponseStatus, value)
+        return value
     raise TypeError(f"Unexpected value {value!r}. Expected one of {JOBS_DELETED_RESPONSE_STATUS_VALUES!r}")

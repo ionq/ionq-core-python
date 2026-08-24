@@ -13,6 +13,7 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 from ..types import UNSET, Unset
+from typing import cast
 
 
 
@@ -39,6 +40,12 @@ class Backend:
             degraded (bool | Unset): Flag to tell if the backend is degraded or not.
             kw (float | Unset): The amount of energy used by the backend in kilowatt-hours. Example: 4902.81.
             location (str | Unset): The location of the backend. Example: College Park, MD, USA.
+            supported_error_mitigations (list[str] | Unset): Error mitigation options supported by the backend. Example:
+                ['debiasing'].
+            supported_gates (list[str] | Unset): Gates supported by the backend. Example: ['x', 'y', 'z', 'h', 's', 'si',
+                't', 'ti', 'v', 'vi', 'rx', 'ry', 'rz', 'cnot', 'swap', 'xx', 'yy', 'zz', 'not'].
+            supported_native_gates (list[str] | Unset): Native gates supported by the backend. Example: ['gpi', 'gpi2',
+                'ms'].
      """
 
     average_queue_time: float
@@ -50,6 +57,9 @@ class Backend:
     degraded: bool | Unset = UNSET
     kw: float | Unset = UNSET
     location: str | Unset = UNSET
+    supported_error_mitigations: list[str] | Unset = UNSET
+    supported_gates: list[str] | Unset = UNSET
+    supported_native_gates: list[str] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -75,6 +85,24 @@ class Backend:
 
         location = self.location
 
+        supported_error_mitigations: list[str] | Unset = UNSET
+        if not isinstance(self.supported_error_mitigations, Unset):
+            supported_error_mitigations = self.supported_error_mitigations
+
+
+
+        supported_gates: list[str] | Unset = UNSET
+        if not isinstance(self.supported_gates, Unset):
+            supported_gates = self.supported_gates
+
+
+
+        supported_native_gates: list[str] | Unset = UNSET
+        if not isinstance(self.supported_native_gates, Unset):
+            supported_native_gates = self.supported_native_gates
+
+
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -93,6 +121,12 @@ class Backend:
             field_dict["kw"] = kw
         if location is not UNSET:
             field_dict["location"] = location
+        if supported_error_mitigations is not UNSET:
+            field_dict["supported_error_mitigations"] = supported_error_mitigations
+        if supported_gates is not UNSET:
+            field_dict["supported_gates"] = supported_gates
+        if supported_native_gates is not UNSET:
+            field_dict["supported_native_gates"] = supported_native_gates
 
         return field_dict
 
@@ -119,6 +153,15 @@ class Backend:
 
         location = d.pop("location", UNSET)
 
+        supported_error_mitigations = cast(list[str], d.pop("supported_error_mitigations", UNSET))
+
+
+        supported_gates = cast(list[str], d.pop("supported_gates", UNSET))
+
+
+        supported_native_gates = cast(list[str], d.pop("supported_native_gates", UNSET))
+
+
         backend = cls(
             average_queue_time=average_queue_time,
             backend=backend,
@@ -129,6 +172,9 @@ class Backend:
             degraded=degraded,
             kw=kw,
             location=location,
+            supported_error_mitigations=supported_error_mitigations,
+            supported_gates=supported_gates,
+            supported_native_gates=supported_native_gates,
         )
 
 
