@@ -22,7 +22,6 @@ jobs:
       - run: uv sync --group regen
       - name: Fetch latest spec
         run: |
-          set -euo pipefail
           BASE_URL=$(jq -r '.servers[0].url' openapi.json)
           echo "BASE_URL=${BASE_URL}" >> "$GITHUB_ENV"
           curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
@@ -37,7 +36,6 @@ jobs:
       - name: Regenerate client
         if: steps.drift.outputs.drifted == 'true'
         run: |
-          set -euo pipefail
           cp /tmp/latest-spec.json openapi.json
           if [[ -f openapi-overlay.yaml ]]; then
             uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
@@ -54,7 +52,6 @@ jobs:
       - name: Compose PR body
         if: steps.drift.outputs.drifted == 'true'
         run: |
-          set -euo pipefail
           {
             echo "The spec at \`${BASE_URL}/api-docs\` has diverged from the vendored \`openapi.json\`. This PR fetches the new spec and regenerates the client."
             printf '\n<details><summary>Spec diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
@@ -85,7 +82,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
           # CodeQL runs via GitHub's default setup and has no dispatchable
           # workflow file — confirm it reports on regen PRs.
           gh workflow run ci.yml --ref spec-drift/auto-regen
