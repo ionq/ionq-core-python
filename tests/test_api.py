@@ -10,6 +10,7 @@ from ionq_core.models.clone_job_payload import CloneJobPayload
 from ionq_core.models.get_jobs_response import GetJobsResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.whoami import Whoami
+from tests.conftest import make_job_json
 
 WHOAMI_JSON = {"key_id": "e060759f-4348-4767-a645-8c0301265791", "key_name": "Test Key"}
 
@@ -32,36 +33,7 @@ BACKENDS_JSON = [
     },
 ]
 
-JOBS_JSON = {
-    "jobs": [
-        {
-            "id": "job-1",
-            "status": "completed",
-            "type": "ionq.circuit.v1",
-            "backend": "simulator",
-            "dry_run": False,
-            "submitter_id": "user-1",
-            "project_id": "proj-1",
-            "parent_job_id": "parent-1",
-            "session_id": "sess-1",
-            "metadata": {},
-            "name": "Test",
-            "submitted_at": "2025-05-28T20:47:05.440Z",
-            "started_at": "2025-05-28T20:48:00Z",
-            "completed_at": "2025-05-28T20:49:00Z",
-            "predicted_wait_time_ms": 5000,
-            "predicted_execution_duration_ms": 3000,
-            "execution_duration_ms": 2800,
-            "shots": 1000,
-            "failure": {"code": "InternalError", "message": "test"},
-            "output": {},
-            "settings": {},
-            "stats": {},
-            "results": {},
-        }
-    ],
-    "next": "cursor-token",
-}
+JOBS_JSON = {"jobs": [make_job_json("job-1")], "next": "cursor-token"}
 
 
 class TestGetWhoami:

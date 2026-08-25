@@ -67,7 +67,7 @@ class EventHook(Protocol):
 
         Args:
             request: The original HTTP request.
-            response: The HTTP response. The body has already been read.
+            response: The HTTP response.
         """
         ...
 
@@ -81,20 +81,11 @@ class AsyncEventHook(Protocol):
     """
 
     async def on_request(self, request: httpx.Request) -> None:
-        """Called after the request is built but before it is sent.
-
-        Args:
-            request: The outgoing HTTP request.
-        """
+        """Async counterpart of `EventHook.on_request`."""
         ...
 
     async def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
-        """Called after a response is received.
-
-        Args:
-            request: The original HTTP request.
-            response: The HTTP response.
-        """
+        """Async counterpart of `EventHook.on_response`."""
         ...
 
 

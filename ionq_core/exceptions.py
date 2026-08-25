@@ -184,9 +184,7 @@ def raise_for_status(
 ) -> None:
     """Raise an appropriate `APIError` subclass for an HTTP error status.
 
-    Does nothing for status codes below 400. For 4xx codes, raises the
-    specific subclass (e.g. `AuthenticationError` for 401). For 5xx codes
-    or unrecognized 4xx codes, raises `ServerError` or `APIError` respectively.
+    Does nothing for status codes below 400.
 
     Args:
         status_code: The HTTP status code.

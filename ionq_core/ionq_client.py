@@ -48,10 +48,6 @@ def IonQClient(
 ) -> AuthenticatedClient:
     """Create an authenticated IonQ API client.
 
-    This is the recommended entry point for using the library. It handles
-    authentication, retry configuration, User-Agent construction, and transport
-    setup for both sync and async usage.
-
     Args:
         api_key: IonQ API key. If not provided, reads the ``IONQ_API_KEY``
             environment variable.

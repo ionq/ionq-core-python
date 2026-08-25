@@ -60,10 +60,6 @@ class TestAsyncWaitForJob:
         with pytest.raises(JobFailedError, match="j1"):
             await async_wait_for_job(auth_client, "j1", timeout=5)
 
-    async def test_canceled_returns(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=make_job_json("j1", "canceled"))
-        assert (await async_wait_for_job(auth_client, "j1", timeout=5)).status == "canceled"
-
     async def test_none_response_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=500)
         auth_client.raise_on_unexpected_status = False

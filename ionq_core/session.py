@@ -60,13 +60,6 @@ class SessionManager:
         max_cost: Optional maximum cost in USD for the session.
 
     Examples:
-        Sync context manager:
-
-        ```python
-        with SessionManager(client, "qpu.aria-1", max_jobs=10) as session:
-            print(session.session_id)
-        ```
-
         Async context manager:
 
         ```python
@@ -86,10 +79,15 @@ class SessionManager:
     ) -> None:
         self._client = client
         self._backend = backend
-        self._max_jobs = max_jobs
-        self._max_time = max_time
-        self._max_cost = max_cost
         self._session_id: str | None = None
+        kw: dict = {}
+        if max_jobs is not None:
+            kw["job_count_limit"] = max_jobs
+        if max_time is not None:
+            kw["duration_limit_min"] = max_time
+        if max_cost is not None:
+            kw["cost_limit"] = SessionCostLimit(unit="usd", value=max_cost)
+        self._settings: SessionSettingsRequest | Unset = SessionSettingsRequest(**kw) if kw else UNSET
 
     @classmethod
     def from_id(cls, client: AuthenticatedClient, session_id: str) -> SessionManager:
@@ -116,16 +114,6 @@ class SessionManager:
         """The session ID, or ``None`` if `open` has not been called."""
         return self._session_id
 
-    def _build_settings(self) -> SessionSettingsRequest | Unset:
-        kw: dict = {}
-        if self._max_jobs is not None:
-            kw["job_count_limit"] = self._max_jobs
-        if self._max_time is not None:
-            kw["duration_limit_min"] = self._max_time
-        if self._max_cost is not None:
-            kw["cost_limit"] = SessionCostLimit(unit="usd", value=self._max_cost)
-        return SessionSettingsRequest(**kw) if kw else UNSET
-
     def open(self) -> None:
         """Create a new session on the configured backend.
 
@@ -134,7 +122,7 @@ class SessionManager:
         """
         if self._session_id is not None:
             raise IonQError("Session already open")
-        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
+        body = CreateSessionRequest(backend=self._backend, settings=self._settings)
         session = create_session.sync(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")
@@ -168,7 +156,7 @@ class SessionManager:
         """Async version of `open`."""
         if self._session_id is not None:
             raise IonQError("Session already open")
-        body = CreateSessionRequest(backend=self._backend, settings=self._build_settings())
+        body = CreateSessionRequest(backend=self._backend, settings=self._settings)
         session = await create_session.asyncio(client=self._client, body=body)
         if session is None:
             raise IonQError("Failed to create session")

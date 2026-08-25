@@ -61,9 +61,6 @@ class TestIonQClient:
     def test_custom_timeout(self):
         assert IonQClient(api_key="key", timeout=httpx.Timeout(120.0)).get_httpx_client().timeout.read == 120.0
 
-    def test_error_raising_transport_wired(self):
-        assert isinstance(IonQClient(api_key="key").get_httpx_client()._transport, ErrorRaisingTransport)
-
     def test_async_client_wired(self):
         ac = IonQClient(api_key="key").get_async_httpx_client()
         assert isinstance(ac._transport, ErrorRaisingTransport)

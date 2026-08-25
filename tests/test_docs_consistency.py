@@ -11,7 +11,7 @@ import pytest
 from ionq_core import extensions, polling
 from ionq_core._transport import DEFAULT_MAX_RETRIES, MAX_RETRY_AFTER
 from ionq_core.exceptions import RateLimitError
-from ionq_core.ionq_client import DEFAULT_BASE_URL, DEFAULT_TIMEOUT
+from ionq_core.ionq_client import _AUTH_HEADER, _AUTH_PREFIX, DEFAULT_BASE_URL, DEFAULT_TIMEOUT
 from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
 
@@ -140,21 +140,19 @@ def test_single_spdx_year_across_package():
     assert len(years) == 1, f"expected exactly one SPDX year, found: {years}"
 
 
-def test_spec_path_in_agents_md():
-    """The api-docs path quoted in AGENTS.md tracks DEFAULT_BASE_URL."""
-    spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
-    assert spec_path in AGENTS
-
-
 @pytest.mark.parametrize(
     "needle",
     [
-        f"Python {_python_floor()}",
-        "py" + _python_floor().replace(".", ""),
+        f"Python {_python_floor()}",  # prose floor
+        "py" + _python_floor().replace(".", ""),  # ruff/ty target form of the floor
+        f"line-length = {PYPROJECT['tool']['ruff']['line-length']}",
+        ", ".join(PYPROJECT["tool"]["ruff"]["lint"]["select"]),  # rule list, order-sensitive
+        f"{_AUTH_HEADER}: {_AUTH_PREFIX} ",  # wire auth header phrasing
+        f"{urlparse(DEFAULT_BASE_URL).path}/api-docs",  # api-docs path tracks DEFAULT_BASE_URL
     ],
 )
-def test_python_floor_in_agents_md(needle):
-    """Both the prose 'Python X.Y' and the ruff/ty 'pyXY' form appear in AGENTS.md."""
+def test_agents_md_pins(needle):
+    """Values quoted in AGENTS.md that must track code/config."""
     assert needle in AGENTS, f"{needle!r} missing from AGENTS.md"
 
 
@@ -164,20 +162,3 @@ def test_coverage_threshold_in_agents_md():
     m = re.search(r"--cov-fail-under=\d+", addopts)
     assert m, f"--cov-fail-under not in pytest addopts: {addopts!r}"
     assert m.group(0) in AGENTS
-
-
-def test_ruff_line_length_in_agents_md():
-    assert f"line-length = {PYPROJECT['tool']['ruff']['line-length']}" in AGENTS
-
-
-def test_ruff_select_in_agents_md():
-    """Ruff rule list in AGENTS.md matches pyproject (order-sensitive)."""
-    rules = ", ".join(PYPROJECT["tool"]["ruff"]["lint"]["select"])
-    assert rules in AGENTS, f"ruff select rules {rules!r} not in AGENTS.md"
-
-
-def test_auth_header_in_agents_md():
-    """The wire-header phrasing in AGENTS.md matches _AUTH_HEADER + _AUTH_PREFIX."""
-    from ionq_core.ionq_client import _AUTH_HEADER, _AUTH_PREFIX
-
-    assert f"{_AUTH_HEADER}: {_AUTH_PREFIX} " in AGENTS

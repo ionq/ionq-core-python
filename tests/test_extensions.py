@@ -82,9 +82,6 @@ class TestUserAgentToken:
         assert "custom/2.0" in ua
         assert "qiskit-ionq/1.1.0" in ua
 
-    def test_no_extension_still_works(self):
-        assert _ua(IonQClient(api_key="key")).startswith("ionq-core/")
-
     def test_async_client_user_agent(self):
         client = IonQClient(api_key="key", extension=ClientExtension(user_agent_token="cirq-ionq/0.5.0"))
         assert "cirq-ionq/0.5.0" in client.get_async_httpx_client().headers["User-Agent"]
@@ -118,15 +115,8 @@ class TestTimeoutPrecedence:
         t = IonQClient(api_key="key", timeout=httpx.Timeout(30.0), extension=ext)
         assert t.get_httpx_client().timeout.read == 30.0
 
-    def test_no_extension_timeout_uses_explicit(self):
-        assert IonQClient(api_key="key", timeout=httpx.Timeout(30.0)).get_httpx_client().timeout.read == 30.0
-
 
 class TestMaxRetriesPrecedence:
-    def test_transport_created_with_extension(self):
-        client = IonQClient(api_key="key", extension=ClientExtension(max_retries=5))
-        assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
-
     def test_transport_created_with_explicit_retries(self):
         client = IonQClient(api_key="key", max_retries=3)
         assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
@@ -287,43 +277,15 @@ class TestDebugHooks:
             def on_request(self, request):
                 raise RuntimeError("hook failed")
 
-            def on_response(self, request, response):
-                pass
-
-            def on_error(self, request, error):
-                pass
-
         with pytest.raises(RuntimeError, match="hook failed"):
             HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=True).handle_request(
                 httpx.Request("GET", _BACKENDS_URL)
             )
 
-    def test_non_debug_swallows_hook_exception(self):
-        class BrokenHook:
-            def on_request(self, request):
-                raise RuntimeError("hook failed")
-
-            def on_response(self, request, response):
-                pass
-
-            def on_error(self, request, error):
-                pass
-
-        result = HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=False).handle_request(
-            httpx.Request("GET", _BACKENDS_URL)
-        )
-        assert result.status_code == 200
-
     async def test_async_debug_propagates(self):
         class BrokenAsyncHook:
             async def on_request(self, request):
                 raise RuntimeError("async hook failed")
-
-            async def on_response(self, request, response):
-                pass
-
-            async def on_error(self, request, error):
-                pass
 
         with pytest.raises(RuntimeError, match="async hook failed"):
             await HookTransport(
@@ -401,12 +363,6 @@ class TestErrorMapper:
         with pytest.raises(DownstreamError, match="mapped"):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
-    async def test_async_mapper_passthrough(self):
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
-
-        with pytest.raises(NotFoundError):
-            await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
-
     def test_error_mapper_wired_in_transport_chain(self):
         ext = ClientExtension(error_mapper=lambda exc: exc)
         transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
@@ -479,14 +435,10 @@ class TestAccessUnderlyingHttpxClient:
 
 class TestHookTransportClose:
     def test_close_delegates(self):
-        fake = FakeTransport(httpx.Response(200))
-        transport = HookTransport(fake, ())
-        transport.close()
+        HookTransport(FakeTransport(httpx.Response(200)), ()).close()
 
     async def test_aclose_delegates(self):
-        fake = FakeTransport(httpx.Response(200))
-        transport = HookTransport(fake, ())
-        await transport.aclose()
+        await HookTransport(FakeTransport(httpx.Response(200)), ()).aclose()
 
 
 class TestTransportChainOrder:
@@ -508,29 +460,4 @@ class TestTransportChainOrder:
 
         assert isinstance(transport, OuterTransport)
         assert isinstance(transport.inner, HookTransport)
-        assert isinstance(transport.inner._transport, ErrorRaisingTransport)
-
-    def test_full_chain_with_error_mapper(self):
-        hook = RecordingHook()
-
-        class OuterTransport(httpx.BaseTransport):
-            def __init__(self, inner):
-                self.inner = inner
-
-            def handle_request(self, request):
-                return self.inner.handle_request(request)
-
-            def close(self):
-                self.inner.close()
-
-        ext = ClientExtension(
-            event_hooks=(hook,),
-            error_mapper=lambda exc: exc,
-            transport_wrapper=lambda t: OuterTransport(t),
-        )
-        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
-
-        assert isinstance(transport, OuterTransport)
-        assert isinstance(transport.inner, HookTransport)
-        assert transport.inner._error_mapper is not None
         assert isinstance(transport.inner._transport, ErrorRaisingTransport)

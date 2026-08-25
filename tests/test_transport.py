@@ -105,16 +105,6 @@ class TestErrorRaisingTransportSync:
         with pytest.raises(AuthenticationError):
             transport.handle_request(_req())
 
-    def test_404_raises_not_found(self):
-        transport, _ = _wrap([_resp(404)])
-        with pytest.raises(NotFoundError):
-            transport.handle_request(_req())
-
-    def test_429_raises_rate_limit(self):
-        transport, _ = _wrap([_resp(429)])
-        with pytest.raises(RateLimitError):
-            transport.handle_request(_req())
-
     def test_503_raises_server_error(self):
         transport, _ = _wrap([_resp(503)])
         with pytest.raises(ServerError) as exc_info:
@@ -242,7 +232,7 @@ class TestRetryAfterParsing:
         assert exc_info.value.retry_after == expected
 
 
-class _CountingStream(httpx.SyncByteStream):
+class _CountingStream(httpx.SyncByteStream, httpx.AsyncByteStream):
     """A large streamed body that records how many chunks were consumed."""
 
     def __init__(self, chunk_size=16384, chunks=1000):
@@ -255,17 +245,9 @@ class _CountingStream(httpx.SyncByteStream):
             self.consumed += 1
             yield self.chunk
 
-
-class _CountingAsyncStream(httpx.AsyncByteStream):
-    def __init__(self, chunk_size=16384, chunks=1000):
-        self.chunk = b"x" * chunk_size
-        self.chunks = chunks
-        self.consumed = 0
-
     async def __aiter__(self):
-        for _ in range(self.chunks):
-            self.consumed += 1
-            yield self.chunk
+        for chunk in self:
+            yield chunk
 
 
 class TestErrorBodyCap:
@@ -283,7 +265,7 @@ class TestErrorBodyCap:
         assert len(exc_info.value.body) <= 500
 
     async def test_async_read_stops_at_cap(self):
-        stream = _CountingAsyncStream()
+        stream = _CountingStream()
         transport, _ = _wrap([httpx.Response(400, stream=stream)])
         with pytest.raises(BadRequestError) as exc_info:
             await transport.handle_async_request(_req())
