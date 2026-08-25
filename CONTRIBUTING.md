@@ -1,7 +1,5 @@
 # Contributing to ionq-core
 
-Thanks for your interest in improving `ionq-core`. This guide covers how to file bugs, propose changes, set up a development environment, regenerate the client, and submit pull requests.
-
 ## Code of conduct
 
 This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unacceptable behavior to <conduct@ionq.co>.
@@ -14,17 +12,17 @@ This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Report unac
 
 ## Proposing changes
 
-`ionq-core` is generated from IonQ's OpenAPI specification, and most of the package is overwritten on every regeneration. Before opening a pull request, check where your change belongs:
+Most of `ionq-core` is generated from IonQ's OpenAPI spec and overwritten on every regeneration, so check where your change belongs:
 
-- **API surface changes** (new endpoints, parameter names, response shapes) -> these originate in the upstream OpenAPI spec, not this repo. Open an issue describing the change you want to see.
-- **Bugs in generated code** -> files marked `linguist-generated=true` in [`.gitattributes`](.gitattributes) are overwritten on every regeneration; never edit them directly. File an issue rather than editing the generated output.
+- **API surface changes** (endpoints, parameter names, response shapes) -> these come from the upstream spec, not this repo. Open an issue describing the change you want.
+- **Bugs in generated code** -> never edit files marked `linguist-generated=true` in [`.gitattributes`](.gitattributes); file an issue instead.
 - **Hand-written extensions, tests, docs, type hints, tooling** -> pull requests welcome.
 
-For non-trivial changes, open an issue first to confirm scope before investing significant time.
+For non-trivial changes, open an issue first to confirm scope.
 
 ## Development setup
 
-This project uses [`uv`](https://docs.astral.sh/uv/) for Python and dependency management; the `uv.lock` file is canonical and CI runs with `UV_FROZEN=true`.
+This project uses [`uv`](https://docs.astral.sh/uv/). `uv.lock` is canonical and CI runs with `UV_FROZEN=true`.
 
 ```sh
 git clone https://github.com/ionq/ionq-core-python
@@ -33,7 +31,7 @@ uv sync
 uvx pre-commit install
 ```
 
-The supported Python floor is set by `requires-python` in `pyproject.toml`; the CI matrix in [`ci.yml`](.github/workflows/ci.yml) is the source of truth for tested interpreters.
+The Python floor is `requires-python` in `pyproject.toml`; the tested interpreters are the matrix in [`ci.yml`](.github/workflows/ci.yml).
 
 ## Running checks locally
 
@@ -44,22 +42,22 @@ uv run ruff format --check       # format check (drop --check to apply)
 uv run ty check ionq_core/       # type check
 ```
 
-Coverage is measured against the hand-written modules only; the generated surface is excluded. Tests treat warnings as errors.
+Coverage measures only the hand-written modules. Warnings are errors.
 
 ### Integration tests
 
-Tests under `tests/integration/` hit the live IonQ API. They are excluded by default and require an API key:
+Tests under `tests/integration/` hit the live IonQ API. They are deselected by default and need an API key:
 
 ```sh
 export IONQ_API_KEY=...
 uv run pytest -m integration --no-cov
 ```
 
-CI runs them on a weekly schedule via the [`integration`](.github/workflows/integration.yml) workflow against a gated secret; you do not need to run them locally for most contributions.
+CI runs them weekly via the [`integration`](.github/workflows/integration.yml) workflow against a gated secret, so most contributions do not need them locally.
 
 ## Regenerating the client
 
-To regenerate `ionq_core/api/`, `ionq_core/models/`, and the root-level generated files, run:
+To regenerate `ionq_core/api/`, `ionq_core/models/`, and the root-level generated files:
 
 ```sh
 uv sync --group regen
@@ -74,21 +72,21 @@ uv run openapi-python-client generate \
     --overwrite
 ```
 
-Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` and the Q-CTRL `api_credentials` field from `repr`, keep the `Authorization` header out of repr-visible client state, route path parameters through `ionq_core._url.quote_path_param`, and run `ruff` fix-and-format.
+Keep it in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same command on every PR. The post-hooks in [`openapi-python-client-config.yaml`](openapi-python-client-config.yaml) normalize the output and apply the security rewrites; each one is commented.
 
-Commit the regenerated files alongside the spec or template change that caused them. Spec drift is checked weekly by [`spec-drift.yml`](.github/workflows/spec-drift.yml), which opens an issue if `openapi.json` falls behind upstream.
+Commit regenerated files with the spec or template change that caused them. [`spec-drift.yml`](.github/workflows/spec-drift.yml) checks weekly and opens an issue if `openapi.json` falls behind upstream.
 
 ## Pull request workflow
 
-1. Fork the repository and create a topic branch off `main`.
-2. Make your changes; add or update tests for any hand-written code you touch.
+1. Fork and branch off `main`.
+2. Add or update tests for any hand-written code you touch.
 3. Run the local checks above and `uvx pre-commit run --all-files`.
-4. Push and open a PR against `main`. Fill in the **Summary** and **Test plan** sections of the template.
-5. CI must pass: lint, tests across the supported-Python matrix, the generated-code staleness check, `pip-audit`, and `zizmor` when workflow files change. A reviewer from `@ionq/developer-tools` will review.
+4. Open a PR against `main` and fill in the **Summary** and **Test plan** sections.
+5. CI must pass: lint, tests across the Python matrix, the generated-code staleness check, `pip-audit`, and `zizmor` when workflow files change. `@ionq/developer-tools` reviews.
 
-There is no enforced commit-message format, but PR titles become release notes via `gh release create --generate-notes`. Write each title as the line you would want to see in a changelog: imperative mood, user-facing, no leading ticket number.
+Commit messages have no enforced format, but PR titles become release notes via `gh release create --generate-notes`. Write each title as a changelog line: imperative, user-facing, no leading ticket number.
 
-User-visible changes should also be reflected in [CHANGELOG.md](CHANGELOG.md) under the next release section, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+Add user-visible changes to [CHANGELOG.md](CHANGELOG.md) under the next release section, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
 ## Contributor License Agreement
 

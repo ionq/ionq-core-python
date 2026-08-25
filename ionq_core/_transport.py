@@ -3,12 +3,9 @@
 
 """Transport layer: retry via httpx-retries, error raising for IonQ API responses.
 
-`ErrorRaisingTransport` converts HTTP error responses and connection failures
-into structured `IonQError` exceptions; `build_transport` assembles the default
-stack used by `IonQClient`. Idempotent methods are retried on status codes 429,
-500, 502, 503, and 520-529 with exponential backoff (factor 0.5, jitter 0.5,
-max 60s); POST is never retried because the API has no idempotency keys, so a
-replay after an ambiguous 5xx could duplicate billable work.
+`ErrorRaisingTransport` converts HTTP error responses and connection failures into structured
+`IonQError` exceptions. `build_transport` assembles the default stack used by `IonQClient`:
+idempotent methods retry on `RETRYABLE_STATUS_CODES` with bounded exponential backoff, POST never does.
 """
 
 import json
@@ -21,25 +18,21 @@ from httpx_retries import Retry, RetryTransport
 from .exceptions import APIConnectionError, APITimeoutError, raise_for_status
 
 RETRYABLE_STATUS_CODES: frozenset[int] = frozenset({429, 500, 502, 503, *range(520, 530)})
-"""HTTP status codes that trigger an automatic retry."""
 
 DEFAULT_MAX_RETRIES: int = 2
-"""Default number of retry attempts for transient errors."""
 
 MAX_RETRY_AFTER: float = 300.0
-"""Cap (seconds) on the server-supplied ``Retry-After``: callers are documented
-to sleep on `RateLimitError.retry_after`, so a forged header must stay bounded."""
+"""Cap (seconds) on the server-supplied ``Retry-After``: callers sleep on
+`RateLimitError.retry_after`, so a forged header must stay bounded."""
 
 MAX_ERROR_BODY_BYTES: int = 64 * 1024
-"""Maximum decoded bytes read from an error response body."""
 
 
 def _read_error_body(response: httpx.Response) -> bytes:
     """Read at most `MAX_ERROR_BODY_BYTES` decoded bytes of an error body.
 
-    Streaming with a cap (instead of ``response.read()``) keeps a small
-    compressed body from inflating without limit in client memory: httpx
-    transparently applies whatever ``Content-Encoding`` the server chose.
+    Streaming with a cap (not ``response.read()``) stops a small compressed body from
+    inflating without limit: httpx transparently applies the server's ``Content-Encoding``.
     """
     body = bytearray()
     try:
@@ -69,8 +62,7 @@ def _raise_for_response(response: httpx.Response, content: bytes) -> None:
     try:
         body: dict | str | None = json.loads(content)
     except (ValueError, UnicodeDecodeError):
-        # json.JSONDecodeError subclasses ValueError; UnicodeDecodeError covers
-        # bodies that aren't decodable in the declared (or guessed) encoding.
+        # json.JSONDecodeError subclasses ValueError; UnicodeDecodeError covers undecodable bodies.
         body = content.decode(response.encoding or "utf-8", errors="replace")[:500] or None
     message = (body.get("message") or body.get("error")) if isinstance(body, dict) else None
     try:
@@ -78,8 +70,7 @@ def _raise_for_response(response: httpx.Response, content: bytes) -> None:
     except (KeyError, ValueError):
         retry_after = None
     else:
-        # float() accepts "inf" and overflow forms like "1e309"; a non-finite
-        # value is garbage, not advice, so treat it as absent.
+        # float() accepts "inf" and overflow forms like "1e309"; non-finite is garbage, not advice.
         retry_after = min(max(parsed, 0.0), MAX_RETRY_AFTER) if math.isfinite(parsed) else None
     raise_for_status(response.status_code, body, retry_after, message, request_id=response.headers.get("x-request-id"))
 
@@ -87,20 +78,16 @@ def _raise_for_response(response: httpx.Response, content: bytes) -> None:
 class ErrorRaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
     """Wraps a transport to raise structured IonQ exceptions on error responses.
 
-    For HTTP 4xx/5xx responses, reads the response body (capped at
-    `MAX_ERROR_BODY_BYTES` decoded bytes) and raises the appropriate
-    `APIError` subclass. For connection and timeout errors from httpx,
-    raises `APIConnectionError` or `APITimeoutError` respectively.
-
-    This class implements both sync and async transport interfaces so a
-    single instance works with both ``httpx.Client`` and ``httpx.AsyncClient``.
+    4xx/5xx responses become the matching `APIError` subclass (body capped at
+    `MAX_ERROR_BODY_BYTES`); httpx timeouts and connection failures become
+    `APITimeoutError` and `APIConnectionError`. One instance serves both
+    ``httpx.Client`` and ``httpx.AsyncClient``.
 
     Args:
-        transport: Inner transport for sync requests (typically a
-            ``RetryTransport``).
-        async_transport: Inner transport for async requests; defaults to
-            ``transport``. Separate inners let `build_transport` set TLS
-            options, which live on distinct sync/async httpx transports.
+        transport: Inner transport for sync requests (typically a ``RetryTransport``).
+        async_transport: Inner transport for async requests; defaults to ``transport``.
+            Separate inners let `build_transport` set TLS options, which live on
+            distinct sync/async httpx transports.
     """
 
     def __init__(self, transport, async_transport=None) -> None:
@@ -143,22 +130,10 @@ def build_transport(
 ) -> ErrorRaisingTransport:
     """Build the default transport stack for `IonQClient`.
 
-    Creates ``RetryTransport``s (from httpx-retries) with exponential
-    backoff, wrapped by `ErrorRaisingTransport` for structured error handling.
-
     Args:
-        max_retries: Maximum number of retry attempts. Defaults to
-            `DEFAULT_MAX_RETRIES` (2).
-        retryable_status_codes: HTTP status codes that trigger a retry.
-            Defaults to `RETRYABLE_STATUS_CODES`.
-        verify: TLS verification (``True``/``False``, a CA bundle path, or an
-            ``ssl.SSLContext``) applied to the underlying transports; httpx
-            ignores client-level ``verify`` when a custom transport is
-            supplied, so it must be configured here to take effect.
-
-    Returns:
-        A configured `ErrorRaisingTransport` ready to be passed to an
-        httpx client (sync or async).
+        verify: TLS verification (``True``/``False``, a CA bundle path, or an ``ssl.SSLContext``)
+            applied to the underlying transports. httpx ignores client-level ``verify`` when a
+            custom transport is supplied, so it must be set here to take effect.
     """
     retry = Retry(
         total=max_retries,
@@ -169,9 +144,8 @@ def build_transport(
         # POST is deliberately not retryable: without idempotency keys, a replay
         # after an ambiguous 5xx could duplicate billable jobs.
     )
-    # Build the SSL context once: handing `verify` to each transport would load
-    # the CA bundle from disk twice per client (create_ssl_context passes an
-    # ssl.SSLContext through unchanged, so pinned contexts keep their identity).
+    # Build the SSL context once: passing `verify` to each transport would load the CA bundle
+    # twice. create_ssl_context passes an ssl.SSLContext through unchanged, so pinned contexts survive.
     ctx = httpx.create_ssl_context(verify=verify)
     return ErrorRaisingTransport(
         RetryTransport(transport=httpx.HTTPTransport(verify=ctx), retry=retry),

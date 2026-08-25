@@ -3,10 +3,8 @@
 
 """IonQ-specific client convenience wrapper.
 
-The `IonQClient` factory function is the recommended way to create an API client.
-It reads the API key from the environment, configures retries with exponential
-backoff, sets a descriptive User-Agent header, and wires up both the sync and
-async httpx transports.
+`IonQClient` builds an `AuthenticatedClient` with the API key from the environment, a descriptive User-Agent, and
+retrying sync and async transports.
 """
 
 __all__ = ["IonQClient", "__version__"]
@@ -34,8 +32,7 @@ _AUTH_PREFIX = "apiKey"
 _AUTH_HEADER = "Authorization"
 
 
-# Factory named in PascalCase (deliberately, not a class) so call sites read
-# like construction. Returns the generated `AuthenticatedClient`.
+# PascalCase deliberately (not a class) so call sites read like construction.
 def IonQClient(
     *,
     api_key: str | None = None,
@@ -49,58 +46,33 @@ def IonQClient(
     """Create an authenticated IonQ API client.
 
     Args:
-        api_key: IonQ API key. If not provided, reads the ``IONQ_API_KEY``
-            environment variable.
+        api_key: IonQ API key. Defaults to the ``IONQ_API_KEY`` environment variable.
         base_url: API base URL. Defaults to the IonQ production API.
-        max_retries: Maximum retry attempts for transient errors (429, 5xx).
-            Defaults to 2. Set to 0 to disable retries.
-        timeout: Request timeout as an ``httpx.Timeout`` instance. Defaults to
-            60 seconds with a 10-second connect timeout.
-        additional_user_agent: Extra token appended to the User-Agent header,
-            useful for identifying calling applications.
-        extension: A `ClientExtension` bundle provided by a downstream SDK.
-            Allows injecting hooks, custom headers, transport wrappers, and
-            error mappers.
-        **kwargs: Passed through to `AuthenticatedClient`. ``verify_ssl``
-            (``True``/``False``, a CA bundle path, or an ``ssl.SSLContext``)
-            is also applied to the underlying httpx transports on both the
-            sync and async paths. ``headers`` are merged beneath the
-            extension defaults and the generated ``User-Agent``; ``cookies``
-            reach both the sync and async clients. ``httpx_args`` is
-            reserved: the transport slot is owned by `IonQClient`.
+        max_retries: Maximum retries for transient errors (429, 5xx). Defaults to 2. Set to 0 to disable retries.
+        timeout: Request timeout. Defaults to 60 seconds with a 10-second connect timeout.
+        additional_user_agent: Extra token appended to the User-Agent header.
+        extension: Hooks, custom headers, transport wrappers, and error mappers from a downstream SDK.
+        **kwargs: Passed through to `AuthenticatedClient`. ``verify_ssl`` (``True``/``False``, a CA bundle path, or
+            an ``ssl.SSLContext``) also reaches the underlying httpx transports on both the sync and async paths.
+            ``headers`` are merged beneath the extension defaults and the generated ``User-Agent``; ``cookies`` reach
+            both the sync and async clients. ``httpx_args`` is reserved: `IonQClient` owns the transport slot.
 
     Returns:
-        An `AuthenticatedClient` configured with retry transport and
-        authentication headers, ready for both sync and async API calls.
+        An `AuthenticatedClient` ready for both sync and async API calls.
 
     Raises:
         ValueError: If no API key is provided and ``IONQ_API_KEY`` is not set.
 
     Examples:
-        Basic usage with environment variable:
-
         ```python
         from ionq_core import IonQClient
         from ionq_core.api.backends import get_backends
 
-        client = IonQClient()
+        client = IonQClient()  # reads IONQ_API_KEY
         backends = get_backends.sync(client=client)
         ```
 
-        Explicit configuration:
-
-        ```python
-        import httpx
-        from ionq_core import IonQClient
-
-        client = IonQClient(
-            api_key="your-api-key",
-            max_retries=5,
-            timeout=httpx.Timeout(30.0, connect=10.0),
-        )
-        ```
-
-        Async usage with context manager:
+        The client also works as an async context manager:
 
         ```python
         async with IonQClient() as client:
@@ -137,13 +109,11 @@ def IonQClient(
     effective_timeout = timeout or ext.timeout or DEFAULT_TIMEOUT
     effective_retries = next(v for v in (max_retries, ext.max_retries, DEFAULT_MAX_RETRIES) if v is not None)
 
-    # Caller headers are merged here (extension defaults and the User-Agent
-    # win) rather than forwarded, which would collide with this dict in
-    # AuthenticatedClient(**kwargs).
+    # Caller headers are merged here (extension defaults and the User-Agent win) rather than forwarded, which would
+    # collide with this dict in AuthenticatedClient(**kwargs).
     headers = {**(kwargs.pop("headers", None) or {}), **ext.default_headers, "User-Agent": user_agent}
 
-    # httpx ignores client-level `verify` when a custom transport is supplied,
-    # so the caller's verify_ssl must be plumbed into the transports here.
+    # httpx ignores client-level `verify` when a custom transport is supplied, so verify_ssl goes into the transports.
     sync_transport = async_transport = build_transport(
         effective_retries,
         ext.retryable_status_codes or RETRYABLE_STATUS_CODES,
@@ -179,11 +149,9 @@ def IonQClient(
         httpx_args={"transport": sync_transport},
         **kwargs,
     )
-    # `set_async_httpx_client` bypasses `AuthenticatedClient`'s lazy auth-header
-    # injection, so `Authorization` is merged in manually. TLS is carried by
-    # `async_transport`. `_follow_redirects` is private on the generated client
-    # but is the only way to mirror the caller's choice here; do not add a
-    # public accessor in the hand-written layer.
+    # `set_async_httpx_client` bypasses `AuthenticatedClient`'s lazy auth-header injection, so `Authorization` is
+    # merged in manually; TLS rides on `async_transport`. `_follow_redirects` is private but is the only way to mirror
+    # the caller's choice here; do not add a public accessor in the hand-written layer.
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,

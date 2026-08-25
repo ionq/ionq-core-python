@@ -3,19 +3,21 @@ package_name_override: ionq_core
 literal_enums: true
 
 post_hooks:
+  # Keep the IonQ API key out of AuthenticatedClient's attrs-generated repr.
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
-  # Merge the Authorization header into a method-local dict instead of writing it
-  # into self._headers, which is repr-visible and caller-owned (the key would leak
-  # via repr(client) and into any other client sharing the headers dict).
+  # Put the auth header in a method-local dict, not self._headers: that dict is repr-visible and
+  # caller-owned, so the key would leak via repr(client) and into any client sharing it.
   - "perl -0777 -pi -e 's/self\\._headers\\[self\\.auth_header_name\\] = (.*?)\\n(.*?)headers=self\\._headers,/_auth_headers = {**self._headers, self.auth_header_name: $1}\\n$2headers=_auth_headers,/gs' client.py"
   # api_credentials is a Q-CTRL API key; keep it out of the attrs-generated repr
   # so logging/echoing a job payload cannot disclose it (SECURITY.md in-scope).
   - "perl -pi -e 's/^    api_credentials: str\\K$/ = _attrs_field(repr=False)/' models/qctrl_qaoa_job_creation_payload_external_settings.py"
-  # Route path parameters through ionq_core._url.quote_path_param, which rejects
-  # "", ".", and "..": quote() leaves dots unencoded, so ".." would delete a fixed
-  # URL segment under RFC 3986 normalization (/sessions/../jobs -> /jobs).
+  # Route path params through quote_path_param, which rejects "", ".", and "..": quote() leaves
+  # dots unencoded, so ".." would delete a fixed URL segment under RFC 3986 normalization
+  # (/sessions/../jobs -> /jobs).
   - "perl -pi -e 's/^from urllib.parse import quote$/from ..._url import quote_path_param/; s/quote\\(str\\((\\w+)\\), safe=\"\"\\)/quote_path_param($1)/g' $(find api -name '*.py')"
-  # Also squeeze trailing newlines to one so generated output satisfies
+  # Prepend the SPDX header; squeeze trailing newlines to one so generated output satisfies
   # pre-commit's end-of-file-fixer without fighting the staleness gate.
   - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/;s/\\n+\\z/\\n/' $(find . -name '*.py')"
+  # Format the rendered package __init__.py, the one generated file that ruff's
+  # excludes don't skip; CI's staleness gate depends on this output byte-for-byte.
   - "ruff format ."

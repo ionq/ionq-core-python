@@ -3,9 +3,7 @@
 
 """Pagination helpers for cursor-based IonQ API endpoints.
 
-The IonQ API returns paginated results with a ``next`` cursor. The helpers
-in this module wrap the raw endpoint calls and automatically follow cursors,
-yielding individual job objects.
+Each helper wraps a raw endpoint call, follows the ``next`` cursor, and yields individual jobs.
 
 Example:
     ```python
@@ -38,8 +36,7 @@ logger = logging.getLogger("ionq_core")
 
 
 def _check_cursor(cursor: str, seen: set[str], label: str) -> None:
-    # The server-controlled cursor is the loop's only exit condition; an empty
-    # or repeating cursor must abort rather than iterate forever.
+    # The server-controlled cursor is the loop's only exit condition: empty or repeated means abort, not loop forever.
     if not cursor or cursor in seen:
         raise IonQError(f"Pagination cursor for {label} did not advance (next={cursor!r}); aborting")
     seen.add(cursor)
@@ -85,24 +82,21 @@ def iter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs, automatically following pagination cursors.
+    """Iterate over all jobs, following pagination cursors.
 
     Args:
         client: An authenticated API client.
-        status: Filter by job status (e.g. ``"completed"``, ``"failed"``).
+        status: Filter by job status.
         target: Filter by backend target name.
         session_id: Filter by session ID.
         submitter_id: Filter by submitter user ID.
-        limit: Maximum number of jobs per page (server default applies
-            if unset).
+        limit: Jobs per page, not a total cap; the server default applies if unset.
 
     Yields:
-        Individual job objects across all pages.
+        Job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response, or if the
-            pagination cursor is empty or fails to advance (which would
-            otherwise loop forever).
+        IonQError: If the API returns ``None``, or if the cursor is empty or repeats, which would loop forever.
     """
     return _paginate(
         get_jobs.sync,
@@ -125,24 +119,7 @@ def aiter_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async version of `iter_jobs`.
-
-    Args:
-        client: An authenticated API client.
-        status: Filter by job status.
-        target: Filter by backend target name.
-        session_id: Filter by session ID.
-        submitter_id: Filter by submitter user ID.
-        limit: Maximum number of jobs per page.
-
-    Yields:
-        Individual job objects across all pages.
-
-    Raises:
-        IonQError: If the API returns a ``None`` response, or if the
-            pagination cursor is empty or fails to advance (which would
-            otherwise loop forever).
-    """
+    """Async version of `iter_jobs`."""
     return _apaginate(
         get_jobs.asyncio,
         "jobs",
@@ -164,25 +141,21 @@ def iter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> Iterator[Job]:
-    """Iterate over all jobs in a specific session.
-
-    Like `iter_jobs`, but scoped to a single session.
+    """Like `iter_jobs`, but scoped to one session.
 
     Args:
         client: An authenticated API client.
-        session_id: The session ID to list jobs for.
+        session_id: The session to list jobs for.
         status: Filter by job status.
         target: Filter by backend target name.
         submitter_id: Filter by submitter user ID.
-        limit: Maximum number of jobs per page.
+        limit: Jobs per page, not a total cap; the server default applies if unset.
 
     Yields:
-        Individual job objects across all pages.
+        Job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response, or if the
-            pagination cursor is empty or fails to advance (which would
-            otherwise loop forever).
+        IonQError: If the API returns ``None``, or if the cursor is empty or repeats, which would loop forever.
     """
     return _paginate(
         get_session_jobs.sync,
@@ -205,24 +178,7 @@ def aiter_session_jobs(
     submitter_id: str | Unset = UNSET,
     limit: int | Unset = UNSET,
 ) -> AsyncIterator[Job]:
-    """Async version of `iter_session_jobs`.
-
-    Args:
-        client: An authenticated API client.
-        session_id: The session ID to list jobs for.
-        status: Filter by job status.
-        target: Filter by backend target name.
-        submitter_id: Filter by submitter user ID.
-        limit: Maximum number of jobs per page.
-
-    Yields:
-        Individual job objects across all pages.
-
-    Raises:
-        IonQError: If the API returns a ``None`` response, or if the
-            pagination cursor is empty or fails to advance (which would
-            otherwise loop forever).
-    """
+    """Async version of `iter_session_jobs`."""
     return _apaginate(
         get_session_jobs.asyncio,
         "session jobs",

@@ -1,5 +1,3 @@
-"""Tests for the extension API (ClientExtension, EventHook, transport wrappers)."""
-
 import httpx
 import pytest
 
@@ -209,8 +207,6 @@ class TestOnErrorHook:
         assert hook.responses == []
 
     def test_on_error_not_required(self):
-        """Hooks without on_error are silently skipped."""
-
         class MinimalHook:
             def on_request(self, request):
                 pass
@@ -235,8 +231,6 @@ class TestOnErrorHook:
         assert hook.errors[0] == (request, error)
 
     async def test_async_on_error_not_required(self):
-        """Async hooks without on_error are silently skipped."""
-
         class MinimalAsyncHook:
             async def on_request(self, request):
                 pass

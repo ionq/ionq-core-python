@@ -74,8 +74,7 @@ class TestIonQClient:
     def test_token_not_in_repr(self):
         c = IonQClient(api_key="super-secret-key")
         assert "super-secret-key" not in repr(c)
-        # the credential must also stay out of repr-visible state after the
-        # httpx clients (and their auth headers) have been built
+        # the key must stay out of repr after the httpx clients (and their auth headers) are built
         c.get_httpx_client()
         c.get_async_httpx_client()
         assert "super-secret-key" not in repr(c)
@@ -93,9 +92,7 @@ class TestIonQClient:
         assert c.get_async_httpx_client().cookies["a"] == "b"
 
     def test_caller_headers_dict_not_mutated(self):
-        # A headers dict passed by the caller is caller-owned; injecting the
-        # Authorization value into it would leak the key to any other client
-        # sharing that dict (and into repr).
+        # Injecting Authorization into the caller's dict would leak the key to other holders of it, and into repr.
         shared = {"X-Custom": "1"}
         c = AuthenticatedClient(base_url="https://api.invalid", token="secret-token", prefix="apiKey", headers=shared)
         c.get_httpx_client()
@@ -131,9 +128,7 @@ class TestIonQClient:
 class TestIonQClientTls:
     """verify_ssl must reach the connection-terminating transports (CWE-295).
 
-    httpx ignores client-level ``verify`` whenever a custom transport is
-    supplied, so these tests assert on the SSL context of the innermost
-    httpx transports actually used by IonQClient, on both paths.
+    httpx ignores client-level ``verify`` when a custom transport is supplied, so assert on the innermost transports.
     """
 
     @staticmethod

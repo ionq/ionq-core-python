@@ -3,7 +3,7 @@
 
 """Structured exceptions for the IonQ API client.
 
-All exceptions inherit from `IonQError`. The hierarchy is:
+All exceptions inherit from `IonQError`:
 
 ```
 IonQError
@@ -23,10 +23,11 @@ IonQError
 Example:
     ```python
     from ionq_core import IonQClient, RateLimitError, AuthenticationError
+    from ionq_core.api.default import create_job
 
     client = IonQClient()
     try:
-        job = create_job.sync(client=client, body=payload)
+        job = create_job.sync(client=client, body=...)
     except AuthenticationError:
         print("Invalid API key")
     except RateLimitError as e:
@@ -51,27 +52,23 @@ __all__ = [
 class IonQError(Exception):
     """Base exception for all IonQ errors.
 
-    Catch this to handle any error raised by the library, including connection
-    failures, API errors, polling timeouts, and job failures. The one
-    exception outside this tree is ``errors.UnexpectedStatus``, raised only
-    for undocumented status codes when ``raise_on_unexpected_status`` is set.
+    The only error outside this tree is ``errors.UnexpectedStatus``, raised for
+    undocumented status codes when ``raise_on_unexpected_status`` is set.
     """
 
 
 class APIConnectionError(IonQError):
     """Raised when a connection to the IonQ API cannot be established.
 
-    This covers DNS resolution failures, refused connections, and other
-    network-level errors. The original ``httpx`` exception is chained
-    via ``__cause__``.
+    Covers DNS failures, refused connections, and other network-level errors.
+    The original ``httpx`` exception is chained via ``__cause__``.
     """
 
 
 class APITimeoutError(APIConnectionError):
     """Raised when a request to the IonQ API times out.
 
-    Inherits from `APIConnectionError` so that catching connection errors
-    also catches timeouts.
+    Also caught by ``except APIConnectionError``.
     """
 
 
@@ -80,14 +77,13 @@ class APIError(IonQError):
 
     Attributes:
         status_code: The HTTP status code.
-        body: The parsed response body (``dict`` if JSON, ``str`` otherwise,
-            or ``None`` if the body could not be read).
-        message: A human-readable error message extracted from the response,
-            or a default ``"HTTP <status>"`` string.
+        body: Parsed response body (``dict`` if JSON, ``str`` otherwise,
+            ``None`` if it could not be read).
+        message: Error message from the response, or ``"HTTP <status>"``.
         retry_after: Seconds to wait before retrying, from the ``Retry-After``
-            header, or ``None`` if the server did not send a usable one.
-        request_id: The ``x-request-id`` header from the response, useful for
-            contacting IonQ support about a specific request.
+            header, or ``None`` if the server sent no usable one.
+        request_id: The ``x-request-id`` response header; quote it when
+            contacting IonQ support.
     """
 
     def __init__(
@@ -108,30 +104,20 @@ class APIError(IonQError):
 
 
 class AuthenticationError(APIError):
-    """Raised on ``401 Unauthorized``.
-
-    Typically means the API key is missing, invalid, or revoked.
-    """
+    """Raised on ``401 Unauthorized``: the API key is missing, invalid, or revoked."""
 
 
 class PermissionDeniedError(APIError):
-    """Raised on ``403 Forbidden``.
-
-    The API key is valid but lacks permission for the requested operation.
-    """
+    """Raised on ``403 Forbidden``: the API key is valid but lacks permission for the operation."""
 
 
 class NotFoundError(APIError):
-    """Raised on ``404 Not Found``.
-
-    The requested resource (job, session, backend, etc.) does not exist.
-    """
+    """Raised on ``404 Not Found``: the job, session, backend, etc. does not exist."""
 
 
 class BadRequestError(APIError):
-    """Raised on ``400 Bad Request``.
+    """Raised on ``400 Bad Request``: the body or query params failed server-side validation.
 
-    The request body or query parameters failed server-side validation.
     Inspect ``body`` for details.
     """
 
@@ -139,26 +125,17 @@ class BadRequestError(APIError):
 class RateLimitError(APIError):
     """Raised on ``429 Too Many Requests``.
 
-    The client has exceeded the API rate limit. The ``retry_after`` attribute
-    indicates how many seconds to wait before retrying, if the server provided
-    a ``Retry-After`` header.
-
     Attributes:
-        retry_after: Seconds to wait before retrying, or ``None`` if the
-            server did not include a usable ``Retry-After`` header. The
-            default transport validates the header and caps the value at
-            300 seconds (non-finite values are treated as absent), so a
-            hostile or buggy server cannot steer callers that sleep on this
-            attribute into an unbounded wait.
+        retry_after: Seconds to wait before retrying, or ``None`` if the server
+            sent no usable ``Retry-After`` header. The default transport caps
+            it at 300 seconds (non-finite values count as absent), so a hostile
+            or buggy server cannot push callers that sleep on it into an
+            unbounded wait.
     """
 
 
 class ServerError(APIError):
-    """Raised on ``5xx`` server errors.
-
-    These are typically transient and are automatically retried by the default
-    transport (see `IonQClient`).
-    """
+    """Raised on ``5xx``. Usually transient; the default transport retries these (see `IonQClient`)."""
 
 
 _STATUS_TO_EXCEPTION: dict[int, type[APIError]] = {
@@ -178,25 +155,9 @@ def raise_for_status(
     *,
     request_id: str | None = None,
 ) -> None:
-    """Raise an appropriate `APIError` subclass for an HTTP error status.
+    """Raise the `APIError` subclass matching an HTTP error status; a no-op below 400.
 
-    Does nothing for status codes below 400.
-
-    Args:
-        status_code: The HTTP status code.
-        body: The parsed response body.
-        retry_after: Value from the ``Retry-After`` header, if present.
-        message: A human-readable error message.
-        request_id: The ``x-request-id`` response header.
-
-    Raises:
-        BadRequestError: On 400.
-        AuthenticationError: On 401.
-        PermissionDeniedError: On 403.
-        NotFoundError: On 404.
-        RateLimitError: On 429.
-        ServerError: On 5xx.
-        APIError: On other 4xx codes.
+    5xx raises `ServerError`; any other unmapped 4xx raises `APIError`.
     """
     if status_code < 400:
         return

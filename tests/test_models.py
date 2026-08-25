@@ -138,8 +138,7 @@ class TestSessionModel:
 
 
 class TestQctrlCredentialMasking:
-    """api_credentials is a Q-CTRL API key; repr()/str() of the payload models
-    must never disclose it (CWE-532), while the wire format stays intact."""
+    """api_credentials is a Q-CTRL API key. repr()/str() must never leak it (CWE-532); to_dict() must keep it."""
 
     SECRET = "qctrl-secret-key-123"
 
