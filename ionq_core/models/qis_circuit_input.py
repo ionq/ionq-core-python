@@ -32,7 +32,8 @@ class QisCircuitInput:
     """ 
         Attributes:
             qubits (int):
-            circuit (list[GateQisGate]):
+            circuit (list[GateQisGate]): The single circuit to run. To submit multiple circuits, set `type` to
+                `ionq.multi-circuit.v1` and use `input.circuits`.
             gateset (QisCircuitInputGateset):
      """
 

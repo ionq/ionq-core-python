@@ -16,33 +16,41 @@ from ..models.api_cost_model import ApiCostModel
 from ..models.api_cost_model import check_api_cost_model
 from ..models.job_status import check_job_status
 from ..models.job_status import JobStatus
+from ..models.single_circuit_job_type import check_single_circuit_job_type
+from ..models.single_circuit_job_type import SingleCircuitJobType
 from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.circuit_job_result import CircuitJobResult
+  from ..models.circuit_job_output import CircuitJobOutput
+  from ..models.circuit_job_results import CircuitJobResults
   from ..models.circuit_job_settings import CircuitJobSettings
   from ..models.circuit_job_stats import CircuitJobStats
   from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
-  from ..models.json_object import JsonObject
   from ..models.noise import Noise
 
 
 
 
 
-T = TypeVar("T", bound="GetCircuitJobResponse")
+T = TypeVar("T", bound="SingleCircuitJob")
 
 
 
 @_attrs_define
-class GetCircuitJobResponse:
-    """ 
+class SingleCircuitJob:
+    """ Response shape for single-circuit jobs.
+
+    Covers every circuit-shaped job type: user-submitted (`ionq.circuit.v1`,
+    `ionq.qasm3.v1`, `ionq.qir.v1`) and the per-circuit child jobs spawned by a QAOA run
+    (`qctrl.qaoa-circuit.v1`). They all share the same settings, stats, output,
+    and results shape — only the `type` discriminator differs.
+
         Attributes:
             id (str):
             status (JobStatus):
-            type_ (str):
+            type_ (SingleCircuitJobType):
             backend (str):
             dry_run (bool):
             submitter_id (str): The id of the user who submitted the job.
@@ -59,10 +67,13 @@ class GetCircuitJobResponse:
             execution_duration_ms (int | None): How long the job actually took to run on the QPU. Null if the job hasn't run
                 yet.
             failure (Failure | None):
-            output (JsonObject):
+            output (CircuitJobOutput):
             settings (CircuitJobSettings):
             stats (CircuitJobStats):
-            results (CircuitJobResult | None):
+            results (CircuitJobResults | None): Result artifacts produced by the circuit, keyed by format identifier. Each
+                entry is an `ArtifactDescriptor` — pass its `id` to the [artifact endpoint](/api-reference/v0.4/jobs/get-job-
+                artifact) to download the payload. See [Results formats](/api-reference/v0.4/schemas/results-formats) for the
+                catalog of valid identifiers and their payload schemas.
             child_job_ids (list[str] | None):
             shots (int | Unset): `shots` are not included with ideal simulator backend.
             noise (Noise | Unset):
@@ -72,7 +83,7 @@ class GetCircuitJobResponse:
 
     id: str
     status: JobStatus
-    type_: str
+    type_: SingleCircuitJobType
     backend: str
     dry_run: bool
     submitter_id: str
@@ -88,10 +99,10 @@ class GetCircuitJobResponse:
     predicted_execution_duration_ms: int | None
     execution_duration_ms: int | None
     failure: Failure | None
-    output: JsonObject
+    output: CircuitJobOutput
     settings: CircuitJobSettings
     stats: CircuitJobStats
-    results: CircuitJobResult | None
+    results: CircuitJobResults | None
     child_job_ids: list[str] | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
@@ -102,18 +113,18 @@ class GetCircuitJobResponse:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.circuit_job_result import CircuitJobResult
+        from ..models.circuit_job_output import CircuitJobOutput
+        from ..models.circuit_job_results import CircuitJobResults
         from ..models.circuit_job_settings import CircuitJobSettings
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         id = self.id
 
         status: str = self.status
 
-        type_ = self.type_
+        type_: str = self.type_
 
         backend = self.backend
 
@@ -169,7 +180,7 @@ class GetCircuitJobResponse:
         stats = self.stats.to_dict()
 
         results: dict[str, Any] | None
-        if isinstance(self.results, CircuitJobResult):
+        if isinstance(self.results, CircuitJobResults):
             results = self.results.to_dict()
         else:
             results = self.results
@@ -234,12 +245,12 @@ class GetCircuitJobResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.circuit_job_result import CircuitJobResult
+        from ..models.circuit_job_output import CircuitJobOutput
+        from ..models.circuit_job_results import CircuitJobResults
         from ..models.circuit_job_settings import CircuitJobSettings
         from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
         from ..models.noise import Noise
         d = dict(src_dict)
         id = d.pop("id")
@@ -249,7 +260,10 @@ class GetCircuitJobResponse:
 
 
 
-        type_ = d.pop("type")
+        type_ = check_single_circuit_job_type(d.pop("type"))
+
+
+
 
         backend = d.pop("backend")
 
@@ -367,7 +381,7 @@ class GetCircuitJobResponse:
         failure = _parse_failure(d.pop("failure"))
 
 
-        output = JsonObject.from_dict(d.pop("output"))
+        output = CircuitJobOutput.from_dict(d.pop("output"))
 
 
 
@@ -382,20 +396,20 @@ class GetCircuitJobResponse:
 
 
 
-        def _parse_results(data: object) -> CircuitJobResult | None:
+        def _parse_results(data: object) -> CircuitJobResults | None:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                results_type_1 = CircuitJobResult.from_dict(data)
+                results_type_1 = CircuitJobResults.from_dict(data)
 
 
 
                 return results_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(CircuitJobResult | None, data)
+            return cast(CircuitJobResults | None, data)
 
         results = _parse_results(d.pop("results"))
 
@@ -438,7 +452,7 @@ class GetCircuitJobResponse:
 
 
 
-        get_circuit_job_response = cls(
+        single_circuit_job = cls(
             id=id,
             status=status,
             type_=type_,
@@ -467,4 +481,4 @@ class GetCircuitJobResponse:
             cost_model=cost_model,
         )
 
-        return get_circuit_job_response
+        return single_circuit_job

@@ -12,6 +12,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.bad_request_error import BadRequestError
+from ...models.error import Error
 from ...models.group_by import check_group_by
 from ...models.group_by import GroupBy
 from ...models.modality import check_modality
@@ -65,7 +67,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Usages | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BadRequestError | Error | Usages:
     if response.status_code == 200:
         response_200 = Usages.from_dict(response.json())
 
@@ -73,13 +75,29 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
-    if client.raise_on_unexpected_status:
-        raise errors.UnexpectedStatus(response.status_code, response.content)
-    else:
-        return None
+    if response.status_code == 400:
+        response_400 = BadRequestError.from_dict(response.json())
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Usages]:
+
+        return response_400
+
+    if response.status_code == 401:
+        response_401 = Error.from_dict(response.json())
+
+
+
+        return response_401
+
+    response_default = Error.from_dict(response.json())
+
+
+
+    return response_default
+
+
+
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BadRequestError | Error | Usages]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -97,7 +115,7 @@ def sync_detailed(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Response[Usages]:
+) -> Response[BadRequestError | Error | Usages]:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
@@ -114,7 +132,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Usages]
+        Response[BadRequestError | Error | Usages]
      """
 
 
@@ -142,7 +160,7 @@ def sync(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Usages | None:
+) -> BadRequestError | Error | Usages | None:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
@@ -159,7 +177,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Usages
+        BadRequestError | Error | Usages
      """
 
 
@@ -182,7 +200,7 @@ async def asyncio_detailed(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Response[Usages]:
+) -> Response[BadRequestError | Error | Usages]:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
@@ -199,7 +217,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Usages]
+        Response[BadRequestError | Error | Usages]
      """
 
 
@@ -227,7 +245,7 @@ async def asyncio(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Usages | None:
+) -> BadRequestError | Error | Usages | None:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
@@ -244,7 +262,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Usages
+        BadRequestError | Error | Usages
      """
 
 

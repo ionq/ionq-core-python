@@ -18,33 +18,31 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="CircuitJobResultShots")
+T = TypeVar("T", bound="IonqResultProbabilitiesJsonV1")
 
 
 
 @_attrs_define
-class CircuitJobResultShots:
-    """ 
-        Attributes:
-            url (str):
+class IonqResultProbabilitiesJsonV1:
+    """ `ionq.result.probabilities.json.v1` — Legacy probability distribution.
+    Flat object keyed by decimal qubit state integer strings, values are
+    probabilities summing to 1.
+
+        Example:
+            {'0': 0.5, '1': 0.25, '3': 0.25}
+
      """
 
-    url: str
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, float] = _attrs_field(init=False, factory=dict)
 
 
 
 
 
     def to_dict(self) -> dict[str, Any]:
-        url = self.url
-
-
+        
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({
-            "url": url,
-        })
 
         return field_dict
 
@@ -53,24 +51,21 @@ class CircuitJobResultShots:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        url = d.pop("url")
-
-        circuit_job_result_shots = cls(
-            url=url,
+        ionq_result_probabilities_json_v1 = cls(
         )
 
 
-        circuit_job_result_shots.additional_properties = d
-        return circuit_job_result_shots
+        ionq_result_probabilities_json_v1.additional_properties = d
+        return ionq_result_probabilities_json_v1
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> float:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: float) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:

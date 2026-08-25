@@ -31,7 +31,7 @@ class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
 
 
 def make_job_json(job_id, status="completed", **overrides):
-    """Minimal valid job dict usable as both BaseJob and GetJobResponse."""
+    """Minimal valid job dict usable as both BaseJob and SingleCircuitJob."""
     return {
         "id": job_id,
         "status": status,

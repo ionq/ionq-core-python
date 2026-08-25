@@ -27,7 +27,8 @@ class GetJobCostResponseEstimatedCost:
     """ 
         Attributes:
             value (float):  Example: 24.83.
-            unit (str):  Example: usd.
+            unit (str): The currency code the cost is denominated in. `credit` is used instead for organizations billed in
+                Credits. Example: usd.
      """
 
     value: float

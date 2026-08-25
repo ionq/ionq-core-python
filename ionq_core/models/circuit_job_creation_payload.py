@@ -22,6 +22,7 @@ if TYPE_CHECKING:
   from ..models.job_metadata import JobMetadata
   from ..models.native_circuit_input import NativeCircuitInput
   from ..models.noise import Noise
+  from ..models.qasm3_circuit import QASM3Circuit
   from ..models.qis_circuit_input import QisCircuitInput
 
 
@@ -36,10 +37,13 @@ T = TypeVar("T", bound="CircuitJobCreationPayload")
 class CircuitJobCreationPayload:
     """ 
         Attributes:
-            backend (str): Available options: `simulator`, `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-1`, `qpu.forte-
-                enterprise-1`
+            backend (str): Available options: `simulator`, `qpu.forte-1`, `qpu.forte-enterprise-1`
             type_ (CircuitJobCreationPayloadType):
-            input_ (NativeCircuitInput | QisCircuitInput):
+            input_ (NativeCircuitInput | QASM3Circuit | QisCircuitInput): Every input shape a single-circuit job can carry.
+                QIS and native circuits
+                are JSON gate lists; `ionq.qasm3.v1` carries the program source instead.
+                The `type` discriminator selects which one applies — see the per-option
+                docs below.
             name (str | Unset):
             metadata (JobMetadata | Unset):
             shots (int | Unset): `shots` is ignored by ideal simulator backend. Default: 100.
@@ -51,7 +55,7 @@ class CircuitJobCreationPayload:
 
     backend: str
     type_: CircuitJobCreationPayloadType
-    input_: NativeCircuitInput | QisCircuitInput
+    input_: NativeCircuitInput | QASM3Circuit | QisCircuitInput
     name: str | Unset = UNSET
     metadata: JobMetadata | Unset = UNSET
     shots: int | Unset = 100
@@ -69,6 +73,7 @@ class CircuitJobCreationPayload:
         from ..models.job_metadata import JobMetadata
         from ..models.native_circuit_input import NativeCircuitInput
         from ..models.noise import Noise
+        from ..models.qasm3_circuit import QASM3Circuit
         from ..models.qis_circuit_input import QisCircuitInput
         backend = self.backend
 
@@ -76,6 +81,8 @@ class CircuitJobCreationPayload:
 
         input_: dict[str, Any]
         if isinstance(self.input_, QisCircuitInput):
+            input_ = self.input_.to_dict()
+        elif isinstance(self.input_, NativeCircuitInput):
             input_ = self.input_.to_dict()
         else:
             input_ = self.input_.to_dict()
@@ -134,6 +141,7 @@ class CircuitJobCreationPayload:
         from ..models.job_metadata import JobMetadata
         from ..models.native_circuit_input import NativeCircuitInput
         from ..models.noise import Noise
+        from ..models.qasm3_circuit import QASM3Circuit
         from ..models.qis_circuit_input import QisCircuitInput
         d = dict(src_dict)
         backend = d.pop("backend")
@@ -143,24 +151,34 @@ class CircuitJobCreationPayload:
 
 
 
-        def _parse_input_(data: object) -> NativeCircuitInput | QisCircuitInput:
+        def _parse_input_(data: object) -> NativeCircuitInput | QASM3Circuit | QisCircuitInput:
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                componentsschemas_json_circuit_input_type_0 = QisCircuitInput.from_dict(data)
+                componentsschemas_circuit_job_input_type_0 = QisCircuitInput.from_dict(data)
 
 
 
-                return componentsschemas_json_circuit_input_type_0
+                return componentsschemas_circuit_job_input_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_circuit_job_input_type_1 = NativeCircuitInput.from_dict(data)
+
+
+
+                return componentsschemas_circuit_job_input_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
             if not isinstance(data, dict):
                 raise TypeError()
-            componentsschemas_json_circuit_input_type_1 = NativeCircuitInput.from_dict(data)
+            componentsschemas_circuit_job_input_type_2 = QASM3Circuit.from_dict(data)
 
 
 
-            return componentsschemas_json_circuit_input_type_1
+            return componentsschemas_circuit_job_input_type_2
 
         input_ = _parse_input_(d.pop("input"))
 

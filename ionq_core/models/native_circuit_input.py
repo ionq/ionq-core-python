@@ -32,7 +32,8 @@ T = TypeVar("T", bound="NativeCircuitInput")
 class NativeCircuitInput:
     """ 
         Attributes:
-            circuit (list[GateNativeGate]):
+            circuit (list[GateNativeGate]): The single circuit to run. To submit multiple circuits, set `type` to
+                `ionq.multi-circuit.v1` and use `input.circuits`.
             gateset (NativeCircuitInputGateset):
             qubits (int | Unset):
      """

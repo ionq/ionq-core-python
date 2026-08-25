@@ -12,24 +12,34 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 
 
 
 
 
 
-T = TypeVar("T", bound="CircuitJobResultHistogram")
+T = TypeVar("T", bound="FormatSchemaDocument")
 
 
 
 @_attrs_define
-class CircuitJobResultHistogram:
-    """ 
+class FormatSchemaDocument:
+    """ JSON Schema document returned by the schemas endpoint. The exact contents
+    vary by format identifier (see the Results / Circuit formats catalog
+    pages for each format's structure).
+
         Attributes:
-            url (str):
+            schema (str): JSON Schema draft URI.
+            id (str): Format identifier (matches the path parameter).
+            type_ (str): Top-level JSON type of the format payload.
+            description (str | Unset): Human-readable description of the format.
      """
 
-    url: str
+    schema: str
+    id: str
+    type_: str
+    description: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -37,14 +47,24 @@ class CircuitJobResultHistogram:
 
 
     def to_dict(self) -> dict[str, Any]:
-        url = self.url
+        schema = self.schema
+
+        id = self.id
+
+        type_ = self.type_
+
+        description = self.description
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "url": url,
+            "$schema": schema,
+            "$id": id,
+            "type": type_,
         })
+        if description is not UNSET:
+            field_dict["description"] = description
 
         return field_dict
 
@@ -53,15 +73,24 @@ class CircuitJobResultHistogram:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        url = d.pop("url")
+        schema = d.pop("$schema")
 
-        circuit_job_result_histogram = cls(
-            url=url,
+        id = d.pop("$id")
+
+        type_ = d.pop("type")
+
+        description = d.pop("description", UNSET)
+
+        format_schema_document = cls(
+            schema=schema,
+            id=id,
+            type_=type_,
+            description=description,
         )
 
 
-        circuit_job_result_histogram.additional_properties = d
-        return circuit_job_result_histogram
+        format_schema_document.additional_properties = d
+        return format_schema_document
 
     @property
     def additional_keys(self) -> list[str]:

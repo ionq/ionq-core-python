@@ -12,14 +12,15 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.get_variant_results_response import GetVariantResultsResponse
+from ...models.format_schema_document import FormatSchemaDocument
+from ...models.formats import check_formats
+from ...models.formats import Formats
 from typing import cast
 
 
 
 def _get_kwargs(
-    uuid: str,
-    variant_id: str,
+    format_: Formats,
 
 ) -> dict[str, Any]:
     
@@ -30,7 +31,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/jobs/{uuid}/variants/{variant_id}/results/probabilities".format(uuid=quote_path_param(uuid),variant_id=quote_path_param(variant_id),),
+        "url": "/schemas/formats/{format_}".format(format_=quote_path_param(format_),),
     }
 
 
@@ -38,17 +39,13 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | GetVariantResultsResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> FormatSchemaDocument | None:
     if response.status_code == 200:
-        response_200 = GetVariantResultsResponse.from_dict(response.json())
+        response_200 = FormatSchemaDocument.from_dict(response.json())
 
 
 
         return response_200
-
-    if response.status_code == 404:
-        response_404 = cast(Any, None)
-        return response_404
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -56,7 +53,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | GetVariantResultsResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[FormatSchemaDocument]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -66,29 +63,29 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    uuid: str,
-    variant_id: str,
+    format_: Formats,
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | GetVariantResultsResponse]:
-    """ 
+) -> Response[FormatSchemaDocument]:
+    """  Returns the JSON Schema document for the requested artifact format.
+    See the Results formats and Circuit formats catalog pages for the full list of identifiers and their
+    payload schemas.
+
     Args:
-        uuid (str):
-        variant_id (str):
+        format_ (Formats):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetVariantResultsResponse]
+        Response[FormatSchemaDocument]
      """
 
 
     kwargs = _get_kwargs(
-        uuid=uuid,
-variant_id=variant_id,
+        format_=format_,
 
     )
 
@@ -99,57 +96,57 @@ variant_id=variant_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    uuid: str,
-    variant_id: str,
+    format_: Formats,
     *,
     client: AuthenticatedClient,
 
-) -> Any | GetVariantResultsResponse | None:
-    """ 
+) -> FormatSchemaDocument | None:
+    """  Returns the JSON Schema document for the requested artifact format.
+    See the Results formats and Circuit formats catalog pages for the full list of identifiers and their
+    payload schemas.
+
     Args:
-        uuid (str):
-        variant_id (str):
+        format_ (Formats):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetVariantResultsResponse
+        FormatSchemaDocument
      """
 
 
     return sync_detailed(
-        uuid=uuid,
-variant_id=variant_id,
+        format_=format_,
 client=client,
 
     ).parsed
 
 async def asyncio_detailed(
-    uuid: str,
-    variant_id: str,
+    format_: Formats,
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | GetVariantResultsResponse]:
-    """ 
+) -> Response[FormatSchemaDocument]:
+    """  Returns the JSON Schema document for the requested artifact format.
+    See the Results formats and Circuit formats catalog pages for the full list of identifiers and their
+    payload schemas.
+
     Args:
-        uuid (str):
-        variant_id (str):
+        format_ (Formats):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetVariantResultsResponse]
+        Response[FormatSchemaDocument]
      """
 
 
     kwargs = _get_kwargs(
-        uuid=uuid,
-variant_id=variant_id,
+        format_=format_,
 
     )
 
@@ -160,29 +157,29 @@ variant_id=variant_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    uuid: str,
-    variant_id: str,
+    format_: Formats,
     *,
     client: AuthenticatedClient,
 
-) -> Any | GetVariantResultsResponse | None:
-    """ 
+) -> FormatSchemaDocument | None:
+    """  Returns the JSON Schema document for the requested artifact format.
+    See the Results formats and Circuit formats catalog pages for the full list of identifiers and their
+    payload schemas.
+
     Args:
-        uuid (str):
-        variant_id (str):
+        format_ (Formats):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetVariantResultsResponse
+        FormatSchemaDocument
      """
 
 
     return (await asyncio_detailed(
-        uuid=uuid,
-variant_id=variant_id,
+        format_=format_,
 client=client,
 
     )).parsed

@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `move_job` endpoint (`POST /jobs/{UUID}/move`) and `get_format_schema` endpoint (`GET /schemas/formats/{format}`), from the latest upstream spec.
+- Typed per-kind job models returned by `get_job`: `SingleCircuitJob`, `MultiCircuitJob`, `QaoaJob`, and `QuantumFunctionJob`, plus typed result-format models (`IonqResultHistogramJsonV1`/`V2`, `IonqResultProbabilitiesJsonV1`/`V2`, `IonqResultShotsJsonV1`/`V2`, and friends). `QuantumFunctionJobResults` now types `value` and `variance`, which were previously untyped upstream.
 - `Matrix2x2` and `Matrix4x4` are now exported from `ionq_core.gates`; they were already documented as the return types of the gate unitaries.
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
 - `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `ApiCostModel` (`"QCT"` or `"2QGE_operations"`).
@@ -29,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- `get_job` (and therefore `wait_for_job` / `async_wait_for_job`) returns `SingleCircuitJob | MultiCircuitJob | QaoaJob | QuantumFunctionJob` instead of the removed `GetJobResponse`.
+- The `backend` parameter enum narrowed upstream to `qpu.forte-1` and `qpu.forte-enterprise-1`; `qpu.aria-1`, `qpu.aria-2`, `qpu.forte-enterprise-2`, and `qpu.forte-enterprise-3` are no longer accepted by the typed endpoints that validate it.
 - Every `APIError` now carries `retry_after` (parsed and clamped from the `Retry-After` header). Previously only `RateLimitError` exposed it and the value was discarded for other statuses such as 503, where RFC 9110 also allows the header.
 - POST requests are no longer retried automatically by the default transport. The API has no idempotency-key mechanism, so replaying `create_job` / `create_session` / `end_session` after an ambiguous gateway 5xx could duplicate billable work; idempotent methods retry as before. Callers that want POST retries must supply their own transport and handle deduplication.
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
@@ -42,6 +46,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 
+- Variant-results endpoints (`GET /jobs/{UUID}/variants/{variantId}/results/{shots,histogram,probabilities}`) and their models, removed upstream; per-variant data now arrives through the typed job results and artifacts.
+- `GetJobResponse`, `GetCircuitJobResponse`, `GetVariantResultsResponse`, `CircuitJobResult*`, `JsonCircuitInput`, and `NoiseModel` models, restructured upstream into the per-kind job and result-format models above.
 - `get_compiled_file` endpoint (`GET /jobs/{UUID}/circuits/{lang}`) and its `GetCompiledFileLang` enum, removed upstream in favor of `get_job_artifact`. Compiled circuits are now fetched as artifacts by id rather than by `lang` (`"native"` / `"qasm3"`).
 - `CostModel` model, replaced by `ApiCostModel`.
 - The `python-dateutil` runtime dependency, no longer needed now that generated code uses `datetime.fromisoformat`.

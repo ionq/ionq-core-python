@@ -32,7 +32,12 @@ from .types import Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
-    from .models.get_job_response import GetJobResponse
+    from .models.multi_circuit_job import MultiCircuitJob
+    from .models.qaoa_job import QaoaJob
+    from .models.quantum_function_job import QuantumFunctionJob
+    from .models.single_circuit_job import SingleCircuitJob
+
+    Job = MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob
 
 logger = logging.getLogger("ionq_core")
 
@@ -73,7 +78,7 @@ class JobFailedError(IonQError):
         super().__init__(f"Job {job_id} failed: {failure}")
 
 
-def _check_terminal(job: GetJobResponse, raise_on_failure: bool) -> bool:
+def _check_terminal(job: Job, raise_on_failure: bool) -> bool:
     if raise_on_failure and job.status == "failed":
         raise JobFailedError(job.id, None if isinstance(job.failure, Unset) else job.failure)
     return job.status in _TERMINAL
@@ -86,7 +91,7 @@ def wait_for_job(
     poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
-) -> GetJobResponse:
+) -> Job:
     """Poll a job until it reaches a terminal state.
 
     Terminal states are ``"completed"``, ``"failed"``, and ``"canceled"``.
@@ -129,7 +134,7 @@ async def async_wait_for_job(
     poll_interval: float = _DEFAULT_INTERVAL,
     timeout: float = _DEFAULT_TIMEOUT,
     raise_on_failure: bool = True,
-) -> GetJobResponse:
+) -> Job:
     """Async version of `wait_for_job`.
 
     Args:
