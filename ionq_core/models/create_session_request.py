@@ -84,4 +84,3 @@ class CreateSessionRequest:
         )
 
         return create_session_request
-

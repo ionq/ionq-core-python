@@ -92,4 +92,3 @@ class GetJobsResponse:
         )
 
         return get_jobs_response
-

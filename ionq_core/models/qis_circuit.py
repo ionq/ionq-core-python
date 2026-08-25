@@ -143,4 +143,3 @@ class QISCircuit:
         )
 
         return qis_circuit
-

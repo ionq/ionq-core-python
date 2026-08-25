@@ -73,4 +73,3 @@ class JobDeletedResponse:
         )
 
         return job_deleted_response
-

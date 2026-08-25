@@ -115,4 +115,3 @@ class GetJobEstimateQueryParams:
         )
 
         return get_job_estimate_query_params
-

@@ -98,4 +98,3 @@ class QisCircuitInput:
         )
 
         return qis_circuit_input
-

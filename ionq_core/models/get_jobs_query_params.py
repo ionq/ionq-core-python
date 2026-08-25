@@ -145,4 +145,3 @@ class GetJobsQueryParams:
         )
 
         return get_jobs_query_params
-

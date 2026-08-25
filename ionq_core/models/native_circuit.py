@@ -143,4 +143,3 @@ class NativeCircuit:
         )
 
         return native_circuit
-

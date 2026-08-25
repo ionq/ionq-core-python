@@ -98,4 +98,3 @@ class GetJobCostResponse:
         )
 
         return get_job_cost_response
-

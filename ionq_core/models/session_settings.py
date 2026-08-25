@@ -114,4 +114,3 @@ class SessionSettings:
         )
 
         return session_settings
-

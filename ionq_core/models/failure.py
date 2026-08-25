@@ -73,4 +73,3 @@ class Failure:
         )
 
         return failure
-

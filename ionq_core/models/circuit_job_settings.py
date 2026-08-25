@@ -98,4 +98,3 @@ class CircuitJobSettings:
         )
 
         return circuit_job_settings
-

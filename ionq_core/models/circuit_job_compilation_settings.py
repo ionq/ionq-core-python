@@ -88,4 +88,3 @@ class CircuitJobCompilationSettings:
         )
 
         return circuit_job_compilation_settings
-

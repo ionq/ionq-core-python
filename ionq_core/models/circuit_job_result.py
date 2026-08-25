@@ -120,4 +120,3 @@ class CircuitJobResult:
         )
 
         return circuit_job_result
-

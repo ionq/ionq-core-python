@@ -200,4 +200,3 @@ class JSONMultiCircuitJob:
         )
 
         return json_multi_circuit_job
-

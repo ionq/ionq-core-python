@@ -121,4 +121,3 @@ class CircuitJobStats:
         )
 
         return circuit_job_stats
-

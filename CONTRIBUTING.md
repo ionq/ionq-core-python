@@ -30,7 +30,7 @@ This project uses [`uv`](https://docs.astral.sh/uv/) for Python and dependency m
 git clone https://github.com/ionq/ionq-core-python
 cd ionq-core-python
 uv sync
-pre-commit install
+uvx pre-commit install
 ```
 
 The supported Python floor is set by `requires-python` in `pyproject.toml`; the CI matrix in [`ci.yml`](.github/workflows/ci.yml) is the source of truth for tested interpreters.
@@ -38,7 +38,7 @@ The supported Python floor is set by `requires-python` in `pyproject.toml`; the 
 ## Running checks locally
 
 ```sh
-uv run pytest                    # unit tests; 100% branch coverage gate on hand-written code
+uv run pytest                    # unit tests
 uv run ruff check                # lint
 uv run ruff format --check       # format check (drop --check to apply)
 uv run ty check ionq_core/       # type check
@@ -64,13 +64,7 @@ To regenerate `ionq_core/api/`, `ionq_core/models/`, and the root-level generate
 ```sh
 uv sync --group regen
 curl -sf https://api.ionq.co/v0.4/api-docs -o openapi.json
-
-if [ -f openapi-overlay.yaml ]; then
-    uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
-else
-    cp openapi.json /tmp/patched-spec.json
-fi
-
+uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
 uv run openapi-python-client generate \
     --path /tmp/patched-spec.json \
     --meta none \
@@ -88,7 +82,7 @@ Commit the regenerated files alongside the spec or template change that caused t
 
 1. Fork the repository and create a topic branch off `main`.
 2. Make your changes; add or update tests for any hand-written code you touch.
-3. Run the local checks above and `pre-commit run --all-files`.
+3. Run the local checks above and `uvx pre-commit run --all-files`.
 4. Push and open a PR against `main`. Fill in the **Summary** and **Test plan** sections of the template.
 5. CI must pass: lint, tests across the supported-Python matrix, the generated-code staleness check, `pip-audit`, and `zizmor` when workflow files change. A reviewer from `@ionq/developer-tools` will review.
 

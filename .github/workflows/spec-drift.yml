@@ -14,8 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      # Pinned (keep in sync with CONTRIBUTING.md); never derived from openapi.json,
-      # so a tampered vendored spec cannot point the check at a mirror that hides it.
+      # Pinned (tests/test_docs_consistency.py keeps it aligned with DEFAULT_BASE_URL);
+      # never derived from openapi.json, so a tampered vendored spec cannot point the
+      # check at a mirror that hides it.
       SPEC_URL: https://api.ionq.co/v0.4/api-docs
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -468,4 +468,3 @@ class GetJobResponse:
         )
 
         return get_job_response
-

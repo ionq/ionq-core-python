@@ -4,7 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
     labels: ["dependencies"]
     groups:
       actions:
@@ -16,7 +15,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
     labels: ["dependencies"]
     groups:
       python:
@@ -31,7 +29,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
     labels: ["dependencies"]
     groups:
       pre-commit:

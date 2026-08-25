@@ -81,4 +81,3 @@ class AddJobResultsPayload:
         )
 
         return add_job_results_payload
-

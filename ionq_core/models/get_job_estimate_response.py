@@ -131,4 +131,3 @@ class GetJobEstimateResponse:
         )
 
         return get_job_estimate_response
-
