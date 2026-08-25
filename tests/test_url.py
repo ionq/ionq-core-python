@@ -21,7 +21,7 @@ class TestQuotePathParam:
         [
             ("abc-123", "abc-123"),
             ("a.b", "a.b"),  # interior dots are legitimate
-            ("...", "..."),  # only exact dot segments escape; three dots do not
+            ("...", "..."),  # three dots are not a dot segment
             ("a/../b", "a%2F..%2Fb"),  # slashes cannot smuggle dot segments
             ("..%2F", "..%252F"),  # pre-encoded input is re-encoded, not decoded
             ("café", "caf%C3%A9"),
@@ -35,10 +35,8 @@ class TestQuotePathParam:
 
 
 class TestEndpointPathParamRejection:
-    """A traversal-shaped identifier must fail before any request is built:
-    quote() leaves "." unencoded, so ".." would otherwise collapse a fixed
-    path segment under RFC 3986 normalization (CWE-23),
-    e.g. /sessions/../jobs -> /jobs."""
+    """Traversal-shaped ids must fail before a request is built: quote() leaves "." unencoded, so ".." would
+    collapse a fixed path segment under RFC 3986 normalization (CWE-23), e.g. /sessions/../jobs -> /jobs."""
 
     @pytest.mark.parametrize("bad", ["..", ".", ""])
     def test_session_jobs_rejects(self, auth_client, bad):

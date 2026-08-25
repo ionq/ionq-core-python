@@ -10,7 +10,7 @@ BASE_URL = "https://test.invalid" + urlparse(DEFAULT_BASE_URL).path
 
 
 class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    """Scripted transport double: returns (or raises) the queued items in order."""
+    """Returns (or raises) the queued items in order."""
 
     def __init__(self, *responses):
         self._responses = list(responses)

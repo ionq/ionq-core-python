@@ -6,14 +6,14 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to file a bug report. Please search [existing issues](https://github.com/ionq/ionq-core-python/issues) first.
+        Search [existing issues](https://github.com/ionq/ionq-core-python/issues) before filing.
 
   - type: dropdown
     id: area
     attributes:
       label: Affected area
       description: |
-        See [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes) for the boundary between generated and hand-written code.
+        See [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes) for the generated vs hand-written boundary.
       options:
         - Generated client (regenerated from OpenAPI spec)
         - Hand-written extensions (retry, pagination, polling, sessions, native gates, etc.)
@@ -28,7 +28,7 @@ body:
     id: what-happened
     attributes:
       label: What happened?
-      description: A clear description of the bug, including any error message or traceback.
+      description: Include any error message or traceback.
     validations:
       required: true
 
@@ -36,13 +36,13 @@ body:
     id: expected
     attributes:
       label: What did you expect to happen?
-      description: Optional - skip if a traceback or error message above already shows the problem.
+      description: Optional - skip if the error above already shows the problem.
 
   - type: textarea
     id: reproduction
     attributes:
       label: Reproduction
-      description: Minimal code or steps to reproduce the bug.
+      description: Minimal code or steps to reproduce.
       render: Python
     validations:
       required: true

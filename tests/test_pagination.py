@@ -71,8 +71,7 @@ class TestIterSessionJobs:
 
 
 class TestCursorGuard:
-    """The next cursor is server-controlled and the loop's only exit; a cursor
-    that repeats or is empty must abort instead of iterating forever (CWE-835)."""
+    """The server-controlled next cursor is the loop's only exit: a repeated or empty one must abort (CWE-835)."""
 
     def test_sync_repeated_cursor_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))

@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please search [existing issues](https://github.com/ionq/ionq-core-python/issues) before opening a new request. For API surface changes (new endpoints, parameter names, response shapes), see [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes).
+        Search [existing issues](https://github.com/ionq/ionq-core-python/issues) first. For API surface changes (endpoints, parameters, response shapes), see [proposing changes](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes).
 
   - type: textarea
     id: description

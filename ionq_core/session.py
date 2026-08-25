@@ -3,9 +3,7 @@
 
 """Session lifecycle manager for IonQ QPU sessions.
 
-Sessions allow you to reserve priority access to a QPU backend. The
-`SessionManager` class wraps the session create / end / status APIs
-and supports both sync and async context managers for automatic cleanup.
+A session reserves priority access to a QPU backend. `SessionManager` wraps the create / end / status APIs.
 
 Example:
     ```python
@@ -13,7 +11,7 @@ Example:
 
     client = IonQClient()
 
-    # Context manager creates and automatically ends the session
+    # Exiting the context manager ends the session
     with SessionManager(client, "qpu.aria-1", max_jobs=10) as session:
         print(session.session_id)
         print(session.status())  # "started"
@@ -48,19 +46,18 @@ logger = logging.getLogger("ionq_core")
 class SessionManager:
     """Convenience wrapper around session create / end / status APIs.
 
-    Can be used as both a sync and async context manager. On exit the
-    session is automatically ended. Exceptions during close are logged
-    and suppressed so that cleanup does not mask the original error.
+    Works as a sync or async context manager; exit ends the session.
+    Errors while ending are logged and suppressed so cleanup cannot mask the original exception.
 
     Args:
         client: An authenticated API client.
         backend: The backend to create a session on (e.g. ``"qpu.aria-1"``).
-        max_jobs: Optional maximum number of jobs for this session.
-        max_time: Optional maximum session duration in minutes.
-        max_cost: Optional maximum cost in USD for the session.
+        max_jobs: Maximum jobs in the session.
+        max_time: Maximum session duration, in minutes.
+        max_cost: Maximum session cost, in USD.
 
     Examples:
-        Async context manager:
+        Async usage:
 
         ```python
         async with SessionManager(client, "qpu.aria-1") as session:
@@ -91,19 +88,14 @@ class SessionManager:
 
     @classmethod
     def from_id(cls, client: AuthenticatedClient, session_id: str) -> SessionManager:
-        """Reconnect to an existing session without creating a new one.
-
-        This is useful for resuming work with a session that was created
-        in a previous process or by another client.
+        """Reconnect to an existing session, e.g. one created by another process or client.
 
         Args:
             client: An authenticated API client.
             session_id: The ID of the existing session.
 
         Returns:
-            A `SessionManager` bound to the given session ID. The ``backend``
-            field will be empty since it is not needed for status checks
-            or ending the session.
+            A `SessionManager` bound to that session. Its ``backend`` is empty; status and end do not need it.
         """
         mgr = cls(client, backend="")
         mgr._session_id = session_id
@@ -130,7 +122,7 @@ class SessionManager:
         logger.info("Opened session %s", self._session_id)
 
     def close(self) -> None:
-        """End the session. Suppresses exceptions so cleanup is safe."""
+        """End the session. Failures are logged, not raised."""
         if self._session_id is None:
             return
         try:
@@ -164,7 +156,7 @@ class SessionManager:
         logger.info("Opened session %s", self._session_id)
 
     async def async_close(self) -> None:
-        """End the session (async). Suppresses exceptions so cleanup is safe."""
+        """Async version of `close`."""
         if self._session_id is None:
             return
         try:

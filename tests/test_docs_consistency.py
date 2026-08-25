@@ -71,7 +71,6 @@ def test_polling_docstring_pins(fn, needle):
 
 
 def test_rate_limit_cap_docstring_pin():
-    """The Retry-After cap documented on RateLimitError tracks MAX_RETRY_AFTER."""
     assert f"{int(MAX_RETRY_AFTER)} seconds" in (RateLimitError.__doc__ or "")
 
 
@@ -83,7 +82,6 @@ def test_rate_limit_cap_docstring_pin():
     ],
 )
 def test_ionq_client_docstring_pins(needle):
-    """The defaults quoted in IonQClient's user-facing docstring track the constants."""
     assert needle in (IonQClient.__doc__ or ""), f"{needle!r} missing from IonQClient docstring"
 
 
@@ -114,7 +112,6 @@ def test_python_version_file_matches_floor():
 
 
 def test_setup_uv_action_default_matches_floor():
-    """The composite action's hardcoded python-version default tracks .python-version."""
     action = (ROOT / ".github" / "actions" / "setup-uv" / "action.yml").read_text()
     assert f'default: "{_python_floor()}"' in action
 
@@ -145,7 +142,7 @@ def test_ruff_excludes_match_coverage_omits():
 
 
 def test_gitattributes_covers_ruff_paths_plus_init():
-    # __init__.py: hand-edited template, generated output; in ruff/coverage scope, marked linguist-generated.
+    # __init__.py comes from a hand-edited template: linguist-generated, but not excluded from ruff/coverage.
     gitattr = {
         _normalize(line.split()[0])
         for line in GITATTRIBUTES.splitlines()
@@ -156,8 +153,7 @@ def test_gitattributes_covers_ruff_paths_plus_init():
 
 
 def test_spec_path_agrees_across_code_spec_docs_and_workflow():
-    # An API-version bump must land everywhere at once: DEFAULT_BASE_URL,
-    # openapi.json, CONTRIBUTING.md, and the pinned spec-drift fetch URL.
+    # An API-version bump must land in all four: DEFAULT_BASE_URL, openapi.json, CONTRIBUTING.md, spec-drift.yml.
     api_path = urlparse(DEFAULT_BASE_URL).path
     spec = json.loads((ROOT / "openapi.json").read_text())
     assert urlparse(spec["servers"][0]["url"]).path == api_path
@@ -167,7 +163,7 @@ def test_spec_path_agrees_across_code_spec_docs_and_workflow():
 
 
 def test_single_spdx_year_across_package():
-    """Generated files get the year via post-hook; hand-written files must be bumped to match at year boundaries."""
+    """The post-hook stamps generated files; hand-written ones need a manual bump each new year."""
     years = set()
     for py in (ROOT / "ionq_core").rglob("*.py"):
         m = re.match(r"# SPDX-FileCopyrightText: (\d{4}) IonQ, Inc\.", py.read_text())
@@ -188,12 +184,10 @@ def test_single_spdx_year_across_package():
     ],
 )
 def test_agents_md_pins(needle):
-    """Values quoted in AGENTS.md that must track code/config."""
     assert needle in AGENTS, f"{needle!r} missing from AGENTS.md"
 
 
 def test_coverage_threshold_in_agents_md():
-    """--cov-fail-under=N in AGENTS.md matches pytest addopts."""
     addopts = PYPROJECT["tool"]["pytest"]["ini_options"]["addopts"]
     m = re.search(r"--cov-fail-under=\d+", addopts)
     assert m, f"--cov-fail-under not in pytest addopts: {addopts!r}"

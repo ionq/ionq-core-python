@@ -24,7 +24,7 @@ def client(api_key: str) -> AuthenticatedClient:
 
 @pytest.fixture(scope="session")
 def _tracked_jobs() -> list[str]:
-    """Session-scoped list of job IDs to delete in `cleanup_jobs`."""
+    """Job IDs to delete in `cleanup_jobs`."""
     return []
 
 
@@ -41,7 +41,7 @@ def track_job(_tracked_jobs: list[str]):
 
 @pytest.fixture(scope="session", autouse=True)
 def cleanup_jobs(client: AuthenticatedClient, _tracked_jobs: list[str]):
-    """Delete all jobs created during the test session."""
+    """Delete tracked jobs after the session."""
     yield
     for job_id in _tracked_jobs:
         with contextlib.suppress(Exception):

@@ -11,7 +11,7 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture(scope="module")
 def backends():
-    # Backends listing is unauthenticated - no API key needed.
+    # Backends listing needs no API key.
     return get_backends.sync(client=Client(base_url=DEFAULT_BASE_URL))
 
 

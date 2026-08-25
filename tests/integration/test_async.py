@@ -1,4 +1,4 @@
-"""Integration tests verifying async variants work against the real API."""
+"""Integration tests for the async API variants."""
 
 import pytest
 
@@ -11,7 +11,7 @@ pytestmark = pytest.mark.integration
 
 @pytest.fixture
 def async_client(api_key):
-    """Separate client instance - `async with` would close the session-scoped client for later tests."""
+    """Separate client - `async with` would close the session-scoped one that later tests need."""
     return IonQClient(api_key=api_key)
 
 

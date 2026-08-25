@@ -37,8 +37,7 @@ def _wrap(responses):
 
 class TestBuildTransport:
     def test_does_not_retry_post_requests(self):
-        # POSTs submit billable jobs/sessions and the API has no idempotency
-        # keys, so a retry after an ambiguous 5xx could duplicate work.
+        # POSTs are billable and the API has no idempotency keys, so retrying an ambiguous 5xx could duplicate work.
         transport = build_transport()
         retry = transport._transport.retry
         assert "POST" not in retry.allowed_methods
@@ -189,17 +188,16 @@ class TestRetryAfterParsing:
     @pytest.mark.parametrize(
         ("header", "expected"),
         [
-            ("9000000000", MAX_RETRY_AFTER),  # absurdly large finite values are capped
+            ("9000000000", MAX_RETRY_AFTER),  # large finite values are capped
             (str(MAX_RETRY_AFTER + 1), MAX_RETRY_AFTER),
             ("-3", 0.0),  # negative values are floored
-            ("inf", None),  # non-finite values are garbage, not advice
+            ("inf", None),
             ("1e309", None),  # overflows float() to +inf
             ("nan", None),
         ],
     )
     def test_retry_after_bounded(self, header, expected):
-        # Callers are documented to sleep on retry_after, so a forged header
-        # must never produce an unbounded or non-finite wait (CWE-1284).
+        # Callers sleep on retry_after, so a forged header must never cause an unbounded or non-finite wait (CWE-1284).
         transport, _ = _wrap([_resp(429, headers={"retry-after": header})])
         with pytest.raises(RateLimitError) as exc_info:
             transport.handle_request(_req())
@@ -207,7 +205,7 @@ class TestRetryAfterParsing:
 
 
 class _CountingStream(httpx.SyncByteStream, httpx.AsyncByteStream):
-    """A large streamed body that records how many chunks were consumed."""
+    """Large streamed body that counts the chunks consumed."""
 
     def __init__(self, chunk_size=16384, chunks=1000):
         self.chunk = b"x" * chunk_size
@@ -253,8 +251,7 @@ class TestErrorBodyCap:
         assert exc_info.value.body == "e" * 500
 
     def test_json_body_exceeding_cap_degrades_to_text(self):
-        # Truncation invalidates the JSON, so the capped prefix is surfaced as
-        # text instead of being parsed into a second full-size structure.
+        # Truncation invalidates the JSON, so the capped prefix is surfaced as text.
         big = b'{"message": "' + b"a" * (MAX_ERROR_BODY_BYTES + 1000) + b'"}'
         transport, _ = _wrap([httpx.Response(400, content=big)])
         with pytest.raises(BadRequestError) as exc_info:
