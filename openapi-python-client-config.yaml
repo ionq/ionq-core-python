@@ -3,6 +3,7 @@ package_name_override: ionq_core
 literal_enums: true
 
 post_hooks:
+  # Keep the IonQ API key out of AuthenticatedClient's attrs-generated repr.
   - "perl -pi -e 's/token: str\\K$/ = field(repr=False)/' client.py"
   # Merge the Authorization header into a method-local dict instead of writing it
   # into self._headers, which is repr-visible and caller-owned (the key would leak
@@ -18,4 +19,6 @@ post_hooks:
   # Also squeeze trailing newlines to one so generated output satisfies
   # pre-commit's end-of-file-fixer without fighting the staleness gate.
   - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/;s/\\n+\\z/\\n/' $(find . -name '*.py')"
+  # Format the rendered package __init__.py, the one generated file that ruff's
+  # excludes don't skip; CI's staleness gate depends on this output byte-for-byte.
   - "ruff format ."

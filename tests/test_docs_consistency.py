@@ -1,17 +1,19 @@
 """Pin docs and config against runtime constants and each other to catch drift in CI."""
 
+import ast
 import json
 import re
+import textwrap
 import tomllib
 from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
 
-from ionq_core import extensions, polling
+from ionq_core import exceptions, extensions, gates, pagination, polling, session
 from ionq_core._transport import DEFAULT_MAX_RETRIES, MAX_RETRY_AFTER
 from ionq_core.exceptions import RateLimitError
-from ionq_core.ionq_client import _AUTH_HEADER, _AUTH_PREFIX, DEFAULT_BASE_URL, DEFAULT_TIMEOUT
+from ionq_core.ionq_client import _AUTH_HEADER, _AUTH_PREFIX, DEFAULT_BASE_URL, DEFAULT_TIMEOUT, IonQClient
 from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
 
@@ -73,12 +75,48 @@ def test_rate_limit_cap_docstring_pin():
     assert f"{int(MAX_RETRY_AFTER)} seconds" in (RateLimitError.__doc__ or "")
 
 
+@pytest.mark.parametrize(
+    "needle",
+    [
+        f"Defaults to {DEFAULT_MAX_RETRIES}. Set to 0",
+        f"{int(DEFAULT_TIMEOUT.read)} seconds with a {int(DEFAULT_TIMEOUT.connect)}-second connect timeout",
+    ],
+)
+def test_ionq_client_docstring_pins(needle):
+    """The defaults quoted in IonQClient's user-facing docstring track the constants."""
+    assert needle in (IonQClient.__doc__ or ""), f"{needle!r} missing from IonQClient docstring"
+
+
+def test_prose_code_examples_parse():
+    """Every ```python fence in README and the published docstrings is valid Python."""
+    docs = {"README.md": (ROOT / "README.md").read_text(), "IonQClient": IonQClient.__doc__ or ""}
+    for mod in (exceptions, extensions, gates, pagination, polling, session):
+        docs[mod.__name__] = mod.__doc__ or ""
+        for name in mod.__all__:
+            docs[f"{mod.__name__}.{name}"] = getattr(mod, name).__doc__ or ""
+    for name, text in docs.items():
+        for snippet in re.findall(r"```python\n(.*?)```", text, flags=re.DOTALL):
+            code = textwrap.dedent(snippet)
+            if ">>>" in code:  # doctest-style: parse only the prompt lines
+                code = "\n".join(line.lstrip()[4:] for line in code.splitlines() if line.lstrip().startswith(">>> "))
+            try:
+                ast.parse(code)
+            except SyntaxError as exc:
+                pytest.fail(f"unparseable example in {name}: {exc}")
+
+
 def test_pyproject_floor_matches_ci_matrix():
     assert _python_floor() == min(_ci_python_versions())
 
 
 def test_python_version_file_matches_floor():
     assert (ROOT / ".python-version").read_text().strip() == _python_floor()
+
+
+def test_setup_uv_action_default_matches_floor():
+    """The composite action's hardcoded python-version default tracks .python-version."""
+    action = (ROOT / ".github" / "actions" / "setup-uv" / "action.yml").read_text()
+    assert f'default: "{_python_floor()}"' in action
 
 
 def test_ruff_target_version_matches_floor():

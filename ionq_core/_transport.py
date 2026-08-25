@@ -5,10 +5,10 @@
 
 `ErrorRaisingTransport` converts HTTP error responses and connection failures
 into structured `IonQError` exceptions; `build_transport` assembles the default
-stack used by `IonQClient`. Idempotent methods are retried on status codes 429,
-500, 502, 503, and 520-529 with exponential backoff (factor 0.5, jitter 0.5,
-max 60s); POST is never retried because the API has no idempotency keys, so a
-replay after an ambiguous 5xx could duplicate billable work.
+stack used by `IonQClient`. Idempotent methods are retried on the codes in
+`RETRYABLE_STATUS_CODES` with bounded exponential backoff (the knobs live in
+`build_transport`); POST is never retried because the API has no idempotency
+keys, so a replay after an ambiguous 5xx could duplicate billable work.
 """
 
 import json
@@ -148,7 +148,7 @@ def build_transport(
 
     Args:
         max_retries: Maximum number of retry attempts. Defaults to
-            `DEFAULT_MAX_RETRIES` (2).
+            `DEFAULT_MAX_RETRIES`.
         retryable_status_codes: HTTP status codes that trigger a retry.
             Defaults to `RETRYABLE_STATUS_CODES`.
         verify: TLS verification (``True``/``False``, a CA bundle path, or an

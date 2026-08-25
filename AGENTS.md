@@ -83,7 +83,7 @@ Auth is `apiKey`, **not** `Bearer`. `IonQClient` sets `prefix="apiKey"`; the wir
 - Public API in each hand-written module is declared via `__all__` at the top; `ionq_core/__init__.py` re-exports those.
 - Type-checked by `ty` against Python 3.11. Ruff: `target-version = "py311"`, `line-length = 120`, `select = E, F, I, UP, B, SIM, RUF`.
 - 100% branch coverage on hand-written code (`--cov-fail-under=100`); generated paths are in `coverage.run.omit`. New conditional branches need new tests.
-- Test fixtures live in [`tests/conftest.py`](tests/conftest.py): `client` (unauth) and `auth_client` (token `"test-api-key"`, `prefix="apiKey"`), both pointing at `https://test.invalid/v0.4`. Use them; don't construct clients ad hoc.
+- Test fixtures and shared helpers live in [`tests/conftest.py`](tests/conftest.py); the clients there point at a `test.invalid` base URL derived from `DEFAULT_BASE_URL`. Use them; don't construct clients ad hoc.
 - Mock HTTP with `httpx_mock` from `pytest-httpx`. Don't introduce `responses`, `requests-mock`, or VCR.
 - Integration tests are marked `pytest.mark.integration` and live in `tests/integration/`. Use the `track_job` fixture so the autouse `cleanup_jobs` fixture deletes anything you create.
 - `gates.py` is intentionally NumPy-free (`cmath`, `math`, nested tuples). Keep it that way.
@@ -94,7 +94,7 @@ Several values are pinned in multiple files (Python floor, API base URL, the gen
 
 ## CI
 
-Workflows live in [`.github/workflows/`](.github/workflows/) — `ls` it for the current set; each file's `on:` block documents its own triggers. Four have non-obvious behavior worth knowing about:
+Workflows live in [`.github/workflows/`](.github/workflows/) — `ls` it for the current set; each file's `on:` block documents its own triggers. Some have non-obvious behavior worth knowing about:
 
 - **`generated.yml`** runs the regenerator on every PR and fails if `git diff ionq_core/` is non-empty. This is what catches hand-edits to generated files.
 - **`integration.yml`** is on a weekly cron and `workflow_dispatch` only — it does not run per PR, so don't rely on it for fast feedback.

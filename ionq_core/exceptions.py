@@ -23,10 +23,11 @@ IonQError
 Example:
     ```python
     from ionq_core import IonQClient, RateLimitError, AuthenticationError
+    from ionq_core.api.default import create_job
 
     client = IonQClient()
     try:
-        job = create_job.sync(client=client, body=payload)
+        job = create_job.sync(client=client, body=...)
     except AuthenticationError:
         print("Invalid API key")
     except RateLimitError as e:
