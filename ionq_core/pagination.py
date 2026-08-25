@@ -37,8 +37,17 @@ if TYPE_CHECKING:
 logger = logging.getLogger("ionq_core")
 
 
+def _check_cursor(cursor: str, seen: set[str], label: str) -> None:
+    # The server-controlled cursor is the loop's only exit condition; an empty
+    # or repeating cursor must abort rather than iterate forever.
+    if not cursor or cursor in seen:
+        raise IonQError(f"Pagination cursor for {label} did not advance (next={cursor!r}); aborting")
+    seen.add(cursor)
+
+
 def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> Iterator[Job]:
     kwargs["next_"] = UNSET
+    seen_cursors: set[str] = set()
     while True:
         response = fetch(*args, **kwargs)
         if response is None:
@@ -46,12 +55,14 @@ def _paginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) 
         yield from response.jobs
         if response.next_ is None:
             return
+        _check_cursor(response.next_, seen_cursors, label)
         kwargs["next_"] = response.next_
         logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
 
 
 async def _apaginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs: Any) -> AsyncIterator[Job]:
     kwargs["next_"] = UNSET
+    seen_cursors: set[str] = set()
     while True:
         response = await fetch(*args, **kwargs)
         if response is None:
@@ -60,6 +71,7 @@ async def _apaginate(fetch: Callable[..., Any], label: str, *args: Any, **kwargs
             yield job
         if response.next_ is None:
             return
+        _check_cursor(response.next_, seen_cursors, label)
         kwargs["next_"] = response.next_
         logger.debug("Fetching next page of %s (cursor=%s)", label, response.next_)
 
@@ -88,7 +100,9 @@ def iter_jobs(
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, or if the
+            pagination cursor is empty or fails to advance (which would
+            otherwise loop forever).
     """
     return _paginate(
         get_jobs.sync,
@@ -125,7 +139,9 @@ def aiter_jobs(
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, or if the
+            pagination cursor is empty or fails to advance (which would
+            otherwise loop forever).
     """
     return _apaginate(
         get_jobs.asyncio,
@@ -164,7 +180,9 @@ def iter_session_jobs(
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, or if the
+            pagination cursor is empty or fails to advance (which would
+            otherwise loop forever).
     """
     return _paginate(
         get_session_jobs.sync,
@@ -201,7 +219,9 @@ def aiter_session_jobs(
         Individual job objects across all pages.
 
     Raises:
-        IonQError: If the API returns a ``None`` response.
+        IonQError: If the API returns a ``None`` response, or if the
+            pagination cursor is empty or fails to advance (which would
+            otherwise loop forever).
     """
     return _apaginate(
         get_session_jobs.asyncio,

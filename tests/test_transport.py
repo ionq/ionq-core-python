@@ -1,7 +1,14 @@
+import ssl
+
 import httpx
 import pytest
 
-from ionq_core._transport import ErrorRaisingTransport, build_transport
+from ionq_core._transport import (
+    MAX_ERROR_BODY_BYTES,
+    MAX_RETRY_AFTER,
+    ErrorRaisingTransport,
+    build_transport,
+)
 from ionq_core.exceptions import (
     APIConnectionError,
     APITimeoutError,
@@ -52,10 +59,39 @@ class TestBuildTransport:
     def test_returns_error_raising(self):
         assert isinstance(build_transport(), ErrorRaisingTransport)
 
-    def test_retries_post_requests(self):
+    def test_does_not_retry_post_requests(self):
+        # POSTs submit billable jobs/sessions and the API has no idempotency
+        # keys, so a retry after an ambiguous 5xx could duplicate work.
         transport = build_transport()
         retry = transport._transport.retry
-        assert "POST" in retry.allowed_methods
+        assert "POST" not in retry.allowed_methods
+        assert "GET" in retry.allowed_methods
+
+    def test_sync_and_async_share_retry_config(self):
+        transport = build_transport(max_retries=5)
+        assert transport._transport.retry.total == 5
+        assert transport._async_transport.retry.total == 5
+
+
+class TestBuildTransportTls:
+    @staticmethod
+    def _ssl_contexts(transport):
+        sync_ctx = transport._transport._sync_transport._pool._ssl_context
+        async_ctx = transport._async_transport._async_transport._pool._ssl_context
+        return sync_ctx, async_ctx
+
+    def test_default_verifies_certificates(self):
+        for ctx in self._ssl_contexts(build_transport()):
+            assert ctx.verify_mode == ssl.CERT_REQUIRED
+
+    def test_verify_false_disables_verification(self):
+        for ctx in self._ssl_contexts(build_transport(verify=False)):
+            assert ctx.verify_mode == ssl.CERT_NONE
+
+    def test_custom_ssl_context_used_verbatim(self):
+        pinned = ssl.create_default_context()
+        for ctx in self._ssl_contexts(build_transport(verify=pinned)):
+            assert ctx is pinned
 
 
 class TestErrorRaisingTransportSync:
@@ -185,3 +221,87 @@ class TestRetryAfterParsing:
         with pytest.raises(RateLimitError) as exc_info:
             transport.handle_request(_req())
         assert exc_info.value.retry_after is None
+
+    @pytest.mark.parametrize(
+        ("header", "expected"),
+        [
+            ("9000000000", MAX_RETRY_AFTER),  # absurdly large finite values are capped
+            (str(MAX_RETRY_AFTER + 1), MAX_RETRY_AFTER),
+            ("-3", 0.0),  # negative values are floored
+            ("inf", None),  # non-finite values are garbage, not advice
+            ("1e309", None),  # overflows float() to +inf
+            ("nan", None),
+        ],
+    )
+    def test_retry_after_bounded(self, header, expected):
+        # Callers are documented to sleep on retry_after, so a forged header
+        # must never produce an unbounded or non-finite wait (CWE-1284).
+        transport, _ = _wrap([_resp(429, headers={"retry-after": header})])
+        with pytest.raises(RateLimitError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.retry_after == expected
+
+
+class _CountingStream(httpx.SyncByteStream):
+    """A large streamed body that records how many chunks were consumed."""
+
+    def __init__(self, chunk_size=16384, chunks=1000):
+        self.chunk = b"x" * chunk_size
+        self.chunks = chunks
+        self.consumed = 0
+
+    def __iter__(self):
+        for _ in range(self.chunks):
+            self.consumed += 1
+            yield self.chunk
+
+
+class _CountingAsyncStream(httpx.AsyncByteStream):
+    def __init__(self, chunk_size=16384, chunks=1000):
+        self.chunk = b"x" * chunk_size
+        self.chunks = chunks
+        self.consumed = 0
+
+    async def __aiter__(self):
+        for _ in range(self.chunks):
+            self.consumed += 1
+            yield self.chunk
+
+
+class TestErrorBodyCap:
+    """Error bodies are server-controlled; only a bounded prefix may be read (CWE-409)."""
+
+    # chunks needed to reach the cap, +1 for iteration slack
+    _MAX_CHUNKS = MAX_ERROR_BODY_BYTES // 16384 + 1
+
+    def test_sync_read_stops_at_cap(self):
+        stream = _CountingStream()
+        transport, _ = _wrap([httpx.Response(400, stream=stream)])
+        with pytest.raises(BadRequestError) as exc_info:
+            transport.handle_request(_req())
+        assert stream.consumed <= self._MAX_CHUNKS
+        assert len(exc_info.value.body) <= 500
+
+    async def test_async_read_stops_at_cap(self):
+        stream = _CountingAsyncStream()
+        transport, _ = _wrap([httpx.Response(400, stream=stream)])
+        with pytest.raises(BadRequestError) as exc_info:
+            await transport.handle_async_request(_req())
+        assert stream.consumed <= self._MAX_CHUNKS
+        assert len(exc_info.value.body) <= 500
+
+    def test_plain_text_body_truncated_to_500(self):
+        transport, _ = _wrap([httpx.Response(400, content=b"e" * 600)])
+        with pytest.raises(BadRequestError) as exc_info:
+            transport.handle_request(_req())
+        assert exc_info.value.body == "e" * 500
+
+    def test_json_body_exceeding_cap_degrades_to_text(self):
+        # Truncation invalidates the JSON, so the capped prefix is surfaced as
+        # text instead of being parsed into a second full-size structure.
+        big = b'{"message": "' + b"a" * (MAX_ERROR_BODY_BYTES + 1000) + b'"}'
+        transport, _ = _wrap([httpx.Response(400, content=big)])
+        with pytest.raises(BadRequestError) as exc_info:
+            transport.handle_request(_req())
+        assert isinstance(exc_info.value.body, str)
+        assert len(exc_info.value.body) <= 500

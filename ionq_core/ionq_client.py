@@ -65,7 +65,10 @@ def IonQClient(
         extension: A `ClientExtension` bundle provided by a downstream SDK.
             Allows injecting hooks, custom headers, transport wrappers, and
             error mappers.
-        **kwargs: Passed through to `AuthenticatedClient`.
+        **kwargs: Passed through to `AuthenticatedClient`. ``verify_ssl``
+            (``True``/``False``, a CA bundle path, or an ``ssl.SSLContext``)
+            is also applied to the underlying httpx transports on both the
+            sync and async paths.
 
     Returns:
         An `AuthenticatedClient` configured with retry transport and
@@ -137,9 +140,12 @@ def IonQClient(
 
     headers = {**ext.default_headers, "User-Agent": user_agent}
 
+    # httpx ignores client-level `verify` when a custom transport is supplied,
+    # so the caller's verify_ssl must be plumbed into the transports here.
     sync_transport = async_transport = build_transport(
         effective_retries,
         ext.retryable_status_codes or RETRYABLE_STATUS_CODES,
+        verify=kwargs.get("verify_ssl", True),
     )
 
     if ext.event_hooks or ext.error_mapper:
@@ -172,18 +178,16 @@ def IonQClient(
         **kwargs,
     )
     # `set_async_httpx_client` bypasses `AuthenticatedClient`'s lazy auth-header
-    # injection (see generated `client.py::get_async_httpx_client`), so we merge
-    # `Authorization` in manually here. The `_verify_ssl` / `_follow_redirects`
-    # fields are private on the generated `AuthenticatedClient` but are the only
-    # way to mirror the caller's choices onto the async transport; do not add a
-    # public accessor in the hand-written layer — they belong to generated code.
+    # injection, so `Authorization` is merged in manually. TLS is carried by
+    # `async_transport`. `_follow_redirects` is private on the generated client
+    # but is the only way to mirror the caller's choice here; do not add a
+    # public accessor in the hand-written layer.
     client.set_async_httpx_client(
         httpx.AsyncClient(
             base_url=base_url,
             headers={**headers, _AUTH_HEADER: f"{_AUTH_PREFIX} {key}"},
             timeout=effective_timeout,
             transport=async_transport,
-            verify=client._verify_ssl,
             follow_redirects=client._follow_redirects,
         )
     )

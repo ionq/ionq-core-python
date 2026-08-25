@@ -83,6 +83,29 @@ class TestIterSessionJobs:
         assert [j.id for j in jobs] == ["j1", "j2"]
 
 
+class TestCursorGuard:
+    """The next cursor is server-controlled and the loop's only exit; a cursor
+    that repeats or is empty must abort instead of iterating forever (CWE-835)."""
+
+    def test_sync_repeated_cursor_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        httpx_mock.add_response(json=_jobs_page(["j2"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="did not advance"):
+            list(iter_jobs(auth_client))
+
+    async def test_async_repeated_cursor_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor="c1"))
+        httpx_mock.add_response(json=_jobs_page(["j2"], next_cursor="c1"))
+        with pytest.raises(IonQError, match="did not advance"):
+            async for _ in aiter_jobs(auth_client):
+                pass
+
+    def test_sync_empty_cursor_raises(self, httpx_mock, auth_client):
+        httpx_mock.add_response(json=_jobs_page(["j1"], next_cursor=""))
+        with pytest.raises(IonQError, match="did not advance"):
+            list(iter_jobs(auth_client))
+
+
 class TestAiterSessionJobs:
     async def test_single_page(self, httpx_mock, auth_client):
         httpx_mock.add_response(json=_jobs_page(["j1"]))

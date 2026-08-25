@@ -9,7 +9,8 @@ from urllib.parse import urlparse
 import pytest
 
 from ionq_core import extensions, polling
-from ionq_core._transport import DEFAULT_MAX_RETRIES
+from ionq_core._transport import DEFAULT_MAX_RETRIES, MAX_RETRY_AFTER
+from ionq_core.exceptions import RateLimitError
 from ionq_core.ionq_client import DEFAULT_BASE_URL, DEFAULT_TIMEOUT
 from ionq_core.polling import _BACKOFF_FACTOR, _MAX_INTERVAL
 from ionq_core.polling import _DEFAULT_TIMEOUT as _POLL_DEFAULT_TIMEOUT
@@ -65,6 +66,11 @@ def test_client_extension_docstring_pins(needle):
 )
 def test_polling_docstring_pins(fn, needle):
     assert needle in (fn.__doc__ or ""), f"{needle!r} missing from {fn.__name__}"
+
+
+def test_rate_limit_cap_docstring_pin():
+    """The Retry-After cap documented on RateLimitError tracks MAX_RETRY_AFTER."""
+    assert f"{int(MAX_RETRY_AFTER)} seconds" in (RateLimitError.__doc__ or "")
 
 
 def test_pyproject_floor_matches_ci_matrix():
