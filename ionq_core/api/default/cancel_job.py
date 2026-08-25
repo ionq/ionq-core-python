@@ -4,7 +4,7 @@
 
 from http import HTTPStatus
 from typing import Any, cast
-from urllib.parse import quote
+from ..._url import quote_path_param
 
 import httpx
 
@@ -29,7 +29,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "put",
-        "url": "/jobs/{uuid}/status/cancel".format(uuid=quote(str(uuid), safe=""),),
+        "url": "/jobs/{uuid}/status/cancel".format(uuid=quote_path_param(uuid),),
     }
 
 

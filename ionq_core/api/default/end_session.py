@@ -4,7 +4,7 @@
 
 from http import HTTPStatus
 from typing import Any, cast
-from urllib.parse import quote
+from ..._url import quote_path_param
 
 import httpx
 
@@ -29,7 +29,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/sessions/{session_id}/end".format(session_id=quote(str(session_id), safe=""),),
+        "url": "/sessions/{session_id}/end".format(session_id=quote_path_param(session_id),),
     }
 
 
