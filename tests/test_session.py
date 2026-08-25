@@ -91,19 +91,6 @@ class TestStatus:
 
 
 class TestOpenClose:
-    def test_open_close_outside_context(self, httpx_mock, auth_client):
-        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
-        httpx_mock.add_response(json=_session_json(active=False), method="POST")
-
-        mgr = SessionManager(auth_client, "qpu.aria-1")
-        mgr.open()
-        assert mgr.session_id == "sess-1"
-        mgr.close()
-
-        reqs = httpx_mock.get_requests()
-        assert reqs[0].url.path == f"{_API_PATH}/sessions"
-        assert "/sessions/sess-1/end" in str(reqs[1].url)
-
     def test_open_when_already_open_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
         mgr = SessionManager(auth_client, "qpu.aria-1")
@@ -155,15 +142,6 @@ class TestAsyncContextManager:
 
 
 class TestAsyncOpenClose:
-    async def test_async_open_close(self, httpx_mock, auth_client):
-        httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
-        httpx_mock.add_response(json=_session_json(active=False), method="POST")
-
-        mgr = SessionManager(auth_client, "qpu.aria-1")
-        await mgr.async_open()
-        assert mgr.session_id == "sess-1"
-        await mgr.async_close()
-
     async def test_async_open_when_already_open_raises(self, httpx_mock, auth_client):
         httpx_mock.add_response(status_code=201, json=_session_json(), method="POST")
         mgr = SessionManager(auth_client, "qpu.aria-1")

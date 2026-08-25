@@ -85,4 +85,3 @@ class SessionsResponse:
         )
 
         return sessions_response
-

@@ -126,4 +126,3 @@ artifact_id=artifact_id,
     )
 
     return _build_response(client=client, response=response)
-

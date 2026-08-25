@@ -94,4 +94,3 @@ class SessionSettingsRequest:
         )
 
         return session_settings_request
-

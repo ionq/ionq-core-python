@@ -468,4 +468,3 @@ class GetCircuitJobResponse:
         )
 
         return get_circuit_job_response
-

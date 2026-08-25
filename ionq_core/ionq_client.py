@@ -48,10 +48,6 @@ def IonQClient(
 ) -> AuthenticatedClient:
     """Create an authenticated IonQ API client.
 
-    This is the recommended entry point for using the library. It handles
-    authentication, retry configuration, User-Agent construction, and transport
-    setup for both sync and async usage.
-
     Args:
         api_key: IonQ API key. If not provided, reads the ``IONQ_API_KEY``
             environment variable.
@@ -68,7 +64,10 @@ def IonQClient(
         **kwargs: Passed through to `AuthenticatedClient`. ``verify_ssl``
             (``True``/``False``, a CA bundle path, or an ``ssl.SSLContext``)
             is also applied to the underlying httpx transports on both the
-            sync and async paths.
+            sync and async paths. ``headers`` are merged beneath the
+            extension defaults and the generated ``User-Agent``; ``cookies``
+            reach both the sync and async clients. ``httpx_args`` is
+            reserved: the transport slot is owned by `IonQClient`.
 
     Returns:
         An `AuthenticatedClient` configured with retry transport and
@@ -138,7 +137,10 @@ def IonQClient(
     effective_timeout = timeout or ext.timeout or DEFAULT_TIMEOUT
     effective_retries = next(v for v in (max_retries, ext.max_retries, DEFAULT_MAX_RETRIES) if v is not None)
 
-    headers = {**ext.default_headers, "User-Agent": user_agent}
+    # Caller headers are merged here (extension defaults and the User-Agent
+    # win) rather than forwarded, which would collide with this dict in
+    # AuthenticatedClient(**kwargs).
+    headers = {**(kwargs.pop("headers", None) or {}), **ext.default_headers, "User-Agent": user_agent}
 
     # httpx ignores client-level `verify` when a custom transport is supplied,
     # so the caller's verify_ssl must be plumbed into the transports here.
@@ -186,6 +188,7 @@ def IonQClient(
         httpx.AsyncClient(
             base_url=base_url,
             headers={**headers, _AUTH_HEADER: f"{_AUTH_PREFIX} {key}"},
+            cookies=kwargs.get("cookies") or {},
             timeout=effective_timeout,
             transport=async_transport,
             follow_redirects=client._follow_redirects,

@@ -15,6 +15,7 @@ post_hooks:
   # "", ".", and "..": quote() leaves dots unencoded, so ".." would delete a fixed
   # URL segment under RFC 3986 normalization (/sessions/../jobs -> /jobs).
   - "perl -pi -e 's/^from urllib.parse import quote$/from ..._url import quote_path_param/; s/quote\\(str\\((\\w+)\\), safe=\"\"\\)/quote_path_param($1)/g' $(find api -name '*.py')"
-  - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/' $(find . -name '*.py')"
-  - "ruff check . --fix-only"
+  # Also squeeze trailing newlines to one so generated output satisfies
+  # pre-commit's end-of-file-fixer without fighting the staleness gate.
+  - "perl -0777 -pi -e '$y=(gmtime)[5]+1900;s/\\A(?!# SPDX-FileCopyrightText)/# SPDX-FileCopyrightText: $y IonQ, Inc.\\n# SPDX-License-Identifier: Apache-2.0\\n# \\@generated\\n\\n/;s/\\n+\\z/\\n/' $(find . -name '*.py')"
   - "ruff format ."

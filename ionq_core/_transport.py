@@ -9,11 +9,6 @@ stack used by `IonQClient`. Idempotent methods are retried on status codes 429,
 500, 502, 503, and 520-529 with exponential backoff (factor 0.5, jitter 0.5,
 max 60s); POST is never retried because the API has no idempotency keys, so a
 replay after an ambiguous 5xx could duplicate billable work.
-
-Error handling bounds what it trusts from the server: at most
-`MAX_ERROR_BODY_BYTES` decoded bytes of an error body are read, and
-``Retry-After`` is clamped to `MAX_RETRY_AFTER` seconds (non-finite values are
-discarded) before being exposed on `RateLimitError.retry_after`.
 """
 
 import json
@@ -174,7 +169,11 @@ def build_transport(
         # POST is deliberately not retryable: without idempotency keys, a replay
         # after an ambiguous 5xx could duplicate billable jobs.
     )
+    # Build the SSL context once: handing `verify` to each transport would load
+    # the CA bundle from disk twice per client (create_ssl_context passes an
+    # ssl.SSLContext through unchanged, so pinned contexts keep their identity).
+    ctx = httpx.create_ssl_context(verify=verify)
     return ErrorRaisingTransport(
-        RetryTransport(transport=httpx.HTTPTransport(verify=verify), retry=retry),
-        RetryTransport(transport=httpx.AsyncHTTPTransport(verify=verify), retry=retry),
+        RetryTransport(transport=httpx.HTTPTransport(verify=ctx), retry=retry),
+        RetryTransport(transport=httpx.AsyncHTTPTransport(verify=ctx), retry=retry),
     )

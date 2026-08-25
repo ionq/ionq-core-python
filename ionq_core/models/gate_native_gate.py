@@ -144,4 +144,3 @@ class GateNativeGate:
         )
 
         return gate_native_gate
-

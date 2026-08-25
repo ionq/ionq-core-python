@@ -15,10 +15,6 @@ def backends():
     return get_backends.sync(client=Client(base_url=DEFAULT_BASE_URL))
 
 
-def test_list_returns_backends(backends):
-    assert len(backends) > 0
-
-
 def test_list_has_qpu(backends):
     assert any("qpu" in b.backend for b in backends)
 

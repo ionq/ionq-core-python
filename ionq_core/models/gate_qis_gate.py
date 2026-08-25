@@ -121,4 +121,3 @@ class GateQisGate:
         )
 
         return gate_qis_gate
-

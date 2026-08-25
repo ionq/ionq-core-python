@@ -217,4 +217,3 @@ class CircuitJobCreationPayload:
         )
 
         return circuit_job_creation_payload
-

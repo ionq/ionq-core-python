@@ -59,4 +59,3 @@ class AddJobResultsResponse:
         )
 
         return add_job_results_response
-

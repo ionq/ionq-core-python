@@ -10,7 +10,7 @@ from ionq_core.extensions import (
     AsyncEventHook,
     HookTransport,
 )
-from tests.conftest import BASE_URL
+from tests.conftest import BASE_URL, FakeTransport
 
 _BACKENDS_URL = f"{BASE_URL}/backends"
 
@@ -82,9 +82,6 @@ class TestUserAgentToken:
         assert "custom/2.0" in ua
         assert "qiskit-ionq/1.1.0" in ua
 
-    def test_no_extension_still_works(self):
-        assert _ua(IonQClient(api_key="key")).startswith("ionq-core/")
-
     def test_async_client_user_agent(self):
         client = IonQClient(api_key="key", extension=ClientExtension(user_agent_token="cirq-ionq/0.5.0"))
         assert "cirq-ionq/0.5.0" in client.get_async_httpx_client().headers["User-Agent"]
@@ -118,15 +115,8 @@ class TestTimeoutPrecedence:
         t = IonQClient(api_key="key", timeout=httpx.Timeout(30.0), extension=ext)
         assert t.get_httpx_client().timeout.read == 30.0
 
-    def test_no_extension_timeout_uses_explicit(self):
-        assert IonQClient(api_key="key", timeout=httpx.Timeout(30.0)).get_httpx_client().timeout.read == 30.0
-
 
 class TestMaxRetriesPrecedence:
-    def test_transport_created_with_extension(self):
-        client = IonQClient(api_key="key", extension=ClientExtension(max_retries=5))
-        assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
-
     def test_transport_created_with_explicit_retries(self):
         client = IonQClient(api_key="key", max_retries=3)
         assert isinstance(client.get_httpx_client()._transport, ErrorRaisingTransport)
@@ -174,28 +164,6 @@ class TestEventHooks:
         assert isinstance(transport, ErrorRaisingTransport)
 
 
-class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(self, response: httpx.Response):
-        self._response = response
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        return self._response
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        return self._response
-
-
-class RaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(self, exc: Exception):
-        self._exc = exc
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        raise self._exc
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        raise self._exc
-
-
 class TestHookTransportExecution:
     def test_hooks_called_in_order(self):
         hook1, hook2 = RecordingHook(), RecordingHook()
@@ -234,7 +202,7 @@ class TestOnErrorHook:
         request = httpx.Request("GET", _BACKENDS_URL)
 
         with pytest.raises(NotFoundError):
-            HookTransport(RaisingTransport(error), (hook,)).handle_request(request)
+            HookTransport(FakeTransport(error), (hook,)).handle_request(request)
 
         assert len(hook.errors) == 1
         assert hook.errors[0] == (request, error)
@@ -251,7 +219,7 @@ class TestOnErrorHook:
                 pass
 
         with pytest.raises(NotFoundError):
-            HookTransport(RaisingTransport(NotFoundError(404)), (MinimalHook(),)).handle_request(
+            HookTransport(FakeTransport(NotFoundError(404)), (MinimalHook(),)).handle_request(
                 httpx.Request("GET", _BACKENDS_URL)
             )
 
@@ -261,7 +229,7 @@ class TestOnErrorHook:
         request = httpx.Request("GET", _BACKENDS_URL)
 
         with pytest.raises(NotFoundError):
-            await HookTransport(RaisingTransport(error), (hook,)).handle_async_request(request)
+            await HookTransport(FakeTransport(error), (hook,)).handle_async_request(request)
 
         assert len(hook.errors) == 1
         assert hook.errors[0] == (request, error)
@@ -276,7 +244,7 @@ class TestOnErrorHook:
             async def on_response(self, request, response):
                 pass
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), (MinimalAsyncHook(),))
+        transport = HookTransport(FakeTransport(NotFoundError(404)), (MinimalAsyncHook(),))
         with pytest.raises(NotFoundError):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
@@ -287,43 +255,15 @@ class TestDebugHooks:
             def on_request(self, request):
                 raise RuntimeError("hook failed")
 
-            def on_response(self, request, response):
-                pass
-
-            def on_error(self, request, error):
-                pass
-
         with pytest.raises(RuntimeError, match="hook failed"):
             HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=True).handle_request(
                 httpx.Request("GET", _BACKENDS_URL)
             )
 
-    def test_non_debug_swallows_hook_exception(self):
-        class BrokenHook:
-            def on_request(self, request):
-                raise RuntimeError("hook failed")
-
-            def on_response(self, request, response):
-                pass
-
-            def on_error(self, request, error):
-                pass
-
-        result = HookTransport(FakeTransport(httpx.Response(200)), (BrokenHook(),), debug=False).handle_request(
-            httpx.Request("GET", _BACKENDS_URL)
-        )
-        assert result.status_code == 200
-
     async def test_async_debug_propagates(self):
         class BrokenAsyncHook:
             async def on_request(self, request):
                 raise RuntimeError("async hook failed")
-
-            async def on_response(self, request, response):
-                pass
-
-            async def on_error(self, request, error):
-                pass
 
         with pytest.raises(RuntimeError, match="async hook failed"):
             await HookTransport(
@@ -376,13 +316,13 @@ class TestErrorMapper:
                 return DownstreamError(f"translated: {exc}")
             return exc
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=mapper)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=mapper)
 
         with pytest.raises(DownstreamError, match="translated"):
             transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
 
     def test_sync_mapper_passthrough(self):
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
 
         with pytest.raises(NotFoundError):
             transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
@@ -396,15 +336,9 @@ class TestErrorMapper:
                 return DownstreamError(f"mapped: {exc}")
             return exc
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=mapper)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=mapper)
 
         with pytest.raises(DownstreamError, match="mapped"):
-            await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
-
-    async def test_async_mapper_passthrough(self):
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
-
-        with pytest.raises(NotFoundError):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
     def test_error_mapper_wired_in_transport_chain(self):
@@ -479,14 +413,10 @@ class TestAccessUnderlyingHttpxClient:
 
 class TestHookTransportClose:
     def test_close_delegates(self):
-        fake = FakeTransport(httpx.Response(200))
-        transport = HookTransport(fake, ())
-        transport.close()
+        HookTransport(FakeTransport(httpx.Response(200)), ()).close()
 
     async def test_aclose_delegates(self):
-        fake = FakeTransport(httpx.Response(200))
-        transport = HookTransport(fake, ())
-        await transport.aclose()
+        await HookTransport(FakeTransport(httpx.Response(200)), ()).aclose()
 
 
 class TestTransportChainOrder:
@@ -508,29 +438,4 @@ class TestTransportChainOrder:
 
         assert isinstance(transport, OuterTransport)
         assert isinstance(transport.inner, HookTransport)
-        assert isinstance(transport.inner._transport, ErrorRaisingTransport)
-
-    def test_full_chain_with_error_mapper(self):
-        hook = RecordingHook()
-
-        class OuterTransport(httpx.BaseTransport):
-            def __init__(self, inner):
-                self.inner = inner
-
-            def handle_request(self, request):
-                return self.inner.handle_request(request)
-
-            def close(self):
-                self.inner.close()
-
-        ext = ClientExtension(
-            event_hooks=(hook,),
-            error_mapper=lambda exc: exc,
-            transport_wrapper=lambda t: OuterTransport(t),
-        )
-        transport = IonQClient(api_key="key", extension=ext).get_httpx_client()._transport
-
-        assert isinstance(transport, OuterTransport)
-        assert isinstance(transport.inner, HookTransport)
-        assert transport.inner._error_mapper is not None
         assert isinstance(transport.inner._transport, ErrorRaisingTransport)

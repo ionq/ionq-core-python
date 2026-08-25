@@ -73,4 +73,3 @@ class JobCanceledResponse:
         )
 
         return job_canceled_response
-

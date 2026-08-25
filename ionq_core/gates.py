@@ -28,7 +28,7 @@ Example:
     ```
 """
 
-__all__ = ["gpi2_matrix", "gpi_matrix", "ms_matrix", "zz_matrix"]
+__all__ = ["Matrix2x2", "Matrix4x4", "gpi2_matrix", "gpi_matrix", "ms_matrix", "zz_matrix"]
 
 import cmath
 import math
@@ -98,12 +98,6 @@ def ms_matrix(phi0: float, phi1: float, angle: float = 0.25) -> Matrix4x4:
 
     Returns:
         A `Matrix4x4` unitary matrix.
-
-    Examples:
-        ```python
-        >>> ms_matrix(0, 0)         # maximally-entangling MS gate
-        >>> ms_matrix(0, 0, 0.125)  # partial entanglement
-        ```
     """
     a = math.pi * angle
     ca, sa = math.cos(a), math.sin(a)

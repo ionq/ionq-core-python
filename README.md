@@ -63,16 +63,11 @@ print(probs.additional_properties)
 
 Each generated endpoint module exposes four callables: `sync`, `sync_detailed`, `asyncio`, and `asyncio_detailed`. The `sync` and `asyncio` variants return the parsed body; the `_detailed` variants return a `Response[T]` with the status code, headers, and parsed body.
 
-For options (`api_key`, `base_url`, `max_retries`, `timeout`, `extension`), error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
+For client options, error classes, retry behavior, pagination, polling, sessions, and downstream-SDK extension hooks, see the [API reference](https://ionq.github.io/ionq-core-python/).
 
 ## Versioning
 
-This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independent of the upstream REST API version - pass an explicit `base_url` to `IonQClient` to pin against a different API. Print the installed version with:
-
-```python
-import ionq_core
-print(ionq_core.__version__)
-```
+This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independent of the upstream REST API version - pass an explicit `base_url` to `IonQClient` to pin against a different API. Print the installed version with `ionq_core.__version__`.
 
 The full release history is in [CHANGELOG.md](https://github.com/ionq/ionq-core-python/blob/main/CHANGELOG.md).
 

@@ -67,4 +67,3 @@ class SessionCostLimit:
         )
 
         return session_cost_limit
-

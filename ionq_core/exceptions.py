@@ -9,13 +9,15 @@ All exceptions inherit from `IonQError`. The hierarchy is:
 IonQError
 +-- APIConnectionError          # network / DNS failures
 |   +-- APITimeoutError         # request timed out
-+-- APIError                    # HTTP 4xx / 5xx responses
++-- APIError                    # HTTP 4xx / 5xx responses (carries retry_after)
 |   +-- BadRequestError         # 400
 |   +-- AuthenticationError     # 401
 |   +-- PermissionDeniedError   # 403
 |   +-- NotFoundError           # 404
-|   +-- RateLimitError          # 429 (includes retry_after)
+|   +-- RateLimitError          # 429
 |   +-- ServerError             # 5xx
++-- JobTimeoutError             # polling deadline exceeded (ionq_core.polling)
++-- JobFailedError              # polled job ended in failure (ionq_core.polling)
 ```
 
 Example:
@@ -50,7 +52,9 @@ class IonQError(Exception):
     """Base exception for all IonQ errors.
 
     Catch this to handle any error raised by the library, including connection
-    failures, API errors, polling timeouts, and job failures.
+    failures, API errors, polling timeouts, and job failures. The one
+    exception outside this tree is ``errors.UnexpectedStatus``, raised only
+    for undocumented status codes when ``raise_on_unexpected_status`` is set.
     """
 
 
@@ -80,6 +84,8 @@ class APIError(IonQError):
             or ``None`` if the body could not be read).
         message: A human-readable error message extracted from the response,
             or a default ``"HTTP <status>"`` string.
+        retry_after: Seconds to wait before retrying, from the ``Retry-After``
+            header, or ``None`` if the server did not send a usable one.
         request_id: The ``x-request-id`` header from the response, useful for
             contacting IonQ support about a specific request.
     """
@@ -89,11 +95,13 @@ class APIError(IonQError):
         status_code: int,
         body: dict | str | None = None,
         message: str | None = None,
+        retry_after: float | None = None,
         *,
         request_id: str | None = None,
     ) -> None:
         self.status_code = status_code
         self.body = body
+        self.retry_after = retry_after
         self.request_id = request_id
         self.message = message or f"HTTP {status_code}"
         super().__init__(self.message)
@@ -144,18 +152,6 @@ class RateLimitError(APIError):
             attribute into an unbounded wait.
     """
 
-    def __init__(
-        self,
-        status_code: int = 429,
-        body: dict | str | None = None,
-        message: str | None = None,
-        retry_after: float | None = None,
-        *,
-        request_id: str | None = None,
-    ) -> None:
-        super().__init__(status_code, body, message, request_id=request_id)
-        self.retry_after = retry_after
-
 
 class ServerError(APIError):
     """Raised on ``5xx`` server errors.
@@ -184,9 +180,7 @@ def raise_for_status(
 ) -> None:
     """Raise an appropriate `APIError` subclass for an HTTP error status.
 
-    Does nothing for status codes below 400. For 4xx codes, raises the
-    specific subclass (e.g. `AuthenticationError` for 401). For 5xx codes
-    or unrecognized 4xx codes, raises `ServerError` or `APIError` respectively.
+    Does nothing for status codes below 400.
 
     Args:
         status_code: The HTTP status code.
@@ -207,6 +201,4 @@ def raise_for_status(
     if status_code < 400:
         return
     exc_cls = _STATUS_TO_EXCEPTION.get(status_code, ServerError if status_code >= 500 else APIError)
-    if exc_cls is RateLimitError:
-        raise RateLimitError(status_code, body, message, retry_after, request_id=request_id)
-    raise exc_cls(status_code, body, message, request_id=request_id)
+    raise exc_cls(status_code, body, message, retry_after, request_id=request_id)

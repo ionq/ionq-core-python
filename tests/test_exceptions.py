@@ -42,8 +42,16 @@ class TestRaiseForStatus:
 
     def test_429_preserves_retry_after(self):
         with pytest.raises(RateLimitError) as exc_info:
-            raise_for_status(429, retry_after=30.0)
+            raise_for_status(429, retry_after=30.0, request_id="req-789")
         assert exc_info.value.retry_after == 30.0
+        assert exc_info.value.request_id == "req-789"
+
+    def test_retry_after_surfaces_on_any_status(self):
+        # RFC 9110 allows Retry-After on e.g. 503; the parsed value must not
+        # be dropped just because the status is not 429.
+        with pytest.raises(ServerError) as exc_info:
+            raise_for_status(503, retry_after=5.0)
+        assert exc_info.value.retry_after == 5.0
 
     def test_unknown_4xx_raises_api_error(self):
         with pytest.raises(APIError) as exc_info:
@@ -61,22 +69,9 @@ class TestExceptionHierarchy:
         assert exc.status_code == 500
         assert exc.body == {"error": "oops"}
         assert str(exc) == "Server error"
-
-    def test_api_error_request_id(self):
-        exc = APIError(500, request_id="req-123")
-        assert exc.request_id == "req-123"
-
-    def test_api_error_request_id_default_none(self):
-        exc = APIError(500)
         assert exc.request_id is None
 
     def test_request_id_on_raise_for_status(self):
         with pytest.raises(ServerError) as exc_info:
             raise_for_status(500, request_id="req-456")
         assert exc_info.value.request_id == "req-456"
-
-    def test_request_id_on_rate_limit(self):
-        with pytest.raises(RateLimitError) as exc_info:
-            raise_for_status(429, retry_after=10.0, request_id="req-789")
-        assert exc_info.value.request_id == "req-789"
-        assert exc_info.value.retry_after == 10.0

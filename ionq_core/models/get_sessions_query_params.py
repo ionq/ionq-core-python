@@ -61,4 +61,3 @@ class GetSessionsQueryParams:
         )
 
         return get_sessions_query_params
-

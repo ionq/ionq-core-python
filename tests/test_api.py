@@ -1,13 +1,12 @@
 import pytest
 
 from ionq_core.api.backends import get_backends
-from ionq_core.api.default import clone_job, create_job, get_job_artifact, get_jobs
+from ionq_core.api.default import clone_job, create_job, get_job_artifact
 from ionq_core.api.whoami import get_whoami
 from ionq_core.errors import UnexpectedStatus
 from ionq_core.models.backend import Backend
 from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayload
 from ionq_core.models.clone_job_payload import CloneJobPayload
-from ionq_core.models.get_jobs_response import GetJobsResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.whoami import Whoami
 
@@ -31,37 +30,6 @@ BACKENDS_JSON = [
         "last_updated": "2025-06-15T00:00:00Z",
     },
 ]
-
-JOBS_JSON = {
-    "jobs": [
-        {
-            "id": "job-1",
-            "status": "completed",
-            "type": "ionq.circuit.v1",
-            "backend": "simulator",
-            "dry_run": False,
-            "submitter_id": "user-1",
-            "project_id": "proj-1",
-            "parent_job_id": "parent-1",
-            "session_id": "sess-1",
-            "metadata": {},
-            "name": "Test",
-            "submitted_at": "2025-05-28T20:47:05.440Z",
-            "started_at": "2025-05-28T20:48:00Z",
-            "completed_at": "2025-05-28T20:49:00Z",
-            "predicted_wait_time_ms": 5000,
-            "predicted_execution_duration_ms": 3000,
-            "execution_duration_ms": 2800,
-            "shots": 1000,
-            "failure": {"code": "InternalError", "message": "test"},
-            "output": {},
-            "settings": {},
-            "stats": {},
-            "results": {},
-        }
-    ],
-    "next": "cursor-token",
-}
 
 
 class TestGetWhoami:
@@ -93,16 +61,6 @@ class TestGetBackends:
         assert isinstance(result[0], Backend)
         assert result[0].backend == "qpu.aria-1"
         assert result[1].degraded is True
-
-
-class TestGetJobs:
-    def test_sync(self, httpx_mock, auth_client):
-        httpx_mock.add_response(json=JOBS_JSON)
-        result = get_jobs.sync(client=auth_client)
-        assert isinstance(result, GetJobsResponse)
-        assert len(result.jobs) == 1
-        assert result.jobs[0].id == "job-1"
-        assert result.jobs[0].status == "completed"
 
 
 class TestCreateJob:

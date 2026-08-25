@@ -80,12 +80,9 @@ class JobFailedError(IonQError):
 
 
 def _check_terminal(job: GetJobResponse, raise_on_failure: bool) -> bool:
-    if job.status not in _TERMINAL:
-        return False
     if raise_on_failure and job.status == "failed":
-        failure = job.failure if not isinstance(job.failure, Unset) else None
-        raise JobFailedError(job.id, failure)
-    return True
+        raise JobFailedError(job.id, None if isinstance(job.failure, Unset) else job.failure)
+    return job.status in _TERMINAL
 
 
 def wait_for_job(

@@ -100,4 +100,3 @@ class NativeCircuitInput:
         )
 
         return native_circuit_input
-

@@ -63,4 +63,3 @@ class JobsBulkOperationRequest:
         )
 
         return jobs_bulk_operation_request
-

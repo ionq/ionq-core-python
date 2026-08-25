@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `Matrix2x2` and `Matrix4x4` are now exported from `ionq_core.gates`; they were already documented as the return types of the gate unitaries.
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
 - `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `ApiCostModel` (`"QCT"` or `"2QGE_operations"`).
 - `clone_job` endpoint (`POST /jobs/{UUID}/clone`) and its `CloneJobPayload` model for resubmitting an existing job with optional overrides.
@@ -28,9 +29,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Every `APIError` now carries `retry_after` (parsed and clamped from the `Retry-After` header). Previously only `RateLimitError` exposed it and the value was discarded for other statuses such as 503, where RFC 9110 also allows the header.
 - POST requests are no longer retried automatically by the default transport. The API has no idempotency-key mechanism, so replaying `create_job` / `create_session` / `end_session` after an ambiguous gateway 5xx could duplicate billable work; idempotent methods retry as before. Callers that want POST retries must supply their own transport and handle deduplication.
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
 - Regenerated with `openapi-python-client` 0.29.0. Generated models now parse timestamps with the standard library (`datetime.fromisoformat`) instead of `dateutil.parser.isoparse`.
+
+### Fixed
+
+- `IonQClient(headers=...)` no longer raises `TypeError`; caller headers are merged beneath the extension defaults and the generated `User-Agent`.
+- `cookies` passed to `IonQClient` now reach the async client as well (previously the sync client only).
+- `IonQClient()` no longer builds the TLS trust store twice; the SSL context is created once and shared by the sync and async transports.
 
 ### Removed
 

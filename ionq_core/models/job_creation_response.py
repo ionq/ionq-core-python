@@ -88,4 +88,3 @@ class JobCreationResponse:
         )
 
         return job_creation_response
-
