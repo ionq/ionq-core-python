@@ -104,15 +104,15 @@ def test_submit_and_poll(client, track_job):
     assert completed.completed_at is not None
 
 
-@pytest.fixture(scope="session")
-def completed_job_id(client):
-    resp = get_jobs.sync(client=client, status="completed", limit=1)
-    assert resp is not None and resp.jobs, "No completed jobs found"
-    return resp.jobs[0].id
-
-
 class TestCompletedJobEndpoints:
     """Use an already-completed job to avoid simulator timeout."""
+
+    @pytest.fixture(scope="class")
+    @classmethod
+    def completed_job_id(cls, client):
+        resp = get_jobs.sync(client=client, status="completed", limit=1)
+        assert resp is not None and resp.jobs, "No completed jobs found"
+        return resp.jobs[0].id
 
     def test_get_job_cost(self, client, completed_job_id):
         cost = get_job_cost.sync(uuid=completed_job_id, client=client)
