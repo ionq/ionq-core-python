@@ -169,7 +169,11 @@ def build_transport(
         # POST is deliberately not retryable: without idempotency keys, a replay
         # after an ambiguous 5xx could duplicate billable jobs.
     )
+    # Build the SSL context once: handing `verify` to each transport would load
+    # the CA bundle from disk twice per client (create_ssl_context passes an
+    # ssl.SSLContext through unchanged, so pinned contexts keep their identity).
+    ctx = httpx.create_ssl_context(verify=verify)
     return ErrorRaisingTransport(
-        RetryTransport(transport=httpx.HTTPTransport(verify=verify), retry=retry),
-        RetryTransport(transport=httpx.AsyncHTTPTransport(verify=verify), retry=retry),
+        RetryTransport(transport=httpx.HTTPTransport(verify=ctx), retry=retry),
+        RetryTransport(transport=httpx.AsyncHTTPTransport(verify=ctx), retry=retry),
     )

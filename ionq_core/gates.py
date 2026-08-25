@@ -28,7 +28,7 @@ Example:
     ```
 """
 
-__all__ = ["gpi2_matrix", "gpi_matrix", "ms_matrix", "zz_matrix"]
+__all__ = ["Matrix2x2", "Matrix4x4", "gpi2_matrix", "gpi_matrix", "ms_matrix", "zz_matrix"]
 
 import cmath
 import math

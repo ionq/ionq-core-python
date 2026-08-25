@@ -1,11 +1,33 @@
 from urllib.parse import urlparse
 
+import httpx
 import pytest
 
 from ionq_core import AuthenticatedClient, Client
 from ionq_core.ionq_client import DEFAULT_BASE_URL
 
 BASE_URL = "https://test.invalid" + urlparse(DEFAULT_BASE_URL).path
+
+
+class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
+    """Scripted transport double: returns (or raises) the queued items in order."""
+
+    def __init__(self, *responses):
+        self._responses = list(responses)
+        self.call_count = 0
+
+    def _next(self):
+        self.call_count += 1
+        item = self._responses.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+    def handle_request(self, request):
+        return self._next()
+
+    async def handle_async_request(self, request):
+        return self._next()
 
 
 def make_job_json(job_id, status="completed", **overrides):

@@ -80,6 +80,18 @@ class TestIonQClient:
         c.get_async_httpx_client()
         assert "super-secret-key" not in repr(c)
 
+    def test_headers_kwarg_merges(self):
+        c = IonQClient(api_key="key", headers={"X-Caller": "1", "User-Agent": "overridden"})
+        hc = c.get_httpx_client()
+        assert hc.headers["X-Caller"] == "1"
+        assert hc.headers["User-Agent"].startswith("ionq-core/")  # generated UA wins
+        assert c.get_async_httpx_client().headers["X-Caller"] == "1"
+
+    def test_cookies_reach_both_clients(self):
+        c = IonQClient(api_key="key", cookies={"a": "b"})
+        assert c.get_httpx_client().cookies["a"] == "b"
+        assert c.get_async_httpx_client().cookies["a"] == "b"
+
     def test_caller_headers_dict_not_mutated(self):
         # A headers dict passed by the caller is caller-owned; injecting the
         # Authorization value into it would leak the key to any other client

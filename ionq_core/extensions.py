@@ -50,6 +50,11 @@ class EventHook(Protocol):
     Implement this protocol and pass instances via
     `ClientExtension.event_hooks` to receive callbacks on every request.
 
+    Hooks may also define an optional ``on_error(request, exc)`` method,
+    fired before a transport exception is re-raised. It is looked up by name
+    and deliberately not part of this protocol, so minimal hooks still pass
+    ``isinstance`` checks.
+
     Hook exceptions are logged and suppressed by default. Set
     ``debug_hooks=True`` on `ClientExtension` to re-raise them instead.
     """
@@ -63,7 +68,11 @@ class EventHook(Protocol):
         ...
 
     def on_response(self, request: httpx.Request, response: httpx.Response) -> None:
-        """Called after a response is received.
+        """Called after a successful response is received.
+
+        Not called for error responses: the wrapped transport raises an
+        `IonQError` before this hook fires. Define ``on_error`` to observe
+        failures.
 
         Args:
             request: The original HTTP request.

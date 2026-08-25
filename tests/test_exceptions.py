@@ -46,6 +46,13 @@ class TestRaiseForStatus:
         assert exc_info.value.retry_after == 30.0
         assert exc_info.value.request_id == "req-789"
 
+    def test_retry_after_surfaces_on_any_status(self):
+        # RFC 9110 allows Retry-After on e.g. 503; the parsed value must not
+        # be dropped just because the status is not 429.
+        with pytest.raises(ServerError) as exc_info:
+            raise_for_status(503, retry_after=5.0)
+        assert exc_info.value.retry_after == 5.0
+
     def test_unknown_4xx_raises_api_error(self):
         with pytest.raises(APIError) as exc_info:
             raise_for_status(418)

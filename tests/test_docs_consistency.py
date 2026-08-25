@@ -117,17 +117,15 @@ def test_gitattributes_covers_ruff_paths_plus_init():
     assert gitattr == ruff | {"ionq_core/__init__.py"}
 
 
-def test_spec_path_matches_default_base_url():
-    # Without this, a DEFAULT_BASE_URL bump leaves CONTRIBUTING.md pointing at a stale endpoint.
-    spec_path = f"{urlparse(DEFAULT_BASE_URL).path}/api-docs"
-    assert spec_path in CONTRIB
-
-
-def test_spec_servers_path_in_docs():
-    # Catches a stale openapi.json: code/docs bumped without regen, or fetched from the wrong version.
+def test_spec_path_agrees_across_code_spec_docs_and_workflow():
+    # An API-version bump must land everywhere at once: DEFAULT_BASE_URL,
+    # openapi.json, CONTRIBUTING.md, and the pinned spec-drift fetch URL.
+    api_path = urlparse(DEFAULT_BASE_URL).path
     spec = json.loads((ROOT / "openapi.json").read_text())
-    spec_path = urlparse(spec["servers"][0]["url"]).path
-    assert f"{spec_path}/api-docs" in CONTRIB
+    assert urlparse(spec["servers"][0]["url"]).path == api_path
+    assert f"{api_path}/api-docs" in CONTRIB
+    drift = (ROOT / ".github" / "workflows" / "spec-drift.yml").read_text()
+    assert f"SPEC_URL: {DEFAULT_BASE_URL}/api-docs" in drift
 
 
 def test_single_spdx_year_across_package():

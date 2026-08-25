@@ -10,7 +10,7 @@ from ionq_core.extensions import (
     AsyncEventHook,
     HookTransport,
 )
-from tests.conftest import BASE_URL
+from tests.conftest import BASE_URL, FakeTransport
 
 _BACKENDS_URL = f"{BASE_URL}/backends"
 
@@ -164,28 +164,6 @@ class TestEventHooks:
         assert isinstance(transport, ErrorRaisingTransport)
 
 
-class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(self, response: httpx.Response):
-        self._response = response
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        return self._response
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        return self._response
-
-
-class RaisingTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(self, exc: Exception):
-        self._exc = exc
-
-    def handle_request(self, request: httpx.Request) -> httpx.Response:
-        raise self._exc
-
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        raise self._exc
-
-
 class TestHookTransportExecution:
     def test_hooks_called_in_order(self):
         hook1, hook2 = RecordingHook(), RecordingHook()
@@ -224,7 +202,7 @@ class TestOnErrorHook:
         request = httpx.Request("GET", _BACKENDS_URL)
 
         with pytest.raises(NotFoundError):
-            HookTransport(RaisingTransport(error), (hook,)).handle_request(request)
+            HookTransport(FakeTransport(error), (hook,)).handle_request(request)
 
         assert len(hook.errors) == 1
         assert hook.errors[0] == (request, error)
@@ -241,7 +219,7 @@ class TestOnErrorHook:
                 pass
 
         with pytest.raises(NotFoundError):
-            HookTransport(RaisingTransport(NotFoundError(404)), (MinimalHook(),)).handle_request(
+            HookTransport(FakeTransport(NotFoundError(404)), (MinimalHook(),)).handle_request(
                 httpx.Request("GET", _BACKENDS_URL)
             )
 
@@ -251,7 +229,7 @@ class TestOnErrorHook:
         request = httpx.Request("GET", _BACKENDS_URL)
 
         with pytest.raises(NotFoundError):
-            await HookTransport(RaisingTransport(error), (hook,)).handle_async_request(request)
+            await HookTransport(FakeTransport(error), (hook,)).handle_async_request(request)
 
         assert len(hook.errors) == 1
         assert hook.errors[0] == (request, error)
@@ -266,7 +244,7 @@ class TestOnErrorHook:
             async def on_response(self, request, response):
                 pass
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), (MinimalAsyncHook(),))
+        transport = HookTransport(FakeTransport(NotFoundError(404)), (MinimalAsyncHook(),))
         with pytest.raises(NotFoundError):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))
 
@@ -338,13 +316,13 @@ class TestErrorMapper:
                 return DownstreamError(f"translated: {exc}")
             return exc
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=mapper)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=mapper)
 
         with pytest.raises(DownstreamError, match="translated"):
             transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
 
     def test_sync_mapper_passthrough(self):
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=lambda exc: exc)
 
         with pytest.raises(NotFoundError):
             transport.handle_request(httpx.Request("GET", _BACKENDS_URL))
@@ -358,7 +336,7 @@ class TestErrorMapper:
                 return DownstreamError(f"mapped: {exc}")
             return exc
 
-        transport = HookTransport(RaisingTransport(NotFoundError(404)), error_mapper=mapper)
+        transport = HookTransport(FakeTransport(NotFoundError(404)), error_mapper=mapper)
 
         with pytest.raises(DownstreamError, match="mapped"):
             await transport.handle_async_request(httpx.Request("GET", _BACKENDS_URL))

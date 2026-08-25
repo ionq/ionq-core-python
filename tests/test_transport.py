@@ -12,34 +12,14 @@ from ionq_core._transport import (
 from ionq_core.exceptions import (
     APIConnectionError,
     APITimeoutError,
-    AuthenticationError,
     BadRequestError,
     NotFoundError,
     RateLimitError,
     ServerError,
 )
-from tests.conftest import BASE_URL
+from tests.conftest import BASE_URL, FakeTransport
 
 _URL = f"{BASE_URL}/backends"
-
-
-class FakeTransport(httpx.BaseTransport, httpx.AsyncBaseTransport):
-    def __init__(self, responses):
-        self._responses = list(responses)
-        self.call_count = 0
-
-    def _next(self):
-        self.call_count += 1
-        item = self._responses.pop(0)
-        if isinstance(item, Exception):
-            raise item
-        return item
-
-    def handle_request(self, request):
-        return self._next()
-
-    async def handle_async_request(self, request):
-        return self._next()
 
 
 def _resp(status_code, headers=None, json_body=None):
@@ -51,14 +31,11 @@ def _req(method="GET"):
 
 
 def _wrap(responses):
-    fake = FakeTransport(responses)
+    fake = FakeTransport(*responses)
     return ErrorRaisingTransport(fake), fake
 
 
 class TestBuildTransport:
-    def test_returns_error_raising(self):
-        assert isinstance(build_transport(), ErrorRaisingTransport)
-
     def test_does_not_retry_post_requests(self):
         # POSTs submit billable jobs/sessions and the API has no idempotency
         # keys, so a retry after an ambiguous 5xx could duplicate work.
@@ -81,8 +58,9 @@ class TestBuildTransportTls:
         return sync_ctx, async_ctx
 
     def test_default_verifies_certificates(self):
-        for ctx in self._ssl_contexts(build_transport()):
-            assert ctx.verify_mode == ssl.CERT_REQUIRED
+        sync_ctx, async_ctx = self._ssl_contexts(build_transport())
+        assert sync_ctx is async_ctx  # built once, shared by both transports
+        assert sync_ctx.verify_mode == ssl.CERT_REQUIRED
 
     def test_verify_false_disables_verification(self):
         for ctx in self._ssl_contexts(build_transport(verify=False)):
@@ -100,11 +78,6 @@ class TestErrorRaisingTransportSync:
         assert transport.handle_request(_req()).status_code == 200
         assert fake.call_count == 1
 
-    def test_401_raises_auth_error(self):
-        transport, _ = _wrap([_resp(401)])
-        with pytest.raises(AuthenticationError):
-            transport.handle_request(_req())
-
     def test_503_raises_server_error(self):
         transport, _ = _wrap([_resp(503)])
         with pytest.raises(ServerError) as exc_info:
@@ -117,8 +90,9 @@ class TestErrorRaisingTransportSync:
             transport.handle_request(_req())
         assert exc_info.value.body == {"error": "Bad Request", "message": "Invalid input"}
 
-    def test_error_message_surfaced(self):
-        transport, _ = _wrap([_resp(404, json_body={"message": "Job not found"})])
+    @pytest.mark.parametrize("key", ["message", "error"])
+    def test_error_message_surfaced(self, key):
+        transport, _ = _wrap([_resp(404, json_body={key: "Job not found"})])
         with pytest.raises(NotFoundError, match="Job not found"):
             transport.handle_request(_req())
 
