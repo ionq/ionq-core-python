@@ -41,19 +41,21 @@ from ionq_core.models.circuit_job_creation_payload import CircuitJobCreationPayl
 
 client = IonQClient()  # reads IONQ_API_KEY from the environment
 
-body = CircuitJobCreationPayload.from_dict({
-    "type": "ionq.circuit.v1",
-    "backend": "simulator",
-    "shots": 100,
-    "input": {
-        "gateset": "qis",
-        "qubits": 2,
-        "circuit": [
-            {"gate": "h", "target": 0},
-            {"gate": "cnot", "control": 0, "target": 1},
-        ],
-    },
-})
+body = CircuitJobCreationPayload.from_dict(
+    {
+        "type": "ionq.circuit.v1",
+        "backend": "simulator",
+        "shots": 100,
+        "input": {
+            "gateset": "qis",
+            "qubits": 2,
+            "circuit": [
+                {"gate": "h", "target": 0},
+                {"gate": "cnot", "control": 0, "target": 1},
+            ],
+        },
+    }
+)
 
 job = create_job.sync(client=client, body=body)
 completed = wait_for_job(client, job.id)
@@ -71,6 +73,7 @@ This package follows [SemVer 2.0](https://semver.org/spec/v2.0.0.html), independ
 
 ```python
 import ionq_core
+
 print(ionq_core.__version__)
 ```
 
