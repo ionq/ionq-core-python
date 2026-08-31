@@ -70,7 +70,7 @@ uv run --group regen python scripts/regenerate_models.py --sync-spec   # fetch t
 
 `--sync-spec` downloads the current spec from <https://api.ionq.co/v0.4/api-docs> into `openapi.json` before regenerating.
 
-[`scripts/regenerate_models.py`](scripts/regenerate_models.py) is the single source of truth for the generation command and works on any OS (`make regen` / `make sync-spec` wrap it); the [`generated`](.github/workflows/generated.yml) workflow runs it on every PR across Linux, macOS, and Windows and verifies the committed output is current. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
+[`scripts/regenerate_models.py`](scripts/regenerate_models.py) is the single source of truth for the generation command and works on any OS (`make regen` / `make sync-spec` wrap it); the [`generated`](.github/workflows/generated.yml) workflow runs it on every PR across Linux, macOS, and Windows and verifies that the committed output is current. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide the `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
 
 Commit the regenerated files alongside the spec or template change that caused them. Spec drift is checked weekly by [`spec-drift.yml`](.github/workflows/spec-drift.yml), which opens an issue if `openapi.json` falls behind upstream.
 
