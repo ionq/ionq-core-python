@@ -4,6 +4,9 @@ Canonical invocation:
 
     uv run --group regen python scripts/regenerate_models.py [--sync-spec]
 
+Invoking this script as such ensures that the commands in here don't need to
+be re-run via uv run.
+
 Applies openapi-overlay.yaml (when present) to openapi.json, then runs
 openapi-python-client with the repo's config and custom templates.
 """
@@ -24,18 +27,12 @@ SPEC_FILE = REPO_ROOT / "openapi.json"
 OVERLAY_FILE = REPO_ROOT / "openapi-overlay.yaml"
 
 
-def _tool(name: str) -> str:
+def _get_tool_path(name: str) -> str:
     path = shutil.which(name)
     if path is None:
-        sys.exit(
-            f"error: {name!r} not found on PATH; run via 'uv run --group regen python scripts/regenerate_models.py'"
-        )
+        invocation_cmd = "uv run --group regen python scripts/regenerate_models.py"
+        sys.exit(f"error: {name!r} not found on PATH; run via '{invocation_cmd}'")
     return path
-
-
-def _run(cmd: list[str]) -> None:
-    print("+", " ".join(cmd))
-    subprocess.run(cmd, check=True, cwd=REPO_ROOT)
 
 
 def main() -> None:
@@ -48,43 +45,29 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.sync_spec:
-        print(f"fetching {SPEC_URL}")
         with urllib.request.urlopen(SPEC_URL, timeout=60) as response:
             SPEC_FILE.write_bytes(response.read())
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         patched_spec = Path(tmp_dir) / "patched-spec.json"
         if OVERLAY_FILE.exists():
-            _run(
-                [
-                    _tool("oas-patch"),
-                    "overlay",
-                    str(SPEC_FILE),
-                    str(OVERLAY_FILE),
-                    "-o",
-                    str(patched_spec),
-                ]
-            )
+            cmd = [_get_tool_path("oas-patch"), "overlay", str(SPEC_FILE), str(OVERLAY_FILE), "-o", str(patched_spec)]
+            subprocess.run(cmd, check=True, cwd=REPO_ROOT)
         else:
             shutil.copyfile(SPEC_FILE, patched_spec)
 
-        _run(
-            [
-                _tool("openapi-python-client"),
-                "generate",
-                "--path",
-                str(patched_spec),
-                "--meta",
-                "none",
-                "--config",
-                "openapi-python-client-config.yaml",
-                "--custom-template-path",
-                "custom-templates",
-                "--output-path",
-                "ionq_core",
-                "--overwrite",
-            ]
-        )
+        # fmt: off
+        cmd = [
+            _get_tool_path("openapi-python-client"), "generate",
+            "--path", str(patched_spec),
+            "--meta", "none",
+            "--config", "openapi-python-client-config.yaml",
+            "--custom-template-path", "custom-templates",
+            "--output-path", "ionq_core",
+            "--overwrite",
+        ]
+        # fmt: on
+        subprocess.run(cmd, check=True, cwd=REPO_ROOT)
 
 
 if __name__ == "__main__":
