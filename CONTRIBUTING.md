@@ -80,7 +80,7 @@ uv run openapi-python-client generate \
     --overwrite
 ```
 
-Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
+Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` and the Q-CTRL `api_credentials` field from `repr`, keep the `Authorization` header out of repr-visible client state, route path parameters through `ionq_core._url.quote_path_param`, and run `ruff` fix-and-format.
 
 Commit the regenerated files alongside the spec or template change that caused them. Spec drift is checked weekly by [`spec-drift.yml`](.github/workflows/spec-drift.yml), which opens an issue if `openapi.json` falls behind upstream.
 

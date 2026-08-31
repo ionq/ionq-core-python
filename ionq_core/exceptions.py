@@ -137,7 +137,11 @@ class RateLimitError(APIError):
 
     Attributes:
         retry_after: Seconds to wait before retrying, or ``None`` if the
-            server did not include a ``Retry-After`` header.
+            server did not include a usable ``Retry-After`` header. The
+            default transport validates the header and caps the value at
+            300 seconds (non-finite values are treated as absent), so a
+            hostile or buggy server cannot steer callers that sleep on this
+            attribute into an unbounded wait.
     """
 
     def __init__(

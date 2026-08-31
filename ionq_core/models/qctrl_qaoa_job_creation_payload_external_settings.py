@@ -31,7 +31,7 @@ class QctrlQaoaJobCreationPayloadExternalSettings:
             external_organization (str | Unset): Optional unique slug for your target Q-CTRL organization
      """
 
-    api_credentials: str
+    api_credentials: str = _attrs_field(repr=False)
     external_organization: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 

@@ -13,15 +13,16 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      # Pinned (keep in sync with CONTRIBUTING.md); never derived from openapi.json,
+      # so a tampered vendored spec cannot point the check at a mirror that hides it.
+      SPEC_URL: https://api.ionq.co/v0.4/api-docs
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Fetch latest spec
-        run: |
-          BASE_URL=$(jq -r '.servers[0].url' openapi.json)
-          echo "BASE_URL=${BASE_URL}" >> "$GITHUB_ENV"
-          curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
+        run: curl -sf "$SPEC_URL" -o /tmp/latest-spec.json
       - name: Check for drift
         id: drift
         run: |
@@ -35,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           {
-            echo "The spec at ${BASE_URL}/api-docs has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client."
+            echo "The spec at ${SPEC_URL} has diverged from the vendored openapi.json. Fetch the new spec and regenerate the client."
             printf '\n<details><summary>Diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
             head -c 60000 /tmp/spec.diff
             [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'

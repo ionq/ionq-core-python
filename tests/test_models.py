@@ -3,6 +3,10 @@ from uuid import UUID
 from ionq_core.models.backend import Backend
 from ionq_core.models.base_job import BaseJob
 from ionq_core.models.job_creation_response import JobCreationResponse
+from ionq_core.models.qctrl_qaoa_job_creation_payload import QctrlQaoaJobCreationPayload
+from ionq_core.models.qctrl_qaoa_job_creation_payload_external_settings import (
+    QctrlQaoaJobCreationPayloadExternalSettings,
+)
 from ionq_core.models.session import Session
 from ionq_core.models.whoami import Whoami
 
@@ -131,3 +135,35 @@ class TestSessionModel:
         result = Session.from_dict(SESSION_SAMPLE).to_dict()
         for key in ["id", "active", "status", "organization_id"]:
             assert result[key] == SESSION_SAMPLE[key]
+
+
+class TestQctrlCredentialMasking:
+    """api_credentials is a Q-CTRL API key; repr()/str() of the payload models
+    must never disclose it (CWE-532), while the wire format stays intact."""
+
+    SECRET = "qctrl-secret-key-123"
+
+    def _payload(self):
+        return QctrlQaoaJobCreationPayload.from_dict(
+            {
+                "backend": "simulator",
+                "type": "qctrl.qaoa.v1",
+                "input": {"problem_type": "maxcut", "problem": {}},
+                "external_settings": {"api_credentials": self.SECRET},
+            }
+        )
+
+    def test_external_settings_repr_masked(self):
+        settings = QctrlQaoaJobCreationPayloadExternalSettings(api_credentials=self.SECRET)
+        assert self.SECRET not in repr(settings)
+        assert self.SECRET not in str(settings)
+
+    def test_containing_payload_repr_masked(self):
+        payload = self._payload()
+        assert self.SECRET not in repr(payload)
+        assert self.SECRET not in str(payload)
+
+    def test_credential_round_trips_to_wire_format(self):
+        payload = self._payload()
+        assert payload.external_settings.api_credentials == self.SECRET
+        assert payload.to_dict()["external_settings"]["api_credentials"] == self.SECRET

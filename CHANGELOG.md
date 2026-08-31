@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Security
+
+- Generated endpoints now reject the path-parameter values `""`, `"."`, and `".."` (raising `ValueError`) before any request is built. `urllib.parse.quote` never encodes dots, so an attacker-supplied identifier like `".."` previously survived into the URL and deleted a fixed path segment under RFC 3986 normalization (e.g. `/sessions/../jobs` -> `/jobs`), redirecting session-scoped reads to account-wide ones.
+- `QctrlQaoaJobCreationPayloadExternalSettings.api_credentials` (a Q-CTRL API key) is now excluded from the attrs-generated `repr`, so logging or echoing a job payload can no longer disclose it. `to_dict()` and the wire format are unchanged.
+- `AuthenticatedClient` no longer writes the `Authorization` value into its repr-visible, caller-owned headers dict when the httpx clients are built; the credential now lives only on the httpx clients themselves. `repr(client)` stays token-free after use, and a headers dict shared with other clients is no longer contaminated with the key.
+- `RateLimitError.retry_after` is now validated by the default transport: values are clamped to at most 300 seconds and non-finite values (`inf`, `nan`, overflowing forms like `1e309`) are treated as absent, so a forged `Retry-After` header cannot drive callers that sleep on it into an unbounded wait or an `OverflowError`.
+- The default transport now reads at most 64 KiB (decoded) of an error-response body instead of materializing the whole, transparently decompressed body, preventing memory exhaustion from compression-bomb error responses.
+- `verify_ssl` passed to `IonQClient` is now applied to the underlying sync and async httpx transports. Previously the value was silently ignored (httpx disregards client-level `verify` when a custom transport is supplied), so custom CA bundles and pinned `ssl.SSLContext` objects had no effect and `verify_ssl=False` did not actually disable verification.
+- The pagination helpers (`iter_jobs`, `aiter_jobs`, `iter_session_jobs`, `aiter_session_jobs`) now raise `IonQError` when the server-supplied `next` cursor is empty or repeats a previously seen cursor, instead of issuing authenticated requests in an unbounded loop.
+- The weekly spec-drift workflow fetches the upstream spec from a URL pinned in the workflow instead of one derived from the vendored `openapi.json`, so a tampered spec can no longer point the drift check at a mirror that hides the tampering.
+
 ### Added
 
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
@@ -17,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- POST requests are no longer retried automatically by the default transport. The API has no idempotency-key mechanism, so replaying `create_job` / `create_session` / `end_session` after an ambiguous gateway 5xx could duplicate billable work; idempotent methods retry as before. Callers that want POST retries must supply their own transport and handle deduplication.
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
 - Regenerated with `openapi-python-client` 0.29.0. Generated models now parse timestamps with the standard library (`datetime.fromisoformat`) instead of `dateutil.parser.isoparse`.
 
