@@ -19,22 +19,20 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling")
+T = TypeVar("T", bound="ErrorMitigationOutputSymmetryVerificationType0")
 
 
 
 @_attrs_define
-class CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling:
+class ErrorMitigationOutputSymmetryVerificationType0:
     """ 
         Attributes:
-            p2q (float | Unset):
-            t2q (float | Unset):
-            t1q (float | Unset):
+            num_allowed_states (float | Unset):
+            applied (bool | Unset):
      """
 
-    p2q: float | Unset = UNSET
-    t2q: float | Unset = UNSET
-    t1q: float | Unset = UNSET
+    num_allowed_states: float | Unset = UNSET
+    applied: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -42,23 +40,19 @@ class CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling:
 
 
     def to_dict(self) -> dict[str, Any]:
-        p2q = self.p2q
+        num_allowed_states = self.num_allowed_states
 
-        t2q = self.t2q
-
-        t1q = self.t1q
+        applied = self.applied
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
         })
-        if p2q is not UNSET:
-            field_dict["p2q"] = p2q
-        if t2q is not UNSET:
-            field_dict["t2q"] = t2q
-        if t1q is not UNSET:
-            field_dict["t1q"] = t1q
+        if num_allowed_states is not UNSET:
+            field_dict["num_allowed_states"] = num_allowed_states
+        if applied is not UNSET:
+            field_dict["applied"] = applied
 
         return field_dict
 
@@ -67,21 +61,18 @@ class CircuitJobSettingsErrorMitigationDebiasingType0PhiChiTwirling:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        p2q = d.pop("p2q", UNSET)
+        num_allowed_states = d.pop("num_allowed_states", UNSET)
 
-        t2q = d.pop("t2q", UNSET)
+        applied = d.pop("applied", UNSET)
 
-        t1q = d.pop("t1q", UNSET)
-
-        circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling = cls(
-            p2q=p2q,
-            t2q=t2q,
-            t1q=t1q,
+        error_mitigation_output_symmetry_verification_type_0 = cls(
+            num_allowed_states=num_allowed_states,
+            applied=applied,
         )
 
 
-        circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling.additional_properties = d
-        return circuit_job_settings_error_mitigation_debiasing_type_0_phi_chi_twirling
+        error_mitigation_output_symmetry_verification_type_0.additional_properties = d
+        return error_mitigation_output_symmetry_verification_type_0
 
     @property
     def additional_keys(self) -> list[str]:

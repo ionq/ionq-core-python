@@ -1,12 +1,40 @@
 overlay: 1.0.0
 info:
   title: ionq-core-python local OpenAPI fixes
-  version: 0.2.0
+  version: 0.3.0
   description: |
     Patches applied to openapi.json before client generation. The upstream
     spec marks QisCircuitInput.qubits as optional, but the simulator
     preflight rejects payloads without it (surfacing as
     UnexpectedCompilationError), so we make it required locally.
+
+    The vendored spec's GetJobEstimateResponse (input_values /
+    rate_information / estimated_cost / cost_unit) no longer matches what
+    the API serves - parsing a successful estimate raised
+    KeyError: 'input_values'. Upstream now documents the shape the API
+    actually returns (estimate_context / rate_card / estimated_total_cost /
+    estimated_unit), so we replace the schema locally with that upstream
+    definition (plus its GetJobEstimateContext and RateCardEntry component
+    schemas) until the next full spec sync.
+
+    The organization_id schema and path parameter declare format: uuid, but
+    real organization ids are not UUIDs (e.g. reverse-DNS ids such as
+    "com.example", and even the spec's own example is not a valid UUID), so
+    parsing a usage response raised "badly formed hexadecimal UUID string";
+    we drop the uuid format locally and treat the id as a plain string.
+
+    Usage.from declares format: date, but the API returns RFC 3339
+    date-times (e.g. "2026-08-01T00:00:00Z"), so parsing a usage response
+    raised "Invalid isoformat string"; we widen the format to date-time
+    locally (datetime.fromisoformat also accepts plain dates).
+
+    ErrorMitigationOutput.debiasing declares an object (variants /
+    aggregation_method), but the API serves a boolean `false` when debiasing
+    is off (and the object when it is on), so parsing any completed job
+    raised TypeError: 'bool' object is not iterable inside the GetJobResponse
+    union - which surfaced as the misleading "Unexpected value
+    'ionq.circuit.v1'" error from the union's last variant. We widen the
+    property to anyOf boolean/object locally.
 
     Previously this overlay also coerced QisCircuitInput.qubits from
     number/double to integer/int32; upstream adopted that fix in May 2026
@@ -22,3 +50,155 @@ actions:
         - circuit
         - gateset
         - qubits
+  - target: $.components.schemas.GetJobEstimateResponse
+    remove: true
+  - target: $.components.schemas
+    update:
+      GetJobEstimateContext:
+        properties:
+          backend:
+            $ref: "#/components/schemas/JobBackends"
+          type:
+            type: string
+            default: ionq.circuit.v1
+          qubits:
+            type: integer
+            format: int32
+            default: 25
+            minimum: 1
+          shots:
+            type: integer
+            format: int32
+            default: 1000
+            minimum: 1
+            maximum: 1000000
+          1q_gates:
+            type: integer
+            format: int32
+            default: 0
+            minimum: 0
+          2q_gates:
+            type: integer
+            format: int32
+            default: 0
+            minimum: 0
+          error_mitigation:
+            type: boolean
+            default: false
+          organization:
+            type: string
+            nullable: true
+          project:
+            type: string
+            nullable: true
+        required:
+          - backend
+          - organization
+          - project
+        type: object
+        additionalProperties: false
+      RateCardEntry:
+        properties:
+          sku:
+            type: string
+          unit:
+            type: string
+            enum:
+              - compute_second
+              - gates
+          unit_cost:
+            type: number
+            format: double
+            description: Present only when unit is "compute_second".
+          cost_1q_gate:
+            type: number
+            format: double
+            description: Present only when unit is "gates".
+          cost_2q_gate:
+            type: number
+            format: double
+            description: Present only when unit is "gates".
+          job_cost_minimum:
+            type: number
+            format: double
+            description: >-
+              Present only when unit is "gates" and the contract applies a
+              job minimum.
+        required:
+          - sku
+          - unit
+        type: object
+        additionalProperties: false
+      GetJobEstimateResponse:
+        properties:
+          estimate_context:
+            $ref: "#/components/schemas/GetJobEstimateContext"
+          estimated_at:
+            $ref: "#/components/schemas/IsoTimestamp"
+          estimated_unit:
+            type: string
+          rate_card:
+            properties:
+              rates:
+                items:
+                  $ref: "#/components/schemas/RateCardEntry"
+                type: array
+              id:
+                type: string
+            required:
+              - rates
+              - id
+            type: object
+          estimated_total_cost:
+            type: number
+            format: double
+          estimated_execution_time:
+            type: integer
+            format: int32
+            description: Predicted job execution time, in milliseconds.
+            example: 96250
+          estimated_quantum_compute_time_us:
+            type: integer
+            format: int32
+            description: |-
+              Predicted quantum compute time, in microseconds. Only present for
+              compute_second priced backends.
+          current_predicted_queue_time:
+            type: integer
+            format: int32
+            description: >-
+              Predicted time this job will wait in the queue before running,
+              in milliseconds.
+            example: 397577
+        required:
+          - estimate_context
+          - estimated_at
+          - estimated_unit
+          - rate_card
+          - estimated_total_cost
+          - estimated_execution_time
+          - current_predicted_queue_time
+        type: object
+        additionalProperties: false
+  - target: $.components.schemas.ErrorMitigationOutput.properties.debiasing
+    remove: true
+  - target: $.components.schemas.ErrorMitigationOutput.properties
+    update:
+      debiasing:
+        anyOf:
+          - type: boolean
+          - type: object
+            properties:
+              variants:
+                items:
+                  $ref: "#/components/schemas/VariantInfo"
+                type: array
+              aggregation_method:
+                type: string
+  - target: $.components.schemas.organization_id.format
+    remove: true
+  - target: $.components.parameters.organization_id.schema.format
+    remove: true
+  - target: $.components.schemas.Usage.properties.from
+    update:
+      format: date-time

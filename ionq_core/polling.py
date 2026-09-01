@@ -36,7 +36,14 @@ from .types import Unset
 
 if TYPE_CHECKING:
     from .client import AuthenticatedClient
-    from .models.get_job_response import GetJobResponse
+    from .models.multi_circuit_job import MultiCircuitJob
+    from .models.qaoa_job import QaoaJob
+    from .models.quantum_function_job import QuantumFunctionJob
+    from .models.single_circuit_job import SingleCircuitJob
+
+    # The spec's GetJobResponse component is an anyOf union, which the
+    # generator inlines instead of emitting as a model class.
+    GetJobResponse = SingleCircuitJob | MultiCircuitJob | QaoaJob | QuantumFunctionJob
 
 logger = logging.getLogger("ionq_core")
 

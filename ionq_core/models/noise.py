@@ -12,10 +12,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..models.noise_model import check_noise_model
-from ..models.noise_model import NoiseModel
 from ..types import UNSET, Unset
-from typing import cast
 
 
 
@@ -30,11 +27,12 @@ T = TypeVar("T", bound="Noise")
 class Noise:
     """ 
         Attributes:
-            model (NoiseModel):
+            model (str): Available options: `ideal`, `harmony`, `harmony-1`, `harmony-2`, `aria-1`, `aria-2`, `forte-1`,
+                `forte-enterprise-1`
             seed (int | Unset):
      """
 
-    model: NoiseModel
+    model: str
     seed: int | Unset = UNSET
 
 
@@ -42,7 +40,7 @@ class Noise:
 
 
     def to_dict(self) -> dict[str, Any]:
-        model: str = self.model
+        model = self.model
 
         seed = self.seed
 
@@ -62,10 +60,7 @@ class Noise:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        model = check_noise_model(d.pop("model"))
-
-
-
+        model = d.pop("model")
 
         seed = d.pop("seed", UNSET)
 

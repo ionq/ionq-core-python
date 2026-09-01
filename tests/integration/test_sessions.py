@@ -21,7 +21,7 @@ def test_session_lifecycle(client):
     try:
         with SessionManager(client, "simulator") as session:
             assert session.session_id is not None
-            assert session.status() in ("started", "ready")
+            assert session.status() in ("created", "started", "ready")
 
             jobs = get_session_jobs.sync(session.session_id, client=client)
             assert jobs is not None

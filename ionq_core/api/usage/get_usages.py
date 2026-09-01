@@ -12,19 +12,20 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.bad_request_error import BadRequestError
+from ...models.error import Error
 from ...models.group_by import check_group_by
 from ...models.group_by import GroupBy
 from ...models.modality import check_modality
 from ...models.modality import Modality
 from ...models.usages import Usages
 from typing import cast
-from uuid import UUID
 import datetime
 
 
 
 def _get_kwargs(
-    organization_id: UUID,
+    organization_id: str,
     *,
     start_date: datetime.date,
     end_date: datetime.date,
@@ -65,7 +66,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Usages | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BadRequestError | Error | Usages:
     if response.status_code == 200:
         response_200 = Usages.from_dict(response.json())
 
@@ -73,13 +74,29 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
-    if client.raise_on_unexpected_status:
-        raise errors.UnexpectedStatus(response.status_code, response.content)
-    else:
-        return None
+    if response.status_code == 400:
+        response_400 = BadRequestError.from_dict(response.json())
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Usages]:
+
+        return response_400
+
+    if response.status_code == 401:
+        response_401 = Error.from_dict(response.json())
+
+
+
+        return response_401
+
+    response_default = Error.from_dict(response.json())
+
+
+
+    return response_default
+
+
+
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BadRequestError | Error | Usages]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -89,7 +106,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -97,13 +114,13 @@ def sync_detailed(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Response[Usages]:
+) -> Response[BadRequestError | Error | Usages]:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -114,7 +131,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Usages]
+        Response[BadRequestError | Error | Usages]
      """
 
 
@@ -134,7 +151,7 @@ modality=modality,
     return _build_response(client=client, response=response)
 
 def sync(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -142,13 +159,13 @@ def sync(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Usages | None:
+) -> BadRequestError | Error | Usages | None:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -159,7 +176,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Usages
+        BadRequestError | Error | Usages
      """
 
 
@@ -174,7 +191,7 @@ modality=modality,
     ).parsed
 
 async def asyncio_detailed(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -182,13 +199,13 @@ async def asyncio_detailed(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Response[Usages]:
+) -> Response[BadRequestError | Error | Usages]:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -199,7 +216,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Usages]
+        Response[BadRequestError | Error | Usages]
      """
 
 
@@ -219,7 +236,7 @@ modality=modality,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    organization_id: UUID,
+    organization_id: str,
     *,
     client: AuthenticatedClient | Client,
     start_date: datetime.date,
@@ -227,13 +244,13 @@ async def asyncio(
     group_by: GroupBy,
     modality: Modality,
 
-) -> Usages | None:
+) -> BadRequestError | Error | Usages | None:
     """ Get usage costs
 
      Retrieves the costs of a given group type, broken down by the given date modality.
 
     Args:
-        organization_id (UUID):
+        organization_id (str):
         start_date (datetime.date):
         end_date (datetime.date):
         group_by (GroupBy): QPU Usage grouping Example: project.
@@ -244,7 +261,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Usages
+        BadRequestError | Error | Usages
      """
 
 

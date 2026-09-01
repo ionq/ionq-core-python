@@ -18,11 +18,11 @@ from ..models.modality import check_modality
 from ..models.modality import Modality
 from ..types import UNSET, Unset
 from typing import cast
-from uuid import UUID
 import datetime
 
 if TYPE_CHECKING:
   from ..models.usage import Usage
+  from ..models.usage_amount import UsageAmount
 
 
 
@@ -41,21 +41,24 @@ class Usages:
             modality (Modality): Report modality Example: daily.
             amount_total (float | Unset): The total cost amount for the given timeframe, in units given by usage_unit
                 Example: 151.31.
+            amount_totals (list[UsageAmount] | Unset): The per-currency breakdown of amount_total before ACU normalization
             job_count (int | Unset): The total number of jobs run in the timeframe Example: 514.
-            organization (UUID | Unset): UUID of an organization. Example: 71d164e-6ebe-4126-8839-f1529bb01a00.
+            organization (str | Unset): UUID of an organization. Example: 71d164e-6ebe-4126-8839-f1529bb01a00.
             time_us_total (float | Unset): The total QPU time usage for the given timeframe, in microseconds Example:
                 1566154.312523.
             usage_data (list[Usage] | Unset): The breakdown of usage by group type in date order most to least recent
             usage_from (datetime.datetime | Unset): Usage beginning RFC 3339 timestamp Example: 2025-10-01T00:00:00Z.
             usage_to (datetime.datetime | Unset): Usage end RFC 3339 timestamp Example: 2025-11-01T00:00:00Z.
-            usage_unit (str | Unset): The currency of the total and job cost amounts Example: USD.
+            usage_unit (str | Unset): The currency of the total and job cost amounts. Normalized to credits if any credit
+                activity is present anywhere in the requested range Example: USD.
      """
 
     group_type: GroupBy
     modality: Modality
     amount_total: float | Unset = UNSET
+    amount_totals: list[UsageAmount] | Unset = UNSET
     job_count: int | Unset = UNSET
-    organization: UUID | Unset = UNSET
+    organization: str | Unset = UNSET
     time_us_total: float | Unset = UNSET
     usage_data: list[Usage] | Unset = UNSET
     usage_from: datetime.datetime | Unset = UNSET
@@ -69,17 +72,25 @@ class Usages:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.usage import Usage
+        from ..models.usage_amount import UsageAmount
         group_type: str = self.group_type
 
         modality: str = self.modality
 
         amount_total = self.amount_total
 
+        amount_totals: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.amount_totals, Unset):
+            amount_totals = []
+            for amount_totals_item_data in self.amount_totals:
+                amount_totals_item = amount_totals_item_data.to_dict()
+                amount_totals.append(amount_totals_item)
+
+
+
         job_count = self.job_count
 
-        organization: str | Unset = UNSET
-        if not isinstance(self.organization, Unset):
-            organization = str(self.organization)
+        organization = self.organization
 
         time_us_total = self.time_us_total
 
@@ -111,6 +122,8 @@ class Usages:
         })
         if amount_total is not UNSET:
             field_dict["amount_total"] = amount_total
+        if amount_totals is not UNSET:
+            field_dict["amount_totals"] = amount_totals
         if job_count is not UNSET:
             field_dict["job_count"] = job_count
         if organization is not UNSET:
@@ -133,6 +146,7 @@ class Usages:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.usage import Usage
+        from ..models.usage_amount import UsageAmount
         d = dict(src_dict)
         group_type = check_group_by(d.pop("group_type"))
 
@@ -146,17 +160,21 @@ class Usages:
 
         amount_total = d.pop("amount_total", UNSET)
 
+        _amount_totals = d.pop("amount_totals", UNSET)
+        amount_totals: list[UsageAmount] | Unset = UNSET
+        if _amount_totals is not UNSET:
+            amount_totals = []
+            for amount_totals_item_data in _amount_totals:
+                amount_totals_item = UsageAmount.from_dict(amount_totals_item_data)
+
+
+
+                amount_totals.append(amount_totals_item)
+
+
         job_count = d.pop("job_count", UNSET)
 
-        _organization = d.pop("organization", UNSET)
-        organization: UUID | Unset
-        if isinstance(_organization,  Unset):
-            organization = UNSET
-        else:
-            organization = UUID(_organization)
-
-
-
+        organization = d.pop("organization", UNSET)
 
         time_us_total = d.pop("time_us_total", UNSET)
 
@@ -198,6 +216,7 @@ class Usages:
             group_type=group_type,
             modality=modality,
             amount_total=amount_total,
+            amount_totals=amount_totals,
             job_count=job_count,
             organization=organization,
             time_us_total=time_us_total,

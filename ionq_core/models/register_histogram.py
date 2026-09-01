@@ -18,13 +18,14 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="GetVariantResultsResponse")
+T = TypeVar("T", bound="RegisterHistogram")
 
 
 
 @_attrs_define
-class GetVariantResultsResponse:
-    """ 
+class RegisterHistogram:
+    """ Bitstring → shot count map for one register.
+
      """
 
     additional_properties: dict[str, float] = _attrs_field(init=False, factory=dict)
@@ -45,12 +46,12 @@ class GetVariantResultsResponse:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        get_variant_results_response = cls(
+        register_histogram = cls(
         )
 
 
-        get_variant_results_response.additional_properties = d
-        return get_variant_results_response
+        register_histogram.additional_properties = d
+        return register_histogram
 
     @property
     def additional_keys(self) -> list[str]:

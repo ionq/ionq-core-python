@@ -30,8 +30,8 @@ class Backend:
 
         Attributes:
             average_queue_time (float): Current wait time on the queue for execution. Example: 1181215.
-            backend (str): Specifies target hardware and generation where applies: `simulator`, `qpu.aria-1`, `qpu.aria-2`,
-                `qpu.forte-1`, `qpu.forte-enterprise-1`, `qpu.forte-enterprise-2`, `qpu.forte-enterprise-3` Example: qpu.aria-1.
+            backend (str): Specifies target hardware and generation where applies: `simulator`, `qpu.forte-1`, `qpu.forte-
+                enterprise-1` Example: qpu.forte-1.
             last_updated (str): Last date time the backend status was updated. Example: 2025-06-16T00:00:00Z.
             qubits (int): The number of qubits available. Example: 25.
             status (str): Current status of the backend: `available`, `unavailable`, `retired`.
