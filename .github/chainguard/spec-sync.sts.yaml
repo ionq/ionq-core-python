@@ -1,0 +1,14 @@
+# spec-sync opens/updates the weekly OpenAPI-regeneration PR and merges it into THIS
+# repo only. The caller holds no key: it federates its Actions OIDC token for a
+# short-lived, self-scoped installation token. Pattern: the `self-modify` variant in
+# ionq-actions/octo-sts/docs/patterns/release-please.md.
+issuer: https://token.actions.githubusercontent.com
+# Both subject forms, so an immutable-ID opt-in or rename keeps syncing;
+# ionq=25356822, ionq-core-python=1204464907.
+subject_pattern: "^repo:(ionq/ionq-core-python|[^/@]+@25356822/[^/@:]+@1204464907):ref:refs/heads/main$"
+claim_pattern:
+  enterprise: "^ionq$"
+permissions:
+  contents: write # push the regeneration branch
+  pull_requests: write # open/update/merge the PR
+  issues: write # apply the spec-drift label (labels ride the issues API)
