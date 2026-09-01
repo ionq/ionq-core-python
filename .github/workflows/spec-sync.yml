@@ -82,6 +82,7 @@ jobs:
           GH_TOKEN: ${{ steps.sts.outputs.token }}
           PR: ${{ steps.pr.outputs.pull-request-number }}
         run: |
-          sleep 30 # let required check runs attach to the new head SHA
+          # Poll until required check runs attach; gh errors instead of waiting when none are reported yet.
+          for _ in $(seq 30); do gh pr checks "$PR" --required --json name >/dev/null 2>&1 && break; sleep 10; done
           gh pr checks "$PR" --required --watch --fail-fast
           gh pr merge "$PR" --squash --admin

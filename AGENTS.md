@@ -121,7 +121,7 @@ When authoring a new workflow, use the local [`.github/actions/setup-uv`](.githu
 
 - Branch off `main`. CODEOWNERS is `@ionq/developer-tools`.
 - PR titles become release-notes lines (`gh release create --generate-notes`). Imperative mood, user-facing, no leading ticket number.
-- User-visible changes go under `## [Unreleased]` in `CHANGELOG.md`, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+- User-visible changes go under `## [Unreleased]` in `CHANGELOG.md`, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Automated `spec-sync` PRs skip this; write their entries at release time from the merged `spec-drift`-labeled PRs.
 - Release: bump `pyproject.toml` `[project] version`, promote `[Unreleased]` → `[X.Y.Z]` in `CHANGELOG.md`, tag `vX.Y.Z`. `release.yml` rejects mismatched tag/version pairs and refuses to republish an existing PyPI version.
 
 ## Things to avoid (and what to do instead)
