@@ -25,8 +25,11 @@ jobs:
       - uses: ./.github/actions/setup-uv
       - name: Regenerate client
         run: uv run --group regen python scripts/regenerate_models.py
+      # Windows only proves regeneration runs: openapi-python-client writes
+      # files with platform-native newlines, so its output there is CRLF and
+      # never byte-identical to the committed (LF) files.
       - name: Check for uncommitted changes
-        if: runner.os == 'Linux'
+        if: matrix.os != 'windows-latest'
         run: |
           if [[ -n "$(git status --porcelain ionq_core/)" ]]; then
             echo "::error::Generated code is out of date. Run 'uv run --group regen python scripts/regenerate_models.py' and commit the results."

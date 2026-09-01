@@ -6,11 +6,14 @@ AuthenticatedClient.token from repr and prepends SPDX/@generated headers.
 
 from __future__ import annotations
 
-import datetime
 import re
 from pathlib import Path
 
 PACKAGE_DIR = Path(__file__).resolve().parent.parent / "ionq_core"
+
+# Year of the package's first publication (v0.1.0, 2026-04-29). Fixed so that
+# regeneration output is identical regardless of when it runs.
+COPYRIGHT_YEAR = 2026
 
 
 def main() -> None:
@@ -23,14 +26,17 @@ def main() -> None:
             flags=re.MULTILINE,
         ),
         encoding="utf-8",
+        newline="\n",
     )
 
-    year = datetime.datetime.now(datetime.UTC).year
-    header = f"# SPDX-FileCopyrightText: {year} IonQ, Inc.\n# SPDX-License-Identifier: Apache-2.0\n# @generated\n\n"
+    header = (
+        f"# SPDX-FileCopyrightText: {COPYRIGHT_YEAR} IonQ, Inc.\n"
+        "# SPDX-License-Identifier: Apache-2.0\n# @generated\n\n"
+    )
     for path in PACKAGE_DIR.rglob("*.py"):
         text = path.read_text(encoding="utf-8")
         if not text.startswith("# SPDX-FileCopyrightText"):
-            path.write_text(header + text, encoding="utf-8")
+            path.write_text(header + text, encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":
