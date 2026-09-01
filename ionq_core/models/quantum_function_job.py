@@ -16,33 +16,38 @@ from ..models.api_cost_model import ApiCostModel
 from ..models.api_cost_model import check_api_cost_model
 from ..models.job_status import check_job_status
 from ..models.job_status import JobStatus
+from ..models.quantum_function_job_type import check_quantum_function_job_type
+from ..models.quantum_function_job_type import QuantumFunctionJobType
 from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.circuit_job_result import CircuitJobResult
-  from ..models.circuit_job_settings import CircuitJobSettings
-  from ..models.circuit_job_stats import CircuitJobStats
   from ..models.failure import Failure
   from ..models.job_metadata import JobMetadata
-  from ..models.json_object import JsonObject
   from ..models.noise import Noise
+  from ..models.quantum_function_job_output import QuantumFunctionJobOutput
+  from ..models.quantum_function_job_results import QuantumFunctionJobResults
+  from ..models.quantum_function_job_settings import QuantumFunctionJobSettings
+  from ..models.quantum_function_job_stats import QuantumFunctionJobStats
 
 
 
 
 
-T = TypeVar("T", bound="GetJobResponse")
+T = TypeVar("T", bound="QuantumFunctionJob")
 
 
 
 @_attrs_define
-class GetJobResponse:
-    """ 
+class QuantumFunctionJob:
+    """ Response shape for `quantum-function` jobs. Settings, stats, output, and
+    results are all free-form — the concrete shape is defined by the function
+    implementation and varies by provider.
+
         Attributes:
             id (str):
             status (JobStatus):
-            type_ (str):
+            type_ (QuantumFunctionJobType):
             backend (str):
             dry_run (bool):
             submitter_id (str): The id of the user who submitted the job.
@@ -59,10 +64,13 @@ class GetJobResponse:
             execution_duration_ms (int | None): How long the job actually took to run on the QPU. Null if the job hasn't run
                 yet.
             failure (Failure | None):
-            output (JsonObject):
-            settings (CircuitJobSettings):
-            stats (CircuitJobStats):
-            results (CircuitJobResult | None):
+            output (QuantumFunctionJobOutput): Output for quantum-function jobs. Shape varies by function implementation.
+            settings (QuantumFunctionJobSettings): Settings for quantum-function-family jobs (`qctrl.qaoa.v1`, `quantum-
+                function`).
+                Unlike circuit jobs, no compilation settings are accepted — only error mitigation.
+            stats (QuantumFunctionJobStats): Stats for quantum-function jobs. Shape varies by function implementation.
+            results (None | QuantumFunctionJobResults): Scalar metrics emitted by the quantum-function implementation — the
+                expectation value of the observable (`value`) and its estimated variance across the shot ensemble (`variance`).
             child_job_ids (list[str] | None):
             shots (int | Unset): `shots` are not included with ideal simulator backend.
             noise (Noise | Unset):
@@ -72,7 +80,7 @@ class GetJobResponse:
 
     id: str
     status: JobStatus
-    type_: str
+    type_: QuantumFunctionJobType
     backend: str
     dry_run: bool
     submitter_id: str
@@ -88,10 +96,10 @@ class GetJobResponse:
     predicted_execution_duration_ms: int | None
     execution_duration_ms: int | None
     failure: Failure | None
-    output: JsonObject
-    settings: CircuitJobSettings
-    stats: CircuitJobStats
-    results: CircuitJobResult | None
+    output: QuantumFunctionJobOutput
+    settings: QuantumFunctionJobSettings
+    stats: QuantumFunctionJobStats
+    results: None | QuantumFunctionJobResults
     child_job_ids: list[str] | None
     shots: int | Unset = UNSET
     noise: Noise | Unset = UNSET
@@ -102,18 +110,18 @@ class GetJobResponse:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.circuit_job_result import CircuitJobResult
-        from ..models.circuit_job_settings import CircuitJobSettings
-        from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
         from ..models.noise import Noise
+        from ..models.quantum_function_job_output import QuantumFunctionJobOutput
+        from ..models.quantum_function_job_results import QuantumFunctionJobResults
+        from ..models.quantum_function_job_settings import QuantumFunctionJobSettings
+        from ..models.quantum_function_job_stats import QuantumFunctionJobStats
         id = self.id
 
         status: str = self.status
 
-        type_ = self.type_
+        type_: str = self.type_
 
         backend = self.backend
 
@@ -169,7 +177,7 @@ class GetJobResponse:
         stats = self.stats.to_dict()
 
         results: dict[str, Any] | None
-        if isinstance(self.results, CircuitJobResult):
+        if isinstance(self.results, QuantumFunctionJobResults):
             results = self.results.to_dict()
         else:
             results = self.results
@@ -234,13 +242,13 @@ class GetJobResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.circuit_job_result import CircuitJobResult
-        from ..models.circuit_job_settings import CircuitJobSettings
-        from ..models.circuit_job_stats import CircuitJobStats
         from ..models.failure import Failure
         from ..models.job_metadata import JobMetadata
-        from ..models.json_object import JsonObject
         from ..models.noise import Noise
+        from ..models.quantum_function_job_output import QuantumFunctionJobOutput
+        from ..models.quantum_function_job_results import QuantumFunctionJobResults
+        from ..models.quantum_function_job_settings import QuantumFunctionJobSettings
+        from ..models.quantum_function_job_stats import QuantumFunctionJobStats
         d = dict(src_dict)
         id = d.pop("id")
 
@@ -249,7 +257,10 @@ class GetJobResponse:
 
 
 
-        type_ = d.pop("type")
+        type_ = check_quantum_function_job_type(d.pop("type"))
+
+
+
 
         backend = d.pop("backend")
 
@@ -367,35 +378,35 @@ class GetJobResponse:
         failure = _parse_failure(d.pop("failure"))
 
 
-        output = JsonObject.from_dict(d.pop("output"))
+        output = QuantumFunctionJobOutput.from_dict(d.pop("output"))
 
 
 
 
-        settings = CircuitJobSettings.from_dict(d.pop("settings"))
+        settings = QuantumFunctionJobSettings.from_dict(d.pop("settings"))
 
 
 
 
-        stats = CircuitJobStats.from_dict(d.pop("stats"))
+        stats = QuantumFunctionJobStats.from_dict(d.pop("stats"))
 
 
 
 
-        def _parse_results(data: object) -> CircuitJobResult | None:
+        def _parse_results(data: object) -> None | QuantumFunctionJobResults:
             if data is None:
                 return data
             try:
                 if not isinstance(data, dict):
                     raise TypeError()
-                results_type_1 = CircuitJobResult.from_dict(data)
+                results_type_1 = QuantumFunctionJobResults.from_dict(data)
 
 
 
                 return results_type_1
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(CircuitJobResult | None, data)
+            return cast(None | QuantumFunctionJobResults, data)
 
         results = _parse_results(d.pop("results"))
 
@@ -438,7 +449,7 @@ class GetJobResponse:
 
 
 
-        get_job_response = cls(
+        quantum_function_job = cls(
             id=id,
             status=status,
             type_=type_,
@@ -467,5 +478,5 @@ class GetJobResponse:
             cost_model=cost_model,
         )
 
-        return get_job_response
+        return quantum_function_job
 

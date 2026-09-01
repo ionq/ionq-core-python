@@ -12,7 +12,10 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.get_job_response import GetJobResponse
+from ...models.multi_circuit_job import MultiCircuitJob
+from ...models.qaoa_job import QaoaJob
+from ...models.quantum_function_job import QuantumFunctionJob
+from ...models.single_circuit_job import SingleCircuitJob
 from typing import cast
 
 
@@ -37,11 +40,48 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | GetJobResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob | None:
     if response.status_code == 200:
-        response_200 = GetJobResponse.from_dict(response.json())
+        def _parse_response_200(data: object) -> MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob:
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_get_job_response_type_0 = SingleCircuitJob.from_dict(data)
 
 
+
+                return componentsschemas_get_job_response_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_get_job_response_type_1 = MultiCircuitJob.from_dict(data)
+
+
+
+                return componentsschemas_get_job_response_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                componentsschemas_get_job_response_type_2 = QaoaJob.from_dict(data)
+
+
+
+                return componentsschemas_get_job_response_type_2
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            componentsschemas_get_job_response_type_3 = QuantumFunctionJob.from_dict(data)
+
+
+
+            return componentsschemas_get_job_response_type_3
+
+        response_200 = _parse_response_200(response.json())
 
         return response_200
 
@@ -67,7 +107,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | GetJobResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -81,7 +121,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | GetJobResponse]:
+) -> Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]:
     """ 
     Args:
         uuid (str):
@@ -91,7 +131,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetJobResponse]
+        Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]
      """
 
 
@@ -111,7 +151,7 @@ def sync(
     *,
     client: AuthenticatedClient,
 
-) -> Any | GetJobResponse | None:
+) -> Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob | None:
     """ 
     Args:
         uuid (str):
@@ -121,7 +161,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetJobResponse
+        Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob
      """
 
 
@@ -136,7 +176,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | GetJobResponse]:
+) -> Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]:
     """ 
     Args:
         uuid (str):
@@ -146,7 +186,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | GetJobResponse]
+        Response[Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob]
      """
 
 
@@ -166,7 +206,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 
-) -> Any | GetJobResponse | None:
+) -> Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob | None:
     """ 
     Args:
         uuid (str):
@@ -176,7 +216,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | GetJobResponse
+        Any | MultiCircuitJob | QaoaJob | QuantumFunctionJob | SingleCircuitJob
      """
 
 

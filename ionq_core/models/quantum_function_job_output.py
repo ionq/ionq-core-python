@@ -18,18 +18,16 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="CircuitJobResultProbabilities")
+T = TypeVar("T", bound="QuantumFunctionJobOutput")
 
 
 
 @_attrs_define
-class CircuitJobResultProbabilities:
-    """ 
-        Attributes:
-            url (str):
+class QuantumFunctionJobOutput:
+    """ Output for quantum-function jobs. Shape varies by function implementation.
+
      """
 
-    url: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -37,14 +35,9 @@ class CircuitJobResultProbabilities:
 
 
     def to_dict(self) -> dict[str, Any]:
-        url = self.url
-
-
+        
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update({
-            "url": url,
-        })
 
         return field_dict
 
@@ -53,15 +46,12 @@ class CircuitJobResultProbabilities:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        url = d.pop("url")
-
-        circuit_job_result_probabilities = cls(
-            url=url,
+        quantum_function_job_output = cls(
         )
 
 
-        circuit_job_result_probabilities.additional_properties = d
-        return circuit_job_result_probabilities
+        quantum_function_job_output.additional_properties = d
+        return quantum_function_job_output
 
     @property
     def additional_keys(self) -> list[str]:

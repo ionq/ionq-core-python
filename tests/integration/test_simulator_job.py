@@ -108,7 +108,8 @@ class TestCompletedJobEndpoints:
     """Use an already-completed job to avoid simulator timeout."""
 
     @pytest.fixture(scope="class")
-    def completed_job_id(self, client):
+    @classmethod
+    def completed_job_id(cls, client):
         resp = get_jobs.sync(client=client, status="completed", limit=1)
         assert resp is not None and resp.jobs, "No completed jobs found"
         return resp.jobs[0].id

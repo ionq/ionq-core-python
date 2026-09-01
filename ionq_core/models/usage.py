@@ -12,11 +12,13 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 from typing import cast
 import datetime
 
 if TYPE_CHECKING:
   from ..models.group_usage import GroupUsage
+  from ..models.usage_amount import UsageAmount
 
 
 
@@ -31,18 +33,23 @@ class Usage:
     """ Single date of QPU usage
 
         Attributes:
-            amount (float): The amount as a cost in USD Example: 1614.23.
-            from_ (datetime.date): Date for this group's usage Example: 2023-07-01.
+            amount (float): The amount as a cost, in units given by amount_unit Example: 1614.23.
+            from_ (datetime.datetime): Date for this group's usage Example: 2023-07-01.
             group_usages (list[GroupUsage]): The top 5 usage groups in order of cost amount descending
             job_count (int): The count of jobs for this group on the given from date Example: 10.
             time_us (float): The QPU time in microseconds Example: 5143166.13413.
+            amount_unit (str | Unset): The unit amount is denominated in. Normalized to credits if any credit activity is
+                present anywhere in the request Example: USD.
+            amounts (list[UsageAmount] | Unset): The per-currency breakdown of amount before ACU normalization
      """
 
     amount: float
-    from_: datetime.date
+    from_: datetime.datetime
     group_usages: list[GroupUsage]
     job_count: int
     time_us: float
+    amount_unit: str | Unset = UNSET
+    amounts: list[UsageAmount] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -51,6 +58,7 @@ class Usage:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.group_usage import GroupUsage
+        from ..models.usage_amount import UsageAmount
         amount = self.amount
 
         from_ = self.from_.isoformat()
@@ -66,6 +74,17 @@ class Usage:
 
         time_us = self.time_us
 
+        amount_unit = self.amount_unit
+
+        amounts: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.amounts, Unset):
+            amounts = []
+            for amounts_item_data in self.amounts:
+                amounts_item = amounts_item_data.to_dict()
+                amounts.append(amounts_item)
+
+
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -76,6 +95,10 @@ class Usage:
             "job_count": job_count,
             "time_us": time_us,
         })
+        if amount_unit is not UNSET:
+            field_dict["amount_unit"] = amount_unit
+        if amounts is not UNSET:
+            field_dict["amounts"] = amounts
 
         return field_dict
 
@@ -84,10 +107,11 @@ class Usage:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.group_usage import GroupUsage
+        from ..models.usage_amount import UsageAmount
         d = dict(src_dict)
         amount = d.pop("amount")
 
-        from_ = datetime.date.fromisoformat(d.pop("from"))
+        from_ = datetime.datetime.fromisoformat(d.pop("from"))
 
 
 
@@ -106,12 +130,28 @@ class Usage:
 
         time_us = d.pop("time_us")
 
+        amount_unit = d.pop("amount_unit", UNSET)
+
+        _amounts = d.pop("amounts", UNSET)
+        amounts: list[UsageAmount] | Unset = UNSET
+        if _amounts is not UNSET:
+            amounts = []
+            for amounts_item_data in _amounts:
+                amounts_item = UsageAmount.from_dict(amounts_item_data)
+
+
+
+                amounts.append(amounts_item)
+
+
         usage = cls(
             amount=amount,
             from_=from_,
             group_usages=group_usages,
             job_count=job_count,
             time_us=time_us,
+            amount_unit=amount_unit,
+            amounts=amounts,
         )
 
 
