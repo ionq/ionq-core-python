@@ -82,7 +82,7 @@ uv run openapi-python-client generate \
 
 Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
 
-Commit the regenerated files alongside the spec or template change that caused them. Spec drift is handled weekly by [`spec-sync.yml`](.github/workflows/spec-sync.yml), which opens a PR re-vendoring `openapi.json` and regenerating the client (the normalized spec diff is in the PR body), then merges it automatically once all required checks pass.
+Commit the regenerated files alongside the spec or template change that caused them. Spec drift is handled weekly by [`spec-sync.yml`](.github/workflows/spec-sync.yml), which opens a regeneration PR carrying the spec diff and merges it once all required checks pass.
 
 ## Pull request workflow
 

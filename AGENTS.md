@@ -112,7 +112,7 @@ Workflows live in [`.github/workflows/`](.github/workflows/) — `ls` it for the
 
 - **`generated.yml`** runs the regenerator on every PR and fails if `git diff ionq_core/` is non-empty. This is what catches hand-edits to generated files.
 - **`integration.yml`** is on a weekly cron and `workflow_dispatch` only — it does not run per PR, so don't rely on it for fast feedback.
-- **`spec-sync.yml`** opens (or updates) a `spec-drift`-labeled PR re-vendoring `openapi.json` and regenerating the client when upstream diverges, then squash-merges it once all required checks pass. It authenticates via octo-sts ([trust policy](.github/chainguard/spec-sync.sts.yaml)); the merge relies on the octo-sts App's PR-only bypass of the `main` ruleset.
+- **`spec-sync.yml`** opens a `spec-drift`-labeled PR re-vendoring `openapi.json` and regenerating the client when upstream drifts, then squash-merges it once all required checks pass (auth: [octo-sts trust policy](.github/chainguard/spec-sync.sts.yaml); merge: the App's PR-only `main`-ruleset bypass).
 - **`release.yml`** triggers on `v*` tags only and refuses mismatched tag/version pairs or republishing existing PyPI versions.
 
 When authoring a new workflow, use the local [`.github/actions/setup-uv`](.github/actions/setup-uv) composite action rather than `astral-sh/setup-uv` directly, for consistency with the existing matrix.

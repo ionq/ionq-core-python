@@ -21,18 +21,21 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Fetch latest spec
-        run: |
-          BASE_URL=$(jq -r '.servers[0].url' openapi.json)
-          echo "BASE_URL=${BASE_URL}" >> "$GITHUB_ENV"
-          echo "SYNC_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
-          curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
       - name: Check for drift
         id: drift
         run: |
+          BASE_URL=$(jq -r '.servers[0].url' openapi.json)
+          curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
           norm() { jq -S 'del(.info.description)' "$1"; }
           if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
             echo "drifted=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "Weekly sync of \`openapi.json\` with ${BASE_URL}/api-docs and client regeneration. Merges automatically once all required checks pass."
+              printf '\n<details><summary>Diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
+              head -c 60000 /tmp/spec.diff
+              [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'
+              printf '```\n</details>\n'
+            } > /tmp/pr-body.md
           fi
       - if: steps.drift.outputs.drifted == 'true'
         uses: ./.github/actions/setup-uv
@@ -49,27 +52,6 @@ jobs:
             --custom-template-path custom-templates \
             --output-path ionq_core \
             --overwrite
-      - name: Compose PR body
-        if: steps.drift.outputs.drifted == 'true'
-        run: |
-          {
-            echo "## Summary"
-            echo
-            echo "Weekly sync of \`openapi.json\` with ${BASE_URL}/api-docs and regeneration of the client."
-            printf '\n<details><summary>Spec diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
-            head -c 60000 /tmp/spec.diff
-            [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'
-            printf '```\n</details>\n\n'
-            echo "## Test plan"
-            echo
-            echo "The required \`staleness\` check re-runs this exact regeneration from the synced spec; \`lint\`, the \`test\` matrix, \`audit\`, and \`CodeQL\` gate the merge. This PR merges automatically once all required checks pass."
-            echo
-            echo "---"
-            echo
-            echo "> [!IMPORTANT]"
-            echo "> Most code in \`ionq_core/\` is auto-generated and overwritten on regeneration."
-            echo "> See [CONTRIBUTING.md](https://github.com/ionq/ionq-core-python/blob/main/CONTRIBUTING.md#proposing-changes) for which files are safe to edit."
-          } > /tmp/pr-body.md
       - name: Mint token
         if: steps.drift.outputs.drifted == 'true'
         id: sts
@@ -88,14 +70,14 @@ jobs:
             openapi.json
             ionq_core
           branch: spec-sync
-          commit-message: Sync OpenAPI spec with upstream (${{ env.SYNC_DATE }})
-          title: Sync OpenAPI spec with upstream (${{ env.SYNC_DATE }})
+          commit-message: Sync OpenAPI spec with upstream
+          title: Sync OpenAPI spec with upstream
           body-path: /tmp/pr-body.md
           labels: spec-drift
           sign-commits: true
           delete-branch: true
       - name: Merge once checks pass
-        if: steps.pr.outputs.pull-request-number != ''
+        if: steps.pr.outputs.pull-request-number
         env:
           GH_TOKEN: ${{ steps.sts.outputs.token }}
           PR: ${{ steps.pr.outputs.pull-request-number }}
