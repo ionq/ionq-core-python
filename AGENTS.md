@@ -112,7 +112,7 @@ Workflows live in [`.github/workflows/`](.github/workflows/) — `ls` it for the
 
 - **`generated.yml`** runs the regenerator on every PR and fails if `git diff ionq_core/` is non-empty. This is what catches hand-edits to generated files.
 - **`integration.yml`** is on a weekly cron and `workflow_dispatch` only — it does not run per PR, so don't rely on it for fast feedback.
-- **`spec-drift.yml`** opens or updates a `spec-drift`-labeled issue when upstream `openapi.json` diverges from the vendored copy.
+- **`spec-sync.yml`** opens a `spec-drift`-labeled PR re-vendoring `openapi.json` and regenerating the client when upstream drifts, then squash-merges it once all required checks pass (auth: [octo-sts trust policy](.github/chainguard/spec-sync.sts.yaml); merge: the App's PR-only `main`-ruleset bypass).
 - **`release.yml`** triggers on `v*` tags only and refuses mismatched tag/version pairs or republishing existing PyPI versions.
 
 When authoring a new workflow, use the local [`.github/actions/setup-uv`](.github/actions/setup-uv) composite action rather than `astral-sh/setup-uv` directly, for consistency with the existing matrix.
@@ -121,7 +121,7 @@ When authoring a new workflow, use the local [`.github/actions/setup-uv`](.githu
 
 - Branch off `main`. CODEOWNERS is `@ionq/developer-tools`.
 - PR titles become release-notes lines (`gh release create --generate-notes`). Imperative mood, user-facing, no leading ticket number.
-- User-visible changes go under `## [Unreleased]` in `CHANGELOG.md`, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+- User-visible changes go under `## [Unreleased]` in `CHANGELOG.md`, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Automated `spec-sync` PRs skip this; write their entries at release time from the merged `spec-drift`-labeled PRs.
 - Release: bump `pyproject.toml` `[project] version`, promote `[Unreleased]` → `[X.Y.Z]` in `CHANGELOG.md`, tag `vX.Y.Z`. `release.yml` rejects mismatched tag/version pairs and refuses to republish an existing PyPI version.
 
 ## Things to avoid (and what to do instead)

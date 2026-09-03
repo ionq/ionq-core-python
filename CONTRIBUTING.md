@@ -82,7 +82,7 @@ uv run openapi-python-client generate \
 
 Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
 
-Commit the regenerated files alongside the spec or template change that caused them. Spec drift is checked weekly by [`spec-drift.yml`](.github/workflows/spec-drift.yml), which opens an issue if `openapi.json` falls behind upstream.
+Commit the regenerated files alongside the spec or template change that caused them. Spec drift is handled weekly by [`spec-sync.yml`](.github/workflows/spec-sync.yml), which opens a regeneration PR carrying the spec diff and merges it once all required checks pass.
 
 ## Pull request workflow
 
@@ -94,7 +94,7 @@ Commit the regenerated files alongside the spec or template change that caused t
 
 There is no enforced commit-message format, but PR titles become release notes via `gh release create --generate-notes`. Write each title as the line you would want to see in a changelog: imperative mood, user-facing, no leading ticket number.
 
-User-visible changes should also be reflected in [CHANGELOG.md](CHANGELOG.md) under the next release section, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
+User-visible changes should also be reflected in [CHANGELOG.md](CHANGELOG.md) under the next release section, in [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format. Automated `spec-sync` PRs are the exception: they merge without an entry, and the release author writes entries for them from the merged `spec-drift`-labeled PRs, whose bodies carry each spec diff.
 
 ## Contributor License Agreement
 

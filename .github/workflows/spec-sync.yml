@@ -1,0 +1,88 @@
+name: Spec sync
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: spec-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check for drift
+        id: drift
+        run: |
+          BASE_URL=$(jq -r '.servers[0].url' openapi.json)
+          curl -sf "${BASE_URL}/api-docs" -o /tmp/latest-spec.json
+          norm() { jq -S 'del(.info.description)' "$1"; }
+          if ! diff -u --label vendored --label upstream <(norm openapi.json) <(norm /tmp/latest-spec.json) > /tmp/spec.diff; then
+            echo "drifted=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "Weekly sync of \`openapi.json\` with ${BASE_URL}/api-docs and client regeneration. Merges automatically once all required checks pass."
+              printf '\n<details><summary>Diff (sorted, pretty-printed JSON)</summary>\n\n```diff\n'
+              head -c 60000 /tmp/spec.diff
+              [[ $(wc -c < /tmp/spec.diff) -gt 60000 ]] && printf '\n... (truncated)\n'
+              printf '```\n</details>\n'
+            } > /tmp/pr-body.md
+          fi
+      - if: steps.drift.outputs.drifted == 'true'
+        uses: ./.github/actions/setup-uv
+      - name: Regenerate client
+        if: steps.drift.outputs.drifted == 'true'
+        run: |
+          cp /tmp/latest-spec.json openapi.json
+          uv sync --group regen
+          uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
+          uv run openapi-python-client generate \
+            --path /tmp/patched-spec.json \
+            --meta none \
+            --config openapi-python-client-config.yaml \
+            --custom-template-path custom-templates \
+            --output-path ionq_core \
+            --overwrite
+      - name: Mint token
+        if: steps.drift.outputs.drifted == 'true'
+        id: sts
+        uses: octo-sts/action@f603d3be9d8dd9871a265776e625a27b00effe05 # v1.1.1
+        with:
+          domain: octo-sts.gh.ionq.co
+          scope: ${{ github.repository }}
+          identity: spec-sync
+      - name: Create or update PR
+        if: steps.drift.outputs.drifted == 'true'
+        id: pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.sts.outputs.token }}
+          add-paths: |
+            openapi.json
+            ionq_core
+          branch: spec-sync
+          commit-message: Sync OpenAPI spec with upstream
+          title: Sync OpenAPI spec with upstream
+          body-path: /tmp/pr-body.md
+          labels: spec-drift
+          sign-commits: true
+          delete-branch: true
+      - name: Merge once checks pass
+        if: steps.pr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ steps.sts.outputs.token }}
+          PR: ${{ steps.pr.outputs.pull-request-number }}
+        run: |
+          # Poll until required check runs attach; gh errors instead of waiting when none are reported yet.
+          for _ in $(seq 30); do gh pr checks "$PR" --required --json name >/dev/null 2>&1 && break; sleep 10; done
+          gh pr checks "$PR" --required --watch --fail-fast
+          gh pr merge "$PR" --squash --admin

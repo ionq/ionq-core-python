@@ -1,0 +1,11 @@
+# spec-sync opens the weekly OpenAPI-regeneration PR and merges it into this repo only,
+# holding no key. Pattern: self-modify in ionq-actions/octo-sts/docs/patterns/release-please.md.
+issuer: https://token.actions.githubusercontent.com
+# Name and immutable-ID subject forms; ionq=25356822, ionq-core-python=1204464907.
+subject_pattern: "^repo:(ionq/ionq-core-python|[^/@]+@25356822/[^/@:]+@1204464907):ref:refs/heads/main$"
+claim_pattern:
+  enterprise: "^ionq$"
+permissions:
+  contents: write
+  pull_requests: write
+  issues: write # PR labels ride the issues API
