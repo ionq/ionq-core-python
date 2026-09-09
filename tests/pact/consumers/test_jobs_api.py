@@ -100,9 +100,11 @@ GET_RESPONSE_BODY = {
     "submitted_at": match.regex("2026-09-09T12:00:00.000Z", regex=ISO_TIMESTAMP),
     "started_at": None,
     "completed_at": None,
-    "predicted_wait_time_ms": match.integer(100),
+    # Null for completed jobs (the wait is over); the SDK only needs the key.
+    "predicted_wait_time_ms": None,
     "predicted_execution_duration_ms": None,
-    "execution_duration_ms": None,
+    # The provider computes this and sends 0 when no execution times exist.
+    "execution_duration_ms": match.integer(0),
     "failure": None,
     "output": match.like({}),
     "settings": match.like({}),
@@ -133,10 +135,7 @@ def test_jobs_api_contract() -> None:
     )
     (
         pact.upon_receiving("a request to get a completed job")
-        .given(
-            "a completed circuit job with results exists",
-            parameters={"id": JOB_ID},
-        )
+        .given("a completed circuit job with results exists", id=JOB_ID)
         .with_request("GET", f"/v0.4/jobs/{JOB_ID}")
         .will_respond_with(200)
         .with_body(GET_RESPONSE_BODY, content_type="application/json")
