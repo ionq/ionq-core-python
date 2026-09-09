@@ -141,12 +141,15 @@ def test_jobs_api_contract() -> None:
         .with_body(GET_RESPONSE_BODY, content_type="application/json")
     )
 
-    with pact.serve() as srv, AuthenticatedClient(
-        base_url=f"{srv.url}/v0.4",
-        token="pact-test-key",
-        prefix="apiKey",
-        auth_header_name="Authorization",
-    ) as client:
+    with (
+        pact.serve() as srv,
+        AuthenticatedClient(
+            base_url=f"{srv.url}/v0.4",
+            token="pact-test-key",
+            prefix="apiKey",
+            auth_header_name="Authorization",
+        ) as client,
+    ):
         created = create_job.sync(client=client, body=CREATE_PAYLOAD)
         assert isinstance(created, JobCreationResponse)
         assert created.status == "submitted"
