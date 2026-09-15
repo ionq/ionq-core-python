@@ -1,0 +1,47 @@
+name: Pact — publish consumer contracts
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - "ionq_core/**"
+      - "tests/pact/**"
+      - ".github/workflows/pact-publish.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  UV_FROZEN: true
+
+jobs:
+  publish-pacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-uv
+        with:
+          enable-cache: ${{ github.event_name == 'push' }}
+      - run: uv sync
+      # --no-cov: the pact test alone cannot meet the repo's 100% coverage gate
+      # (addopts sets --cov-fail-under=100), same as ci.yml's non-3.11 matrix legs.
+      - name: Generate consumer pact
+        run: uv run pytest tests/pact --no-cov
+      - name: Publish pact to PactFlow
+        uses: pactflow/actions/publish-pact-files@3074b72c0df6af10087afccfa6f91e2308dc151c # v2.0.0
+        with:
+          pactfiles: pacts
+          broker_url: ${{ vars.PACT_BROKER_BASE_URL }}
+          token: ${{ secrets.PACT_BROKER_TOKEN }}
+          # Explicit so a PR's detached-HEAD checkout doesn't misreport them.
+          branch: ${{ github.head_ref || github.ref_name }}
+          version: ${{ github.event.pull_request.head.sha || github.sha }}

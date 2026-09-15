@@ -1,33 +1,10 @@
-"""Pact HTTP contract: ionq-core-python (consumer) -> cloud-job-manager (provider).
+"""Pact HTTP contract: ionq-core-python -> cloud-job-manager-http.
 
-Pins the two jobs-API interactions the SDK depends on, in ONE pact
-(ionq-core-python-cloud-job-manager.json):
-
-  1. POST /v0.4/jobs        create a circuit job   -> 201 {id, status, session_id}
-  2. GET  /v0.4/jobs/{id}   fetch a completed job  -> 200 (every SingleCircuitJob
-                                                     required key; results as v1
-                                                     artifact DESCRIPTORS)
-
-The SDK carries /v0.4 in its base_url (client config, not contract): the pact
-records the WIRE paths the provider serves, so the mock base_url below is the
-mock server URL + /v0.4.
-
-Consumer-driven notes (generated openapi-python-client code: parse IS
-consumption — from_dict pops every required key):
-- Create response: session_id is REQUIRED-nullable — new vs the retired
-  python-ionq contract, which read only id + status.
-- Get response: SingleCircuitJob.from_dict hard-requires ~23 keys; nullable
-  ones must be PRESENT (null is fine). results entries are v1 artifact
-  descriptors {id, format, media_type} KEYED BY FORMAT — the provider also
-  sends legacy {url} pointer entries alongside (extra keys, allowed by Pact,
-  ignored by this assertion).
-- Client: bare AuthenticatedClient, never the IonQClient factory — the factory
-  pins a platform-varying User-Agent and warns on non-HTTPS base urls, which
-  this repo's filterwarnings=error would turn into a failure.
-
-Run: uv run pytest tests/pact --no-cov
-(--no-cov mirrors the integration-suite convention: the repo-wide 100%%
-coverage gate fails any partial run.)
+Consumes POST /v0.4/jobs (create -> 201) and GET /v0.4/jobs/{id} (fetch a
+completed job -> 200). Generated openapi-python-client: from_dict parse IS
+consumption, so the GET asserts every required key. Use the bare
+AuthenticatedClient (not the IonQClient factory) — its UA / non-HTTPS warnings
+would trip this repo's filterwarnings=error.
 """
 
 from pathlib import Path
@@ -123,7 +100,7 @@ GET_RESPONSE_BODY = {
 
 
 def test_jobs_api_contract() -> None:
-    pact = Pact("ionq-core-python", "cloud-job-manager").with_specification("V3")
+    pact = Pact("ionq-core-python", "cloud-job-manager-http").with_specification("V3")
 
     (
         pact.upon_receiving("a request to create a circuit job")
