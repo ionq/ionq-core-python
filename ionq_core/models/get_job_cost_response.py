@@ -32,12 +32,12 @@ class GetJobCostResponse:
     """ 
         Attributes:
             dry_run (bool):
-            estimated_cost (GetJobCostResponseEstimatedCost):
+            estimated_cost (GetJobCostResponseEstimatedCost | Unset):
             cost (GetJobCostResponseCost | Unset):
      """
 
     dry_run: bool
-    estimated_cost: GetJobCostResponseEstimatedCost
+    estimated_cost: GetJobCostResponseEstimatedCost | Unset = UNSET
     cost: GetJobCostResponseCost | Unset = UNSET
 
 
@@ -49,7 +49,9 @@ class GetJobCostResponse:
         from ..models.get_job_cost_response_estimated_cost import GetJobCostResponseEstimatedCost
         dry_run = self.dry_run
 
-        estimated_cost = self.estimated_cost.to_dict()
+        estimated_cost: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.estimated_cost, Unset):
+            estimated_cost = self.estimated_cost.to_dict()
 
         cost: dict[str, Any] | Unset = UNSET
         if not isinstance(self.cost, Unset):
@@ -60,8 +62,9 @@ class GetJobCostResponse:
 
         field_dict.update({
             "dry_run": dry_run,
-            "estimated_cost": estimated_cost,
         })
+        if estimated_cost is not UNSET:
+            field_dict["estimated_cost"] = estimated_cost
         if cost is not UNSET:
             field_dict["cost"] = cost
 
@@ -76,7 +79,12 @@ class GetJobCostResponse:
         d = dict(src_dict)
         dry_run = d.pop("dry_run")
 
-        estimated_cost = GetJobCostResponseEstimatedCost.from_dict(d.pop("estimated_cost"))
+        _estimated_cost = d.pop("estimated_cost", UNSET)
+        estimated_cost: GetJobCostResponseEstimatedCost | Unset
+        if isinstance(_estimated_cost,  Unset):
+            estimated_cost = UNSET
+        else:
+            estimated_cost = GetJobCostResponseEstimatedCost.from_dict(_estimated_cost)
 
 
 

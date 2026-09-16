@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `get_job_cost` no longer raises `KeyError: 'estimated_cost'` parsing a cost response: the API omits `estimated_cost` from some responses (observed for simulator jobs) although the spec marks it required, so `GetJobCostResponse.estimated_cost` is now `GetJobCostResponseEstimatedCost | Unset`.
 - `estimate_job_cost` no longer raises `KeyError` parsing a successful estimate: `GetJobEstimateResponse` now matches the shape the API actually serves (`estimate_context`, `rate_card`, `estimated_unit`, `estimated_total_cost`) via the OpenAPI overlay, replacing the stale `input_values` / `rate_information` / `cost_unit` / `estimated_cost` shape. Adds the `GetJobEstimateContext`, `RateCardEntry`, and `GetJobEstimateResponseRateCard` models; removes `GetJobEstimateResponseRateInformation`.
 - `get_usages` no longer raises `ValueError: badly formed hexadecimal UUID string`: organization ids are not UUIDs, so the `organization_id` path parameter and the `Usages.organization` response field are now plain `str` (previously `UUID`) via the OpenAPI overlay.
 - `get_usages` no longer raises `ValueError: Invalid isoformat string` parsing `usage_data`: the API returns RFC 3339 date-times for `Usage.from`, so the field is now `datetime.datetime` (previously `datetime.date`) via the OpenAPI overlay.
