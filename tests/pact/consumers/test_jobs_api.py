@@ -1,10 +1,7 @@
 """Pact HTTP contract: ionq-core-python -> cloud-job-manager-http.
 
 Consumes POST /v0.4/jobs (create -> 201) and GET /v0.4/jobs/{id} (fetch a
-completed job -> 200). Generated openapi-python-client: from_dict parse IS
-consumption, so the GET asserts every required key. Use the bare
-AuthenticatedClient (not the IonQClient factory) — its UA / non-HTTPS warnings
-would trip this repo's filterwarnings=error.
+completed job -> 200).
 """
 
 from pathlib import Path
@@ -23,15 +20,9 @@ PACT_DIR = Path(__file__).resolve().parents[3] / "pacts"
 
 ISO_TIMESTAMP = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$"
 
-# Pinned with cloud-job-manager's provider state handler ('a completed circuit
 # job with results exists' seeds this exact id from the state parameters).
 JOB_ID = "0198097d-3888-72ad-a9dd-9ace842cf181"
 
-# The real request model drives the pact request body (never hand-written, so
-# it can't drift from what the SDK serializes). Enriched with the optional
-# fields the SDK really sends: name, settings.error_mitigation and noise.
-# attrs' to_dict() drops UNSET fields, but shots defaults to 100 (not UNSET)
-# and is therefore always on the wire.
 CREATE_PAYLOAD = CircuitJobCreationPayload.from_dict(
     {
         "type": "ionq.circuit.v1",
@@ -54,14 +45,9 @@ CREATE_PAYLOAD = CircuitJobCreationPayload.from_dict(
 CREATE_RESPONSE_BODY = {
     "id": match.uuid("0198097d-3888-72ad-a9dd-9ace842cf182"),
     "status": "submitted",
-    # Required-nullable: the key must be on the wire (null for sessionless).
     "session_id": None,
 }
 
-# Every SingleCircuitJob required key, with the values the provider state's
-# seed produces; required-nullable keys are asserted as null. results pins the
-# format-keyed v1 descriptor the provider synthesizes (its legacy {url}
-# entries ride along as unasserted extras).
 GET_RESPONSE_BODY = {
     "id": JOB_ID,
     "status": "completed",
@@ -77,10 +63,8 @@ GET_RESPONSE_BODY = {
     "submitted_at": match.regex("2026-09-09T12:00:00.000Z", regex=ISO_TIMESTAMP),
     "started_at": None,
     "completed_at": None,
-    # Null for completed jobs (the wait is over); the SDK only needs the key.
     "predicted_wait_time_ms": None,
     "predicted_execution_duration_ms": None,
-    # The provider computes this and sends 0 when no execution times exist.
     "execution_duration_ms": match.integer(0),
     "failure": None,
     "output": match.like({}),
