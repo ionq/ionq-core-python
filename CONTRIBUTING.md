@@ -44,6 +44,8 @@ uv run ruff format --check       # format check (drop --check to apply)
 uv run ty check ionq_core/       # type check
 ```
 
+A [`Makefile`](Makefile) offers optional shorthand for these (`make test`, `make lint`, `make typecheck`, ...); the `uv run` commands above are the canonical, OS-independent workflow.
+
 Coverage is measured against the hand-written modules only; the generated surface is excluded. Tests treat warnings as errors.
 
 ### Integration tests
@@ -62,25 +64,13 @@ CI runs them on a weekly schedule via the [`integration`](.github/workflows/inte
 To regenerate `ionq_core/api/`, `ionq_core/models/`, and the root-level generated files, run:
 
 ```sh
-uv sync --group regen
-curl -sf https://api.ionq.co/v0.4/api-docs -o openapi.json
-
-if [ -f openapi-overlay.yaml ]; then
-    uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
-else
-    cp openapi.json /tmp/patched-spec.json
-fi
-
-uv run openapi-python-client generate \
-    --path /tmp/patched-spec.json \
-    --meta none \
-    --config openapi-python-client-config.yaml \
-    --custom-template-path custom-templates \
-    --output-path ionq_core \
-    --overwrite
+uv run --group regen python scripts/regenerate_models.py               # from the committed openapi.json (+ overlay)
+uv run --group regen python scripts/regenerate_models.py --sync-spec   # fetch the latest upstream spec first
 ```
 
-Keep this command in sync with the [`generated`](.github/workflows/generated.yml) workflow, which runs the same invocation on every PR. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
+`--sync-spec` downloads the current spec from <https://api.ionq.co/v0.4/api-docs> into `openapi.json` before regenerating.
+
+[`scripts/regenerate_models.py`](scripts/regenerate_models.py) is the single source of truth for the generation command and works on any OS (`make regen` / `make sync-spec` wrap it); the [`generated`](.github/workflows/generated.yml) workflow runs it on every PR across Linux, macOS, and Windows and verifies that the committed output is current. Post-generation hooks (in `openapi-python-client-config.yaml`) inject SPDX/`@generated` headers, hide the `AuthenticatedClient.token` from `repr`, and run `ruff` fix-and-format.
 
 Commit the regenerated files alongside the spec or template change that caused them. Spec drift is handled weekly by [`spec-sync.yml`](.github/workflows/spec-sync.yml), which opens a regeneration PR carrying the spec diff and merges it once all required checks pass.
 

@@ -12,35 +12,27 @@ permissions:
 
 jobs:
   staleness:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-uv
-      - run: uv sync --group regen
-      - name: Prepare spec
-        run: |
-          set -euo pipefail
-          if [[ -f openapi-overlay.yaml ]]; then
-            uv run oas-patch overlay openapi.json openapi-overlay.yaml -o /tmp/patched-spec.json
-          else
-            cp openapi.json /tmp/patched-spec.json
-          fi
       - name: Regenerate client
-        run: |
-          uv run openapi-python-client generate \
-            --path /tmp/patched-spec.json \
-            --meta none \
-            --config openapi-python-client-config.yaml \
-            --custom-template-path custom-templates \
-            --output-path ionq_core \
-            --overwrite
+        run: uv run --group regen python scripts/regenerate_models.py
+      # Windows only proves regeneration runs: openapi-python-client writes
+      # files with platform-native newlines, so its output there is CRLF and
+      # never byte-identical to the committed (LF) files.
       - name: Check for uncommitted changes
+        if: matrix.os != 'windows-latest'
         run: |
           if [[ -n "$(git status --porcelain ionq_core/)" ]]; then
-            echo "::error::Generated code is out of date. Run the generator and commit the results."
+            echo "::error::Generated code is out of date. Run 'uv run --group regen python scripts/regenerate_models.py' and commit the results."
             git diff ionq_core/
             exit 1
           fi

@@ -32,12 +32,18 @@ jobs:
       - run: uv run ty check ionq_core/
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: macos-latest
+            python-version: "3.14"
+          - os: windows-latest
+            python-version: "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -47,7 +53,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: ${{ github.event_name == 'push' }}
       - run: uv sync
-      - run: uv run pytest ${{ matrix.python-version != '3.11' && '--no-cov' || '' }}
+      - run: uv run pytest ${{ (matrix.python-version != '3.11' || matrix.os != 'ubuntu-latest') && '--no-cov' || '' }}
 
   audit:
     runs-on: ubuntu-latest
