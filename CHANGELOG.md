@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `move_job` (`POST /jobs/{UUID}/move`) and `get_format_schema` (`GET /schemas/formats/{format}`, under `ionq_core.api.schemas`) endpoints.
+- Typed per-kind job models returned by `get_job`: `SingleCircuitJob`, `MultiCircuitJob`, `QaoaJob`, and `QuantumFunctionJob`, plus typed result-format models (`IonqResultHistogramJsonV1`/`V2`, `IonqResultProbabilitiesJsonV1`/`V2`, `IonqResultProbabilitiesAggregateJsonV1`, `IonqResultShotsJsonV2`). `QuantumFunctionJobResults` now types `value` and `variance`.
 - `QctrlQaoaJobCreationPayload` and `QctrlQaoaJobInput` for submitting Q-CTRL QAOA maxcut combinatorial-optimization jobs via `create_job`. The `create_job` body union now also accepts `QctrlQaoaJobCreationPayload`.
 - `cost_model` optional field on `BaseJob`, `GetCircuitJobResponse`, and `GetJobResponse`, typed as `ApiCostModel` (`"QCT"` or `"2QGE_operations"`).
 - `clone_job` endpoint (`POST /jobs/{UUID}/clone`) and its `CloneJobPayload` model for resubmitting an existing job with optional overrides.
@@ -23,11 +25,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- `get_job` (and therefore `wait_for_job` / `async_wait_for_job`) returns `SingleCircuitJob | MultiCircuitJob | QaoaJob | QuantumFunctionJob` instead of the removed `GetJobResponse`.
+- The `backend` enum on job-creation and cost-estimate payloads narrowed upstream to `qpu.forte-1` and `qpu.forte-enterprise-1`.
 - `NativeCircuitInput.qubits` and `JsonMultiCircuitInput.qubits` are now `int | Unset` (previously `float | Unset`), matching upstream's tightening to `format: int32, minimum: 1`. `QisCircuitInput.qubits` already had this type locally via the OpenAPI overlay; that overlay action has been removed now that upstream is correct natively.
 - Regenerated with `openapi-python-client` 0.29.0. Generated models now parse timestamps with the standard library (`datetime.fromisoformat`) instead of `dateutil.parser.isoparse`.
 
 ### Removed
 
+- Variant-results endpoints (`GET /jobs/{UUID}/variants/{variantId}/results/{shots,histogram,probabilities}`) and their models, removed upstream; per-variant data now arrives through the typed job results and artifacts.
+- `GetJobResponse`, `GetCircuitJobResponse`, `GetVariantResultsResponse`, `JsonCircuitInput`, and `NoiseModel` models, restructured upstream into the per-kind job and result-format models above.
 - `get_compiled_file` endpoint (`GET /jobs/{UUID}/circuits/{lang}`) and its `GetCompiledFileLang` enum, removed upstream in favor of `get_job_artifact`. Compiled circuits are now fetched as artifacts by id rather than by `lang` (`"native"` / `"qasm3"`).
 - `CostModel` model, replaced by `ApiCostModel`.
 - The `python-dateutil` runtime dependency, no longer needed now that generated code uses `datetime.fromisoformat`.
