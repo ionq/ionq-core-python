@@ -1,10 +1,4 @@
 """Pact HTTP contract: ionq-core-python -> cloud-job-manager-http (GET /v0.4/jobs/{id}).
-
-Consumer contract for fetching a completed circuit job (-> 200). One interaction
-per file; this and the sibling create test both feed the SAME pact file
-(ionq-core-python-cloud-job-manager-http.json) — each writes with overwrite=False
-so its interaction MERGES in rather than replacing the other's. Self-contained
-per the pact standard (no shared fixtures module).
 """
 
 from pathlib import Path
@@ -19,11 +13,8 @@ PACT_DIR = Path(__file__).resolve().parents[3] / "pacts"
 
 ISO_TIMESTAMP = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$"
 
-# Pinned: the provider's state handler seeds a job with this exact id.
 JOB_ID = "0198097d-3888-72ad-a9dd-9ace842cf181"
 
-# from_dict parse == consumption, so the SDK requires every key below present
-# (nullable ones may be null). results is keyed by the v1 artifact FORMAT.
 GET_RESPONSE_BODY = {
     "id": JOB_ID,
     "status": "completed",
@@ -60,8 +51,6 @@ GET_RESPONSE_BODY = {
 
 
 def _client(mock_url: str) -> AuthenticatedClient:
-    # Bare AuthenticatedClient, NOT the IonQClient factory — the factory's
-    # platform User-Agent + non-HTTPS warnings would trip filterwarnings=error.
     return AuthenticatedClient(
         base_url=f"{mock_url}/v0.4",
         token="pact-test-key",
@@ -86,7 +75,5 @@ def test_jobs_get_job_api_contract() -> None:
         assert job.status == "completed"
         assert job.results is not None
 
-    # overwrite=False merges into the shared pact file (CI is fresh; delete
-    # pacts/ locally if you rename an interaction).
     PACT_DIR.mkdir(exist_ok=True)
     pact.write_file(PACT_DIR, overwrite=False)

@@ -1,10 +1,4 @@
 """Pact HTTP contract: ionq-core-python -> cloud-job-manager-http (POST /v0.4/jobs).
-
-Consumer contract for creating a circuit job (-> 201). One interaction per file;
-this and the sibling GET test both feed the SAME pact file
-(ionq-core-python-cloud-job-manager-http.json) — each writes with overwrite=False
-so its interaction MERGES in rather than replacing the other's. Self-contained
-per the pact standard (no shared fixtures module).
 """
 
 from pathlib import Path
@@ -17,8 +11,6 @@ from ionq_core.models import CircuitJobCreationPayload, JobCreationResponse
 
 PACT_DIR = Path(__file__).resolve().parents[3] / "pacts"
 
-# Built from the generated client model, so it reflects what the SDK actually
-# sends (and tracks the openapi.json the model is generated from).
 CREATE_PAYLOAD = CircuitJobCreationPayload.from_dict(
     {
         "type": "ionq.circuit.v1",
@@ -47,8 +39,6 @@ CREATE_RESPONSE_BODY = {
 
 
 def _client(mock_url: str) -> AuthenticatedClient:
-    # Bare AuthenticatedClient, NOT the IonQClient factory — the factory's
-    # platform User-Agent + non-HTTPS warnings would trip filterwarnings=error.
     return AuthenticatedClient(
         base_url=f"{mock_url}/v0.4",
         token="pact-test-key",
@@ -73,7 +63,5 @@ def test_jobs_create_circuit_api_contract() -> None:
         assert created.status == "submitted"
         assert created.session_id is None
 
-    # overwrite=False merges into the shared pact file (CI is fresh; delete
-    # pacts/ locally if you rename an interaction).
     PACT_DIR.mkdir(exist_ok=True)
     pact.write_file(PACT_DIR, overwrite=False)
