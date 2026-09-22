@@ -4,7 +4,7 @@
 
 """A client library for accessing IonQ Cloud Platform API"""
 
-from . import exceptions, extensions, gates, ionq_client, pagination, polling, session
+from . import exceptions, extensions, gates, ionq_client, pagination, polling, results, session
 from .client import AuthenticatedClient, Client  # noqa: F401
 from .exceptions import *  # noqa: F403
 from .extensions import *  # noqa: F403
@@ -12,6 +12,7 @@ from .gates import *  # noqa: F403
 from .ionq_client import *  # noqa: F403
 from .pagination import *  # noqa: F403
 from .polling import *  # noqa: F403
+from .results import *  # noqa: F403
 from .session import *  # noqa: F403
 from .types import UNSET, Unset  # noqa: F401
 
@@ -23,6 +24,7 @@ __all__ = sorted(
         "ionq_client",
         "pagination",
         "polling",
+        "results",
         "session",
         "AuthenticatedClient",
         "Client",
@@ -34,6 +36,7 @@ __all__ = sorted(
         *ionq_client.__all__,
         *pagination.__all__,
         *polling.__all__,
+        *results.__all__,
         *session.__all__,
     }
 )

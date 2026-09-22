@@ -1,5 +1,5 @@
 {% from "helpers.jinja" import safe_docstring %}
-{% set modules = ["exceptions", "extensions", "gates", "ionq_client", "pagination", "polling", "session"] %}
+{% set modules = ["exceptions", "extensions", "gates", "ionq_client", "pagination", "polling", "results", "session"] %}
 {{ safe_docstring(package_description) }}
 from . import {{ modules | join(", ") }}
 from .client import AuthenticatedClient, Client  # noqa: F401
