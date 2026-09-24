@@ -2,9 +2,11 @@ from uuid import UUID
 
 from ionq_core.models.backend import Backend
 from ionq_core.models.base_job import BaseJob
+from ionq_core.models.get_job_cost_response import GetJobCostResponse
 from ionq_core.models.job_creation_response import JobCreationResponse
 from ionq_core.models.session import Session
 from ionq_core.models.whoami import Whoami
+from ionq_core.types import UNSET
 
 BACKEND_SAMPLE = {
     "backend": "qpu.aria-1",
@@ -70,6 +72,13 @@ SESSION_SAMPLE = {
 }
 
 
+JOB_COST_SAMPLE = {
+    "dry_run": False,
+    "estimated_cost": {"value": 24.83, "unit": "usd"},
+    "cost": {"value": 24.83, "unit": "usd"},
+}
+
+
 class TestBackendModel:
     def test_from_dict(self):
         b = Backend.from_dict(BACKEND_SAMPLE)
@@ -131,3 +140,22 @@ class TestSessionModel:
         result = Session.from_dict(SESSION_SAMPLE).to_dict()
         for key in ["id", "active", "status", "organization_id"]:
             assert result[key] == SESSION_SAMPLE[key]
+
+
+class TestJobCostModel:
+    def test_from_dict(self):
+        c = GetJobCostResponse.from_dict(JOB_COST_SAMPLE)
+        assert c.dry_run is False
+        assert c.estimated_cost.value == 24.83
+        assert c.estimated_cost.unit == "usd"
+        assert c.cost.value == 24.83
+
+    def test_from_dict_and_to_dict(self):
+        assert GetJobCostResponse.from_dict(JOB_COST_SAMPLE).to_dict() == JOB_COST_SAMPLE
+
+    def test_estimated_cost_may_be_absent(self):
+        body = {"dry_run": False}
+        c = GetJobCostResponse.from_dict(body)
+        assert c.estimated_cost is UNSET
+        assert c.cost is UNSET
+        assert c.to_dict() == body

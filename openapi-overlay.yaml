@@ -36,6 +36,12 @@ info:
     'ionq.circuit.v1'" error from the union's last variant. We widen the
     property to anyOf boolean/object locally.
 
+    GetJobCostResponse marks estimated_cost as required, but the API
+    (production and staging) omits it from some responses - observed for simulator
+    jobs - so parsing a cost response raised KeyError: 'estimated_cost'. We drop it
+    from the required list locally (the field stays typed, as
+    `GetJobCostResponseEstimatedCost | Unset`) until spec is updated.
+
     Previously this overlay also coerced QisCircuitInput.qubits from
     number/double to integer/int32; upstream adopted that fix in May 2026
     (and extended it to NativeCircuitInput and JsonMultiCircuitInput), so
@@ -202,3 +208,9 @@ actions:
   - target: $.components.schemas.Usage.properties.from
     update:
       format: date-time
+  - target: $.components.schemas.GetJobCostResponse.required
+    remove: true
+  - target: $.components.schemas.GetJobCostResponse
+    update:
+      required:
+        - dry_run
